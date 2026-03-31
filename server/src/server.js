@@ -25,17 +25,17 @@ async function startServer() {
     await DBclient.connect(); // Connect to MongoDB database
     console.log("Connected to MongoDB");
 
-    // Get the database and attach to app.locals
+    //Get the database and attach to app.locals
     const db = DBclient.db("WHS_App_DB");
     app.locals.db = db;
 
-    // TESTING Print current users and issues ---
+    //-----------------------------TESTING Print current users and issues ---
     const users = await db.collection("User").find().toArray();
     console.log("Users in DB:", users);
 
     const issues = await db.collection("Issue").find().toArray();
     console.log("Issues in DB:", issues);
-    // -----------------------------------
+    //-----------------------------------
 
     //Start Express server using app.listen
     app.listen(PORT, () => {
