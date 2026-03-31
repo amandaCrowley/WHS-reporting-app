@@ -5,6 +5,6 @@ import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <App /> {/* This is loading the App.jsx component page*/}
   </StrictMode>,
 )

@@ -53,5 +53,49 @@ startServer();
 
 
 
+//Testing routes in postman
+// --- USERS ROUTES ---
+app.get('/api/users', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const users = await db.collection("User").find().toArray();
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching users");
+  }
+});
 
+app.post('/api/users', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const result = await db.collection("User").insertOne(req.body);
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating user");
+  }
+});
 
+// --- ISSUES ROUTES ---
+app.get('/api/issues', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const issues = await db.collection("Issue").find().toArray();
+    res.json(issues);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching issues");
+  }
+});
+
+app.post('/api/issues', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const result = await db.collection("Issue").insertOne(req.body);
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error creating issue");
+  }
+});
