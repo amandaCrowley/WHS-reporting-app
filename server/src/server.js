@@ -140,6 +140,24 @@ app.get('/api/users', async (req, res) => {
 //   }
 // });
 
+// GET a single user by Firebase UID
+app.get('/api/user/:firebaseUid', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { firebaseUid } = req.params;
+
+    const user = await db.collection("User").findOne({ firebaseUid });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
 // --- ISSUES ROUTES ---
 app.get('/api/issues', async (req, res) => {
   try {

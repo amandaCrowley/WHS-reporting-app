@@ -51,7 +51,7 @@ export default function RegisterPage() {
 
     //This function is called when the user clicks the create account button. 
     const registerUser = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         setError("");
         setLoading(true);
 
@@ -64,9 +64,9 @@ export default function RegisterPage() {
 
         //If the password and confirm password fields do not match, set the error state variable to display an error message to the user
         if (password !== confirmPassword) {
-             setError('Passwords do not match'); 
-             return;
-         }
+            setError('Passwords do not match');
+            return;
+        }
 
         try {
             // Create Firebase Auth user
@@ -103,85 +103,139 @@ export default function RegisterPage() {
     };
 
 
+    //Adjust the syles for this form later, this is just to make it look less horrible for now
     return (
-        <>
-            <div style={{ maxWidth: "400px", margin: "0 auto", padding: "20px" }}>
-                <h1>Create an account</h1>
+        <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            backgroundColor: "#f4f6f8"
+        }}>
+            <div style={{
+                width: "400px",
+                backgroundColor: "white",
+                padding: "30px",
+                borderRadius: "10px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+            }}>
+                <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
+                    Create Account
+                </h1>
 
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+                {/* Error message */}
+                {error && (
+                    <div style={{
+                        color: "red",
+                        backgroundColor: "#ffe6e6",
+                        padding: "10px",
+                        borderRadius: "5px",
+                        marginBottom: "15px",
+                        textAlign: "center"
+                    }}>
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={registerUser}>
-                    <div>
-                        <label>First Name</label>
-                        <input
-                            type="text"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            required
-                        />
-                    </div>
+                    {/* First Name */}
+                    <input
+                        type="text"
+                        placeholder="First Name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        style={inputStyle}
+                        required
+                    />
 
-                    <div>
-                        <label>Last Name</label>
-                        <input
-                            type="text"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label>Email:</label>
-                        <input
-                            placeholder='Enter email'
-                            type="email"
-                            value={email} //Set to the email input value to the email state variable
-                            onChange={(e) => setEmail(e.target.value)} //When the user types in the email input field, it updates the email state variable with the current value
-                            required
-                        />
-                    </div>
+                    {/* Last Name */}
+                    <input
+                        type="text"
+                        placeholder="Last Name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        style={inputStyle}
+                        required
+                    />
 
-                    <div>
-                        <label>Password:</label>
-                        <input
-                            placeholder='Enter password'
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label>Confirm Password:</label>
-                        <input
-                            placeholder='Confirm password'
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
-                    </div>
+                    {/* Email */}
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        style={inputStyle}
+                        required
+                    />
 
-                    <div>
-                        <label>Role</label>
-                        <select value={role} onChange={(e) => setRole(e.target.value)}>
-                            <option value="Student">Student</option>
-                            <option value="Staff">Staff</option>
-                            <option value="Visitor">Visitor</option>
-                            <option value="Contractor">Contractor</option>
-                        </select>
-                    </div>
+                    {/* Password */}
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        style={inputStyle}
+                        required
+                    />
 
-                    <br />
-                    <button type="submit" disabled={loading}>
+                    {/* Confirm Password */}
+                    <input
+                        type="password"
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        style={inputStyle}
+                        required
+                    />
+
+                    {/* Role */}
+                    <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        style={inputStyle}
+                    >
+                        <option value="Student">Student</option>
+                        <option value="Staff">Staff</option>
+                        <option value="Visitor">Visitor</option>
+                        <option value="Contractor">Contractor</option>
+                    </select>
+
+                    {/* Submit button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                            width: "100%",
+                            padding: "10px",
+                            backgroundColor: "#007bff",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            fontWeight: "bold",
+                            marginTop: "10px"
+                        }}
+                    >
                         {loading ? "Registering..." : "Register"}
                     </button>
                 </form>
 
-
-                <br /><br />
-                <p>Already have an account? <Link to="/login">Login here</Link>.</p>
+                <p style={{ textAlign: "center", marginTop: "15px" }}>
+                    Already have an account?{" "}
+                    <Link to="/login" style={{ color: "#007bff" }}>
+                        Login here
+                    </Link>
+                </p>
             </div>
-        </>
+        </div>
     );
 }
+
+const inputStyle = {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "15px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    fontSize: "16px"
+};
