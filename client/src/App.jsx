@@ -28,6 +28,7 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
 import ErrorPage from './pages/ErrorPage.jsx'
+import UserDashboard from './pages/UserDashboard.jsx'
 
 //Adds routes to the app, so that when the user goes to a specific URL, it will load the corresponding page (e.g. /login will load the LoginPage.jsx component page)
 const routes = [{
@@ -42,6 +43,12 @@ const routes = [{
     }, {
       path: '/register',
       element: <Register />
+    }, {
+      path: '/register',
+      element: <Register />
+    }, {
+      path: '/userdashboard',
+      element: <UserDashboard />
     }]
 }]
 const router = createBrowserRouter(routes);
