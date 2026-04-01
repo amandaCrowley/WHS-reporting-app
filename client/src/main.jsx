@@ -4,17 +4,20 @@ import './index.css'
 import App from './App.jsx'
 import { initializeApp } from "firebase/app";
 
-//Before loading the app initialise firebase with the config for our project (this is needed to use firebase authentication)
+// Before loading the app initialise firebase with the config for our project (this is needed to use firebase authentication) 
+// Imports firebase configuration variables from .env.local
+// This file is not included in the repository for security reasons, but it should contain the following variables with the appropriate values
+// See Notion for correct variables
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
+// Initialise Firebase
 const app = initializeApp(firebaseConfig);
 
 createRoot(document.getElementById('root')).render(
