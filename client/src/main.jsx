@@ -6,7 +6,6 @@ import { initializeApp } from "firebase/app";
 
 //Before loading the app initialise firebase with the config for our project (this is needed to use firebase authentication)
 const firebaseConfig = {
-
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
