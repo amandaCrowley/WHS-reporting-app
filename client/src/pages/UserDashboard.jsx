@@ -4,6 +4,8 @@
  * This component displays a user's dashboard page.
  * It contains the logged-in user's information and provides a logout option.
  * 
+ * Future work - overview of submitted issues (Summary page) Total issues submitted, status breakdown, Recent issues, quick buttons etc
+ * 
  * Author/s: Amanda Foxley
  * Date: 1/4/26
  */
