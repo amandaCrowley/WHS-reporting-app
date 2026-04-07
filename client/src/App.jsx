@@ -2,18 +2,9 @@
  * App.jsx
  * 
  * This is the main entry component for the React frontend application.
- * It is responsible for configuring and providing client-side routing
- * using the react-router-dom.
+ * It is responsible for configuring and providing client-side routing.
  * 
- * The application defines routes for:
- * - Home page (/)
- * - Login page (/login)
- * - Registration page (/register)
- * 
- * An ErrorPage component is used to handle invalid routes and display
- * a fallback UI when a user navigates to a non-existent path.
- * 
- * The RouterProvider wraps the application and enables navigation between pages without reloading the browser.
+ * An ErrorPage component is used to handle invalid routes and display an error message when users try to navigate to a non-existent page.
  * 
  * Author/s: Amanda Foxley
  * Date: 1/4/26
@@ -70,7 +61,7 @@ const routes = [{
 const router = createBrowserRouter(routes);
 
 //This is the main App component that is loaded in main.jsx. 
-// It uses the RouterProvider to load the routes we defined above 
+// It uses the RouterProvider to load the routes we have defined above. 
 function App() {
   return (
    <RouterProvider router={router} />

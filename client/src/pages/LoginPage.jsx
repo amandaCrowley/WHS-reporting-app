@@ -1,10 +1,12 @@
 /**
  * LoginPage.jsx
  * 
- * This component represents the login page of the application.
- * It allows users to enter their credentials (e.g. email and password) to authenticate and access their account.
+ * This page allows users to enter their credentials (e.g. email and password) to authenticate and access their WHS reporting app account.
  * 
- * The page will later be connected to the backend API to verify user credentials and handle authentication.
+ * This page is connected to Firebase auth which is a 3rd party service (Google) that provides authentication and user management for web applications.
+ * All user credentaials are stored securely in firebase.
+ * 
+ * Uses firebase auth functions to validate users. 
  * 
  * Author/s: Amanda Foxley
  * Date: 1/4/26

@@ -1,9 +1,8 @@
 /**
- * NotFoundPage.jsx
+ * ErrorPage.jsx
  * 
- * This component is displayed when a user navigates to a route that does not exist within the application.
- * 
- * It contains a simple error message indicating that the requested page could not be found
+ * This page is displayed when a user navigates to a page that does not exist.
+ * It contains a simple error message and a link to go back to the home page.
  * 
  * This component is used as the errorElement in the router configuration (in App.jsx).
  * 

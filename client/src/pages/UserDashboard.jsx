@@ -1,8 +1,7 @@
 /**
  * UserDashboard.jsx
  * 
- * This component displays a user's dashboard page.
- * It contains the logged-in user's information and provides a logout option.
+ * This page is essentially a logged in user's homepage, it stores various details about the user and their issues.
  * 
  * Future work - overview of submitted issues (Summary page) Total issues submitted, status breakdown, Recent issues, quick buttons etc
  * 

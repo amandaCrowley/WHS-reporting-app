@@ -1,10 +1,9 @@
 /**
  * RegisterPage.jsx
  * 
- * This component represents the user registration page.
- * It allows new users to create an account by entering their details such as name, email, and password.
- * Uses firebase to create users with email and password authentication.
- * Store remaining user data into hosted mongoDB database for later use (name, role, etc.)
+ * This page allows new users to create an account by entering their details such as name, email, role and password.
+ * Uses an external service (Firebase authentication) to create and store each user's email and password.
+ * The remaining user data is stored in an externally hosted mongoDB database for later use (name, role, etc.)
  * 
  * Author/s: Amanda Foxley
  * Date: 1/4/26
@@ -33,21 +32,6 @@ export default function RegisterPage() {
 
     const navigate = useNavigate(); //useNavigate is a hook from react-router-dom that allows us to programmatically navigate to different pages in the app (e.g. after successful login, we can navigate to the user's dashboard)
     const auth = getAuth(); //returns the firebase authentication object
-
-    //This function is called when the user clicks the create account button. 
-    // async function createAccount() {
-    //     if (password !== confirmPassword) {
-    //         setError('Passwords do not match'); //If the password and confirm password fields do not match, set the error state variable to display an error message to the user
-    //         return;
-    //     }
-
-    //     try {
-    //         await createUserWithEmailAndPassword(getAuth(), email, password); //Use firebase authentication to create a new user with the email and password entered into the form
-    //         navigate('/login'); //If account creation is successful, navigate to the login page 
-    //     } catch (e) {
-    //         setError(e.message); //If there is an error during registration (e.g. incorrect email or password), set the error state variable to display an error message to the user
-    //     }
-    // }
 
     //This function is called when the user clicks the create account button. 
     const registerUser = async (e) => {

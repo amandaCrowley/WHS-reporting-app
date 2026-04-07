@@ -1,11 +1,9 @@
 /**
  * HomePage.jsx
  * 
- * This component represents the main landing page of the application.
- * It is the default page displayed when users navigate to the root URL (/).
+ * This page represents the main landing page of the application. (It is the root page at the URL "/")
  * 
- * The page provides a basic welcome message and serves as the entry
- * point for users to navigate to other parts of the application.
+ * Contains a basic welcome message and some links to navigate to other parts of the app.
  * 
  * Author/s: Amanda Foxley
  * Date: 1/4/26
