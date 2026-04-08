@@ -55,7 +55,7 @@ async function startServer() {
 startServer();
 
 /*
-* This route handles the creation of new users. It expects a JSON body with the following fields:
+* This route handles the creation of new users (Register page). It expects a JSON body with the following fields:
 - firebaseUid: The unique identifier for the user from Firebase Authentication.
 - firstName: The user's first name. 
 - lastName: The user's last name.
@@ -129,16 +129,6 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// app.post('/api/users', async (req, res) => {
-//   try {
-//     const db = req.app.locals.db;
-//     const result = await db.collection("User").insertOne(req.body);
-//     res.json(result);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send("Error creating user");
-//   }
-// });
 
 // GET a single user by Firebase UID
 app.get('/api/user/:firebaseUid', async (req, res) => {
@@ -198,24 +188,57 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
 
 
 // --- ISSUES ROUTES ---
-app.get('/api/issues', async (req, res) => {
+
+// Get issues for a specific user, has an optional limit (i.e. if limited by 5 then will retrieve the last 5 issues if not limited it will retrun all of them)
+app.get('/api/issues/user/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const issues = await db.collection("Issue").find().toArray();
-    res.json(issues);
+    const { firebaseUid } = req.params;
+
+    // Optional query parameter i.e.  ?limit=5  - would be limited to only return 5 issues
+    const limit = parseInt(req.query.limit) || 0; // 0 = no limit
+
+    // Find the user in MongoDB first to get their ObjectId
+    const user = await db.collection("User").findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Find issues reported by this user
+    let query = { ReportedBy: user._id };
+    let cursor = db.collection("Issue")
+      .find(query)
+      .sort({ "Date/Time reported": -1 }); // latest issues first
+
+    // Check if there is a limit to the number of issues to be returned               
+    if (limit > 0) {
+      cursor = cursor.limit(limit);
+    }
+
+    const issues = await cursor.toArray();
+    res.json(issues); //Return the issues
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error fetching issues");
+    console.error("Failed to fetch user issues:", err);
+    res.status(500).json({ error: "Failed to fetch user issues" });
   }
 });
 
-app.post('/api/issues', async (req, res) => {
+//Get an issue with a matching IssueID
+app.get('/api/issues/:id', async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const result = await db.collection("Issue").insertOne(req.body);
-    res.json(result);
+    const { id } = req.params;
+    
+    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Convert string ID to ObjectId and find matching issue
+
+    if (!issue) 
+      return res.status(404).json({ error: "Issue not found" });
+    
+    res.json(issue); //Send back the issue
+
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error creating issue");
+      console.error(err);
+      res.status(500).json({ error: "Failed to fetch issue" });
   }
 });
