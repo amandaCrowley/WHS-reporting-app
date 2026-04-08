@@ -1,13 +1,21 @@
 /**
- * This is a custom hook to manage authenticated user data.
+ * This is a custom hook to manage authenticated user data using Firebase authentication.
  * 
- * Provides:
- * - userData: the user's full data from the backend (MongoDB)
- * - loading: boolean, true while fetching user data
- * - error: string, any error encountered during fetching
- * - logout: function to log the user out via Firebase
- * - updateUser: function to update the user's data in the backend (last name only for now)
- * - setUserData: setter for manually updating userData if needed
+ * It handles fetching user details from the backend (MongoDB) based on the Firebase UID, 
+ * It also uses state management for loading and error handling
+ * It contains a helper function for updating user data, this is used on the userProfile page
+ * There is also a function to allow components to log out
+ * 
+ * Key features:
+ * - userData: Stores the current user's data from the backend using the Firebase UID of the authenticated user.
+ * - loading: boolean, true while fetching user data - state for pages/components to use to incdicate the loading status of the fetch operation
+ * - error: string, any error encountered during fetching - state for pages/components to use to incdicate the error status of the fetch operation
+ * - logout: Provides a `logout()` function to sign the user out via Firebase and redirect to login.
+ * - updateUser: updates allowed fields (currently only `lastName`) in the database
+ * - setUserData: `setUserData()` allows direct manipulation of local user data without a backend call.
+ * 
+ * Usage:
+ * const { userData, loading, error, logout, updateUser, setUserData } = getUserData();
  * 
  * Author/s: Amanda Foxley
  * Date: 8/4/26
@@ -18,6 +26,8 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 export function getUserData() {
+
+    //State information
     const [userData, setUserData] = useState(null); // State to store user data from backend
     const [loading, setLoading] = useState(true); // State to indicate loading state while fetching user data
     const [error, setError] = useState(null); // State to store error messages if fetching fails
@@ -85,6 +95,7 @@ export function getUserData() {
             fetchUser();
         });
 
+        //Clean up once method has finished tasks
         return () => unsubscribe();
     }, [auth, navigate]);
 
@@ -94,37 +105,39 @@ export function getUserData() {
     */
     const logout = async () => {
         try {
-            await signOut(auth);
-            navigate("/login");
+            await signOut(auth); //Log out current user using Firebase method
+            navigate("/login"); //Redirect
         } catch (err) {
             console.error("Logout failed:", err);
         }
     };
 
     /**
-      * Update profile fields (only lastName for now)
-      */
- const updateUser = async ({ lastName }) => {
-    if (!userData?.firebaseUid) throw new Error("User not loaded yet");
+      * Update user profile fields (currently only lastName)
+      * @param {Object} param0 Object containing { lastName }
+      * @returns Updated user data from backend
+    */
+    const updateUser = async ({ lastName }) => {
+        if (!userData?.firebaseUid) throw new Error("User not loaded yet");
 
-    try {
-      const res = await fetch(`http://localhost:8000/api/user/${userData.firebaseUid}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lastName }),
-      });
+        try {
+            const res = await fetch(`http://localhost:8000/api/user/${userData.firebaseUid}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lastName }),
+            });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update user");
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to update user");
 
-      setUserData(data); //Set local state to new user
-      return data;
-      
-    } catch (err) {
-      console.error("Update failed:", err);
-      throw err;
-    }
-  };
+            setUserData(data); //Update local state to new user
+            return data; //Return updated user data
+
+        } catch (err) {
+            console.error("Update failed:", err);
+            throw err;
+        }
+    };
 
 
     // Return relevant state cvariables/functions for other components/pages to use

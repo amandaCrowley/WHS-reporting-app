@@ -28,7 +28,7 @@ export default function UserDashboard() {
 
     const navigate = useNavigate();
 
-    // Fetch last 3 issues submitted by this user
+    // Fetch last 2 issues submitted by this user
     useEffect(() => {
         if (!userData) return;
 
@@ -36,9 +36,9 @@ export default function UserDashboard() {
             try {
                 setIssuesLoading(true);
 
-                //limit=5 to only retrieve the 3 latest issues
+                //limit=2 to only retrieve the 2 latest issues
                 const res = await fetch(
-                    `http://localhost:8000/api/issues/user/${userData.firebaseUid}?limit=3`
+                    `http://localhost:8000/api/issues/user/${userData.firebaseUid}?limit=2`
                 );
                 if (!res.ok) throw new Error("Failed to fetch issues");
 

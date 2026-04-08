@@ -1,3 +1,11 @@
+/**
+ * .jsx
+ * 
+ * 
+ * Author/s: Amanda Foxley
+ * Date: 8/4/26
+ */
+
 // form to submit new issues (description, location, images etc)
 
 import { useNavigate } from "react-router-dom";

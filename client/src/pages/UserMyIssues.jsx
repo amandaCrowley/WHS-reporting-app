@@ -1,3 +1,15 @@
+/**
+ * UserMyIssues.jsx
+ * 
+ * This page lists all issues submitted by the currently logged in user
+ * 
+ * Users can search for a specific issue by description location or campus
+ * They can also filter their issues by status
+ * 
+ * Author/s: Amanda Foxley
+ * Date: 2/4/26
+ */
+
 //Full list of user’s submitted issues (Search, filter, clickon issue leads to issue details page)
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,66 +18,79 @@ import { getAuth } from "firebase/auth";
 export default function UserMyIssues() {
   const navigate = useNavigate();
 
-  const [issues, setIssues] = useState([]);
-  const [filteredIssues, setFilteredIssues] = useState([]);
-  const [loading, setLoading] = useState(true);
+  //State variables
+  const [issues, setIssues] = useState([]);                           // Stores all issues fetched from backend
+  const [filteredIssues, setFilteredIssues] = useState([]);           // Stores issues filtered by search/status
+  const [loading, setLoading] = useState(true);                       // True while issues are being fetched
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [search, setSearch] = useState("");                           // Stores the current search query
+  const [statusFilter, setStatusFilter] = useState("All");            // Stores selected status filter
 
+  /**
+   * Fetches all issues submitted by the current user from the backend server
+   */
   useEffect(() => {
     const fetchIssues = async () => {
       try {
-        const auth = getAuth();
+        //Get the currently logged in user with Firebase getAuth() method
+        const auth = getAuth(); 
         const user = auth.currentUser;
 
-        if (!user) return;
+        if (!user) return; //User is empty, return
 
         const res = await fetch(
           `http://localhost:8000/api/issues/user/${user.uid}` //get all issues with this user ID
         );
-        const data = await res.json();
+        const data = await res.json(); 
 
-        setIssues(data);
+        setIssues(data); // Save the returned issue data in the state variable
         setFilteredIssues(data);
       } catch (err) {
         console.error("Failed to fetch issues:", err);
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop loading regardless of success/failure
       }
     };
 
-    fetchIssues();
+    fetchIssues(); //Call the fetch issues method to retireve the user's issues
   }, []);
 
-  //Filter issues
+   /**
+   * Filter or search for issues whenever the search input, status filter, or original issues change
+   * 
+   * Allows searching by description, campus, and location
+   * Allows filtering by status
+   */
   useEffect(() => {
     let temp = issues;
 
+    // Filter by status if not set to retrieve "All" issues
     if (statusFilter !== "All") {
       temp = temp.filter(issue => issue.Status === statusFilter);
     }
 
+    // Filter by search query if something is typed into the search bar
     if (search.trim()) {
       const searchLower = search.toLowerCase();
 
       temp = temp.filter(issue =>
-        issue.IssueDescription?.toLowerCase().includes(searchLower) ||
-        issue.Campus?.toLowerCase().includes(searchLower) ||
-        issue.Location?.toLowerCase().includes(searchLower)
+        issue.IssueDescription?.toLowerCase().includes(searchLower) ||  //search by description
+        issue.Campus?.toLowerCase().includes(searchLower) ||            //search by campus
+        issue.Location?.toLowerCase().includes(searchLower)             //search by location
       );
     }
 
-    setFilteredIssues(temp);
+    setFilteredIssues(temp); // Update the filtered issues state
   }, [search, statusFilter, issues]);
 
+  // Display loading message while fetching issues
   if (loading) return <p>Loading your issues...</p>;
 
   return (
     <div>
       <h1>My Issues</h1>
 
-      {/* Search issue descriptions + campus + location*/}
+      {/* Search bar - can search by issue descriptions + campus + location*/}
       <input
         type="text"
         placeholder="Search issues..."

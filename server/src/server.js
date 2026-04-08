@@ -1,3 +1,18 @@
+/**
+ * server.js
+ * 
+ * Express server for the WHS reporting App.
+ * 
+ * Key features:
+ * - Connects to MongoDB Atlas
+ * - Handles CORS (allows frontend/client pages to talk to this server safely) and JSON request bodies (using req.body, i.e without express.json the req.body would be undefined and we could'nmt recieve JSON requests from the frontend)
+ * - User routes: create user, get all users, get single user by id, update user last name
+ * - Issue routes: fetch all issues for a single user, fetch single issue by ID
+
+ * Author/s: Amanda Foxley
+ * Date: 1/4/26
+ */
+
 import express from 'express';
 import cors from "cors";
 import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
@@ -8,10 +23,11 @@ dotenv.config(); //Load environment variables from .env
 const PORT = process.env.PORT || 8000; //Use the PORT environment variable if it's set, otherwise default to 8000
 const app = express(); //Create application using express
 
-// Middleware
+// --------------------------Middleware--------------------------------
 app.use(cors());  //Enable CORS to allow requests from the frontend running on a different origin (e.g. http://localhost:5173/)
 app.use(express.json()); //Tells our server to parse incoming JSON data in the request body and make it available under req.body
 
+//---------------------------Database setup
 const uri = `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@ac-gu3hwzr-shard-00-00.1tuxpwj.mongodb.net:27017,ac-gu3hwzr-shard-00-01.1tuxpwj.mongodb.net:27017,ac-gu3hwzr-shard-00-02.1tuxpwj.mongodb.net:27017/?ssl=true&replicaSet=atlas-x07b7f-shard-0&authSource=admin`;
 
 //Create a MongoClient as recommended on MongoDB website
@@ -22,7 +38,11 @@ const DBclient = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+//----------------------------------------------------------------------
 
+/**
+ * Start the Express server and connect to MongoDB
+ */
 async function startServer() {
   try {
     await DBclient.connect(); // Connect to MongoDB database
@@ -31,14 +51,6 @@ async function startServer() {
     //Get the database and attach to app.locals
     const db = DBclient.db("WHS_App_DB");
     app.locals.db = db;
-
-    // //-----------------------------TESTING Print current users and issues ---
-    // const users = await db.collection("User").find().toArray();
-    // console.log("Users in DB:", users);
-
-    // const issues = await db.collection("Issue").find().toArray();
-    // console.log("Issues in DB:", issues);
-    // //-----------------------------------
 
     //Start Express server using app.listen
     app.listen(PORT, () => {
@@ -53,6 +65,8 @@ async function startServer() {
 
 //Run method to start everything
 startServer();
+
+// ---------------------- USER ROUTES ----------------------
 
 /*
 * This route handles the creation of new users (Register page). It expects a JSON body with the following fields:
@@ -95,7 +109,7 @@ app.post('/api/user', async (req, res) => {
       });
     }
 
-    //Prepare new user object
+    //Create new user object
     const newUser = {
       firebaseUid,
       firstName,
@@ -116,8 +130,10 @@ app.post('/api/user', async (req, res) => {
   }
 });
 
-//Testing routes in postman
-// --- USERS ROUTES ---
+
+/**
+ * This route retrieves ALL users in the Users collection in MongoDB
+ * */
 app.get('/api/users', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -130,7 +146,9 @@ app.get('/api/users', async (req, res) => {
 });
 
 
-// GET a single user by Firebase UID
+/**
+ * This route retrieves a single user using their Firebase UID
+ */
 app.get('/api/user/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -149,7 +167,9 @@ app.get('/api/user/:firebaseUid', async (req, res) => {
   }
 });
 
-// Update user's last name - Other profile page fields should stay as they are (Password can be updated seperately using usePasswordReset.js hook)
+/**
+ * This route allows the app to update user's last name - Other profile page fields should stay as they are (Password can be updated seperately using usePasswordReset.js hook)
+ **/ 
 app.put('/api/user/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -187,9 +207,11 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
 });
 
 
-// --- ISSUES ROUTES ---
+// --------------------- ISSUE ROUTES --------------------------------------
 
-// Get issues for a specific user, has an optional limit (i.e. if limited by 5 then will retrieve the last 5 issues if not limited it will retrun all of them)
+/**
+ * Get all issues for a specific user, has an optional limit (i.e. if limited by 5 then will retrieve the last 5 issues if not limited it will retrun all of them)
+ **/ 
 app.get('/api/issues/user/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -224,7 +246,9 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
   }
 });
 
-//Get an issue with a matching IssueID
+/**
+ * This route retrieves a single issue with a matching IssueID
+ */
 app.get('/api/issues/:id', async (req, res) => {
   try {
     const db = req.app.locals.db;

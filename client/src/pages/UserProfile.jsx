@@ -1,7 +1,10 @@
 /**
  * UserProfile.jsx
  * 
- * This page will alow users to change their profile information. i.e. 
+ * This page will alow users to change their profile information. 
+ * At this stage this just includes the user's last name and password.
+ * i.e. A user can't change their first name, role or email
+ * Perhaps email can be changed on the admin side of the app later on? 
  * 
  * Author/s: Amanda Foxley
  * Date: 2/4/26
@@ -16,9 +19,10 @@ export default function UserProfile() {
   const navigate = useNavigate();
 
   //State variables
-  const { userData, loading, error, logout, updateUser } = getUserData();
-  const { updateUserPassword, loading: pwLoading, error: pwError } = usePasswordReset();
+  const { userData, loading, error, logout, updateUser } = getUserData(); //get user data from the custom react hook (getUserData.js)
+  const { updateUserPassword, loading: pwLoading, error: pwError } = usePasswordReset(); //custom hook that handles a password update via Firebase (usePasswordReset.js)
 
+  //Local password state variables
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,7 +33,7 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (userData?.lastName) {
-      setLastName(userData.lastName); // keep local state in sync with backend
+      setLastName(userData.lastName); // keep local state/variables in sync with updated backend data 
     }
   }, [userData]);
 
@@ -38,27 +42,30 @@ export default function UserProfile() {
   if (error) return <p>{error} Redirecting to login...</p>; //If there is an error, display and redirect
   if (!userData) return <p>No user data found.</p>;
 
-  // Handle updating last name
+  // function to handle updating last name
   const handleUpdateLastName = async () => {
+    
+    //Check that the name isnt empty
     if (lastName.trim() === "") {
       setMessage("Please enter a last name.");
       return;
     }
 
+    //Check not the same as current last name
     if (lastName === userData.lastName) {
       setMessage("New last name must be different from the current one.");
       return;
     }
 
     try {
-      await updateUser({ lastName }); // call your hook
+      await updateUser({ lastName });  //Calls the getUserData custom hook to update the last name in the MongoDB database
       setMessage("Last name updated successfully!");
     } catch (err) {
       setMessage("Failed to update last name.");
     }
   };
 
-  // Handle updating password
+  // function to handle updating password
   const handleUpdatePassword = async () => {
     if (newPassword !== confirmPassword) {
       setMessage("Passwords do not match.");
@@ -66,16 +73,18 @@ export default function UserProfile() {
     }
 
     try {
-      await updateUserPassword(currentPassword, newPassword);
+      await updateUserPassword(currentPassword, newPassword); //Calls the usePasswordReset custom hook to update Firebase with the new password
       setMessage("Password updated successfully!");
+      
+      // Clear password fields after successful update
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
       
-      // If re-login required, log out user
+      // If Firebase requires re-login, log the user out
       if (err.message.includes("log in again")) {
-        logout(); // redirect to login page
+        logout(); // redirect to login page using the getUserData custom hook
         return;
       }
       setMessage(`Failed to update password: ${err.message}`);
@@ -90,6 +99,7 @@ export default function UserProfile() {
 
       <hr />
 
+      {/* Last Name Update Section */}
       <h2>Update Last Name</h2>
       <input
         type="text"
@@ -100,6 +110,7 @@ export default function UserProfile() {
       <button onClick={handleUpdateLastName}>Update Last Name</button>
       <hr />
 
+      {/* Password Change Section */}
       <h2>Change Password</h2>
       <input
         type="password"
@@ -126,10 +137,12 @@ export default function UserProfile() {
 
       <br />
       <br />
+      {/* Feedback message */}
       {message && <p>{message}</p>}
 
       <hr />
 
+      {/* Buttons */}
       <button onClick={logout}>Logout</button>
       <br />
       <br />
