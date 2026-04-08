@@ -18,7 +18,7 @@ const firebaseConfig = {
 };
 
 // Initialise Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

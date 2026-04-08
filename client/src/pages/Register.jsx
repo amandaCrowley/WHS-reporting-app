@@ -103,10 +103,10 @@ export default function RegisterPage() {
                 borderRadius: "10px",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
             }}>
-                <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
-                    Create Account
+                <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
+                    Create WHS 
                 </h1>
-
+                <h1>Account</h1>
                 {/* Error message */}
                 {error && (
                     <div style={{

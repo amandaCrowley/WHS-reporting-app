@@ -158,6 +158,45 @@ app.get('/api/user/:firebaseUid', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user" });
   }
 });
+
+// Update user's last name - Other profile page fields should stay as they are (Password can be updated seperately using usePasswordReset.js hook)
+app.put('/api/user/:firebaseUid', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { firebaseUid } = req.params;
+    const { lastName } = req.body;
+
+    if (!lastName) {
+      return res.status(400).json({ error: "lastName is required" });
+    }
+
+    // Use findOneAndUpdate to return the updated document
+    const result = await db.collection("User").findOneAndUpdate(
+      { firebaseUid }, // match by Firebase UID
+      { $set: { lastName } }, // update only lastName
+      { returnDocument: "after", upsert: false } // don't create new if not found
+    );
+
+    if (!result.value) {
+      // Optional: Instead of returning 404, return current state
+      // This avoids errors when UI calls update before fetchUser
+      const user = await db.collection("User").findOne({ firebaseUid });
+      if (user) {
+        return res.json(user); // return existing user data
+      } else {
+        return res.status(404).json({ error: "User not found" });
+      }
+    }
+
+    res.json(result.value); // updated user
+
+  } catch (err) {
+    console.error("Failed to update user:", err);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
+
 // --- ISSUES ROUTES ---
 app.get('/api/issues', async (req, res) => {
   try {
