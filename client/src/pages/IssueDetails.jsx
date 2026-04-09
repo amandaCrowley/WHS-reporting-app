@@ -48,7 +48,7 @@ export default function IssueDetails() {
     //Display info to the user about what the page is doing
     if (loading) return <p>Loading user data...</p>;    //This will display whilst the data is being fetched from the database
     if (error) return <p>{error} Redirecting to login...</p>; //If there is an error, display and redirect
-    if (!userData) return <p>No user data found.</p>;
+    if (!issue) return <p>No issue found.</p>;
 
   return (
 
