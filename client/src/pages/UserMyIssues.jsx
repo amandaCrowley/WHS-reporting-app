@@ -14,9 +14,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+import { userLogout } from "../hooks/userLogout"
+
 
 export default function UserMyIssues() {
   const navigate = useNavigate();
+  const logout = userLogout();
 
   //State variables
   const [issues, setIssues] = useState([]);                           // Stores all issues fetched from backend
@@ -151,6 +154,9 @@ export default function UserMyIssues() {
       <button onClick={() => navigate("/userdashboard")}>
         Back to Dashboard
       </button>
+      <br />
+      <button onClick={logout}>Logout</button>
     </div>
+    
   );
 }

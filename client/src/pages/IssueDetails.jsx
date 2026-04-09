@@ -10,10 +10,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { userLogout } from "../hooks/userLogout";
 
 export default function IssueDetails() {
   const { issueId } = useParams(); // Get the issue ID from the URL
   const navigate = useNavigate(); 
+  const logout = userLogout(); //Handle logout using logout hook
 
   //Local state variables
   const [issue, setIssue] = useState(null);       // Stores the fetched issue details
@@ -102,6 +104,8 @@ export default function IssueDetails() {
       {/* Navigation buttons */}
       <button onClick={() => navigate("/myissues")}>Back to my issues</button>
       <button onClick={() => navigate("/userdashboard")}>Back to Dashboard</button>
+      <br /><br />
+      <button onClick={logout}>Logout</button>
     </div>
   );
 }

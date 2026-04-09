@@ -4,13 +4,11 @@
  * It handles fetching user details from the backend (MongoDB) based on the Firebase UID, 
  * It also uses state management for loading and error handling
  * It contains a helper function for updating user data, this is used on the userProfile page
- * There is also a function to allow components to log out
  * 
  * Key features:
  * - userData: Stores the current user's data from the backend using the Firebase UID of the authenticated user.
  * - loading: boolean, true while fetching user data - state for pages/components to use to incdicate the loading status of the fetch operation
  * - error: string, any error encountered during fetching - state for pages/components to use to incdicate the error status of the fetch operation
- * - logout: Provides a `logout()` function to sign the user out via Firebase and redirect to login.
  * - updateUser: updates allowed fields (currently only `lastName`) in the database
  * - setUserData: `setUserData()` allows direct manipulation of local user data without a backend call.
  * 
@@ -100,19 +98,6 @@ export function getUserData() {
     }, [auth, navigate]);
 
     /**
-    * Logout function
-    * Logs the user out using Firebase auth and redirects to login page
-    */
-    const logout = async () => {
-        try {
-            await signOut(auth); //Log out current user using Firebase method
-            navigate("/login"); //Redirect
-        } catch (err) {
-            console.error("Logout failed:", err);
-        }
-    };
-
-    /**
       * Update user profile fields (currently only lastName)
       * @param {Object} param0 Object containing { lastName }
       * @returns Updated user data from backend
@@ -141,5 +126,5 @@ export function getUserData() {
 
 
     // Return relevant state cvariables/functions for other components/pages to use
-    return { userData, loading, error, logout, updateUser, setUserData };
+    return { userData, loading, error, updateUser, setUserData };
 }

@@ -13,6 +13,7 @@
 import { useEffect, useState } from "react";
 import { getUserData } from "../hooks/getUserData";
 import { useNavigate } from "react-router-dom";
+import { userLogout } from "../hooks/userLogout"
 
 export default function UserDashboard() {
 
@@ -21,12 +22,13 @@ export default function UserDashboard() {
     // loading - this is true whilst the user data is being fetched
     // error - this will contain any error encountered during fetching
     // logout - this is the function to log the user out via Firebase auth  
-    const { userData, loading, error, logout } = getUserData();
+    const { userData, loading, error } = getUserData();
     const [recentIssues, setRecentIssues] = useState([]);
     const [issuesLoading, setIssuesLoading] = useState(true);
     const [issuesError, setIssuesError] = useState("");
 
     const navigate = useNavigate();
+    const logout = userLogout();
 
     // Fetch last 2 issues submitted by this user
     useEffect(() => {
