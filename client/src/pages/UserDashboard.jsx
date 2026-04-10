@@ -96,11 +96,11 @@ export default function UserDashboard() {
                             }}
                             onClick={() => navigate(`/issue/${issue._id}`)}
                         >
-                            <strong>{issue.IssueDescription}</strong> <br />
-                            Status:  {issue.Status} <br />
-                            <em>{issue.Location} | {issue.Campus} </em>
+                            <strong>{issue.issueDescription}</strong> <br />
+                            Status:  {issue.status} <br />
+                            <em>{issue.location} | {issue.campus} </em>
                             <br />
-                            Date reported: {new Date(issue.DateTimeReported).toLocaleString("en-AU", {
+                            Date reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
                                 dateStyle: "short" //Just display the date
                             })}
                         </li>

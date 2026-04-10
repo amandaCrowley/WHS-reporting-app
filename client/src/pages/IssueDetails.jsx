@@ -59,42 +59,42 @@ export default function IssueDetails() {
 
       {/* Issue description */}
       <p>
-        <strong>Description:</strong> {issue.IssueDescription}
+        <strong>Description:</strong> {issue.issueDescription}
       </p>
 
       {/* issue status */}
       <p>
-        <strong>Status:</strong> {issue.Status}
+        <strong>Status:</strong> {issue.status}
       </p>
 
       {/* issue location */}
       <p>
-        <strong>Location:</strong> {issue.Location}, {issue.Campus}
+        <strong>Location:</strong> {issue.location}, {issue.campus}
       </p>
 
       {/* Isse reported date */}
       <p>
         <strong>Reported on:</strong>{" "}
-        {new Date(issue.DateTimeReported).toLocaleString("en-AU", {
+        {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
           dateStyle: "short",
           timeStyle: "short",
         })}
       
       {/* Witness names, if any */}
       </p>
-      {issue.WitnessNames && issue.WitnessNames.length > 0 && (
+      {issue.witnessNames && issue.witnessNames.length > 0 && (
         <p>
-          <strong>Witnesses:</strong> {issue.WitnessNames.join(", ")}
+          <strong>Witnesses:</strong> {issue.witnessNames.join(", ")}
         </p>
       )}
 
       {/* Assigned to staff memeber */}
-      <p><strong>Assigned to staff:</strong> {issue.AssignedTo ? "Yes" : "No"}</p>
+      <p><strong>Assigned to staff:</strong> {issue.assignedTo ? "Yes" : "No"}</p>
       
       {/* Images, if any */}
       <p>
         <strong>Image/s:</strong>
-        {issue.ImageURL && issue.ImageURLs.map((url, i) => (
+        {issue.imageURL && issue.imageURL.map((url, i) => (
           <img key={i} src={url} alt="Issue" style={{ maxWidth: "200px", margin: "5px" }} />
         ))}
       </p>

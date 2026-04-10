@@ -169,7 +169,7 @@ app.get('/api/user/:firebaseUid', async (req, res) => {
 
 /**
  * This route allows the app to update user's last name - Other profile page fields should stay as they are (Password can be updated seperately using usePasswordReset.js hook)
- **/ 
+ **/
 app.put('/api/user/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -209,9 +209,83 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
 
 // --------------------- ISSUE ROUTES --------------------------------------
 
+/*
+* Add a new issue to the MongoDB database using the logged in user's userID - We may change this later to enable adding an issue without being logged in
+* userID is a URL parameter
+*/
+app.post('/api/issue/:userID', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { campus, location, issueDescription, witnessNames, imageURL } = req.body;
+    const { userID } = req.params; //User id passed in using the request parameters and not in the JSON body
+
+    //Validate required fields
+    if (!location || !issueDescription) {
+      return res.status(400).json({
+        error: "Missing required fields: Location and Issue description are required."
+      });
+    }
+
+    //Validate Campus
+    const validCampus = [
+      "Callaghan",
+      "Ourimbah",
+      "Newcastle City",
+      "Gosford Hospital",
+      "Gosford Mann Street",
+      "Sydney",
+      "Port Macquarie"
+    ];
+
+    if (!campus && !validCampus.includes(campus)) {
+      return res.status(400).json({
+        error: `Invalid Campus. Must be one of: ${validCampus.join(", ")}`
+      });
+    }
+
+    //Validate the userID
+    if (!ObjectId.isValid(userID)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    const userObjectId = new ObjectId(userID);
+
+    //CHeck that the userID exists in the user database
+    const userExists = await db.collection("User").findOne({ _id: userObjectId }); //Retrieve the user data if they do exist
+    if (!userExists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const now = new Date();
+
+    //Create new issue object
+    const newIssue = {
+      campus,
+      location,
+      issueDescription,
+      assignedTo: null,
+      dateTimeReported: now,               //Set the issue's reported date and time to the current date/time
+      reportedBy: new ObjectId(userID),    //Must be an objectID
+      reportedByName: `${userExists.firstName} ${userExists.lastName}` || "",   //Store the user's name if they exist or empty string if not
+      status: "Open",                      //The issue will start off in an open state
+      witnessNames: witnessNames || [],    //This is optional, these names are either passed in the JSON request body or they are empty
+      imageURL: imageURL|| [],             //This is optional as well, a user may choose to attach images to the issue which are stored with an external provider - These are the URL's to the images
+    };
+
+    //Insert into MongoDB
+    const result = await db.collection("Issue").insertOne(newIssue);
+
+    res.status(201).json({ message: "Issue created successfully", issueId: result.insertedId });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create issue" });
+  }
+});
+
 /**
  * Get all issues for a specific user, has an optional limit (i.e. if limited by 5 then will retrieve the last 5 issues if not limited it will retrun all of them)
- **/ 
+ **/
 app.get('/api/issues/user/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -227,7 +301,7 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
     }
 
     // Find issues reported by this user
-    let query = { ReportedBy: user._id };
+    let query = { reportedBy: user._id };
     let cursor = db.collection("Issue")
       .find(query)
       .sort({ "Date/Time reported": -1 }); // latest issues first
@@ -253,16 +327,16 @@ app.get('/api/issues/:id', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { id } = req.params;
-    
+
     const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Convert string ID to ObjectId and find matching issue
 
-    if (!issue) 
+    if (!issue)
       return res.status(404).json({ error: "Issue not found" });
-    
+
     res.json(issue); //Send back the issue
 
   } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Failed to fetch issue" });
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch issue" });
   }
 });

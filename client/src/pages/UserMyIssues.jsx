@@ -69,7 +69,7 @@ export default function UserMyIssues() {
 
     // Filter by status if not set to retrieve "All" issues
     if (statusFilter !== "All") {
-      temp = temp.filter(issue => issue.Status === statusFilter);
+      temp = temp.filter(issue => issue.status === statusFilter);
     }
 
     // Filter by search query if something is typed into the search bar
@@ -77,9 +77,9 @@ export default function UserMyIssues() {
       const searchLower = search.toLowerCase();
 
       temp = temp.filter(issue =>
-        issue.IssueDescription?.toLowerCase().includes(searchLower) ||  //search by description
-        issue.Campus?.toLowerCase().includes(searchLower) ||            //search by campus
-        issue.Location?.toLowerCase().includes(searchLower)             //search by location
+        issue.issueDescription?.toLowerCase().includes(searchLower) ||  //search by description
+        issue.campus?.toLowerCase().includes(searchLower) ||            //search by campus
+        issue.location?.toLowerCase().includes(searchLower)             //search by location
       );
     }
 
@@ -132,17 +132,17 @@ export default function UserMyIssues() {
             }}
             onClick={() => navigate(`/issue/${issue._id}`)}
           >
-            <strong>{issue.IssueDescription}</strong>
+            <strong>{issue.issueDescription}</strong>
 
             {/* Status badge */}
             <p>
-              Status:{issue.Status}
+              Status: {issue.status}
             </p>
             <p>
-              <em>{issue.Location} | {issue.Campus} </em>
+              <em>{issue.location} | {issue.campus} </em>
             </p>
             <p>
-              Date reported: {new Date(issue.DateTimeReported).toLocaleString("en-AU", {
+              Date reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
                 dateStyle: "short"
               })}
             </p>
