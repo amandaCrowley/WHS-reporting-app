@@ -55,8 +55,30 @@ export default function ReportIssue() {
       return;
     }
 
+    // User data empty, return an error
     if (!userData?._id) {
       setFormError("User not loaded. Please try again.");
+      setFormLoading(false);
+      return;
+    }
+
+    //Check the issue description is at least 10 characters
+    if (issueDescription.trim().length < 10) {
+      setFormError("Issue description must be at least 10 characters.");
+      setFormLoading(false);
+      return;
+    }
+
+    //Check the issue description is under 300 characters    
+    if (issueDescription.trim().length > 300) {
+      setFormError("Issue description must be under 300 characters.");
+      setFormLoading(false);
+      return;
+    }
+    
+    //Check the location is at least 3 characters
+     if (location.trim().length < 3) {
+      setFormError("Location must be at least 3 characters.");
       setFormLoading(false);
       return;
     }
@@ -95,6 +117,11 @@ export default function ReportIssue() {
 
     if (!witnessName) return;
 
+    //Check for duplicate witnesses already in the list
+    if (witnessList.includes(witnessName)) {
+      setFormError("This witness has already been added.");
+      return;
+    }
     setWitnessList([...witnessList, witnessName]); //Add the witness name to the list
     setWitnessInput(""); // clear input
   };
@@ -161,10 +188,11 @@ export default function ReportIssue() {
           value="no"
           checked={hasWitnesses === "no"}
           onChange={(e) => {
-            if (e.target.value === "no") {
-              setWitnessList([]); // Remove all witnesses from the list if the user changes thier mind from yes to no
+            if (e.target.value === "no" && witnessList.length > 0) {
+              setFormError("Remove all witnesses before selecting 'No'.");
+              return;
             }
-            setHasWitnesses(e.target.value); //Set the local variable to 'no' witnesses
+            setHasWitnesses(e.target.value);
           }}
         />
         No

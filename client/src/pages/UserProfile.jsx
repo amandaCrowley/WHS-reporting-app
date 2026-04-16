@@ -44,7 +44,8 @@ export default function UserProfile() {
 
   // function to handle updating last name
   const handleUpdateLastName = async () => {
-    
+
+    //-----------------Validation checks-------------------
     //Check that the name isnt empty
     if (lastName.trim() === "") {
       setMessage("Please enter a last name.");
@@ -54,6 +55,12 @@ export default function UserProfile() {
     //Check not the same as current last name
     if (lastName === userData.lastName) {
       setMessage("New last name must be different from the current one.");
+      return;
+    }
+
+    //Min length of at lesat 2 characters
+    if (lastName.trim().length < 2) {
+      setMessage("Last name must be at least 2 characters.");
       return;
     }
 
@@ -67,21 +74,28 @@ export default function UserProfile() {
 
   // function to handle updating password
   const handleUpdatePassword = async () => {
+
+    // --------password validation checks-------------------
     if (newPassword !== confirmPassword) {
       setMessage("Passwords do not match.");
+      return;
+    }
+
+    if (!/(?=.*[A-Z])(?=.*[0-9])/.test(newPassword)) { //Use regex to check for 1 uppercase and 1 number
+      setMessage("Password must include at least one uppercase letter and one number.");
       return;
     }
 
     try {
       await updateUserPassword(currentPassword, newPassword); //Calls the usePasswordReset custom hook to update Firebase with the new password
       setMessage("Password updated successfully!");
-      
+
       // Clear password fields after successful update
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      
+
       // If Firebase requires re-login, log the user out
       if (err.message.includes("log in again")) {
         logout(); // redirect to login page using the getUserData custom hook

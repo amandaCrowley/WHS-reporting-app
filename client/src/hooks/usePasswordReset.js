@@ -23,21 +23,36 @@ export function usePasswordReset() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-/**
- * Function that updates the current user's password.
- * 
- * @param {string} currentPassword - The user's current password to be used to re-authentication
- * @param {string} newPassword - The new password to set
- * @returns {Promise<boolean>} - Returns true on success, or throws an error on failure
- */
+  /**
+   * Function that updates the current user's password.
+   * 
+   * @param {string} currentPassword - The user's current password to be used to re-authentication
+   * @param {string} newPassword - The new password to set
+   * @returns {Promise<boolean>} - Returns true on success, or throws an error on failure
+   */
   const updateUserPassword = async (currentPassword, newPassword) => {
     setLoading(true); //Start loading
     setError(null); //Reset any previous errors
 
+
     try {
+      // -----------------Validation checks-------------------
+      if (!currentPassword || !newPassword) {
+        throw new Error("Both current and new password are required.");
+      }
+
+      if (newPassword.length < 6) {
+        throw new Error("Password must be at least 6 characters long.");
+      }
+
+      if (currentPassword === newPassword) {
+        throw new Error("New password must be different from current password.");
+      }
+
+
       //Get the currently logged in user with Firebase getAuth() method
-      const auth = getAuth(); 
-      const user = auth.currentUser; 
+      const auth = getAuth();
+      const user = auth.currentUser;
 
       if (!user) throw new Error("No user is currently logged in.");
 
@@ -52,7 +67,7 @@ export function usePasswordReset() {
       return true; // success
     } catch (err) {
       setLoading(false); //Stop loading if an error occurs
-      setError(err);
+      setError(err.message);
 
       // Handle specific Firebase requires recent login error
       if (err.code === "auth/requires-recent-login") {

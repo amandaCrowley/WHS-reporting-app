@@ -269,7 +269,7 @@ app.post('/api/issue/:userID', async (req, res) => {
       reportedByName: `${userExists.firstName} ${userExists.lastName}` || "",   //Store the user's name if they exist or empty string if not
       status: "Open",                      //The issue will start off in an open state
       witnessNames: witnessNames || [],    //This is optional, these names are either passed in the JSON request body or they are empty
-      imageURL: imageURL|| [],             //This is optional as well, a user may choose to attach images to the issue which are stored with an external provider - These are the URL's to the images
+      imageURL: imageURL || [],             //This is optional as well, a user may choose to attach images to the issue which are stored with an external provider - These are the URL's to the images
     };
 
     //Insert into MongoDB
@@ -298,6 +298,11 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
     const user = await db.collection("User").findOne({ firebaseUid });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if user is allowed to access these issues (a user can only access their own)
+    if (!issue || issue.reportedBy.toString() !== user._id.toString()) {
+      return res.status(403).json({ error: "Access denied" });
     }
 
     // Find issues reported by this user
