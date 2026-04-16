@@ -301,9 +301,9 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
     }
 
     // Check if user is allowed to access these issues (a user can only access their own)
-    if (!issue || issue.reportedBy.toString() !== user._id.toString()) {
-      return res.status(403).json({ error: "Access denied" });
-    }
+    // if (!issue || issue.reportedBy.toString() !== user._id.toString()) {
+    //   return res.status(403).json({ error: "Access denied" });
+    // }
 
     // Find issues reported by this user
     let query = { reportedBy: user._id };
