@@ -14,6 +14,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; //Import firebase authentication functions to allow us to authenticate users using firebase
+import './LoginPage.css';
 
 /*
 * This function displays the login inputs for the login page and also handles the login logic when the user clicks the login button.
@@ -42,40 +43,40 @@ export default function LoginPage() {
     }
 
     return (
-        <>
-            <h1>Login Page</h1>
+        <div className="login-page">
+            <div className="login-container">
+                <h1>Login Page</h1>
 
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+                {error && <p className="error-message">{error}</p>}
 
-            <form onSubmit={(e) => { e.preventDefault(); login(); }}> {/*When the user hits the submit button the login function is called */}
-            <div>
-                <label>Email:</label><br />
-                <input
-                    placeholder='Enter email'
-                    type="email"
-                    value={email} //Set to the email input value to the email state variable
-                    onChange={(e) => setEmail(e.target.value)} //When the user types in the email input field, it updates the email state variable with the current value
-                    required
-                />
+                <form onSubmit={(e) => { e.preventDefault(); login(); }}>
+                    <div className="form-group">
+                        <label>Email:</label>
+                        <input
+                            placeholder='Enter email'
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Password:</label>
+                        <input
+                            placeholder='Enter password'
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <button type="submit" className="login-button">Login</button>
+                </form>
+
+                <p>Don't have an account? <Link to="/register">Register here</Link></p>
             </div>
-
-            <div>
-                <label>Password:</label><br />
-                <input
-                    placeholder='Enter password'
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)} //When the user types in the password input field, it updates the password state variable with the current value of the input
-                    required
-                />
-            </div>
-
-            <br />
-            <button type="submit">Login</button>
-            </form>
-
-            <p>Don't have an account? Create one here.</p>
-            <Link to="/register">Register here</Link>
-        </>
+        </div>
     );
 }

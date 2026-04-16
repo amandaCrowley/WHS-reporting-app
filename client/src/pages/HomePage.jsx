@@ -10,17 +10,19 @@
  */
 
 import { Link } from 'react-router-dom';
+import './HomePage.css';   // ← Added this line
 
 export default function HomePage() {
   return (
-    <div>
+    <div className="home-page">
+      <div className="hero-section">
         <h1>Welcome to the WHS Reporting System</h1>
         <p>Report issues and stay safe on campus.</p>
+      </div>
 
-      <div>
-        <Link to="/login">Login</Link>
-        <br />
-        <Link to="/register">Register</Link>
+      <div className="actions">
+        <Link to="/login" className="btn btn-primary">Login</Link>
+        <Link to="/register" className="btn btn-secondary">Register</Link>
       </div>
     </div>
   );

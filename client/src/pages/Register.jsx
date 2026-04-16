@@ -11,16 +11,11 @@
 
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth"; //Import firebase functions to allow us to create new users using firebase authentication
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import './Register.css';     // ← CSS is now in separate file
 
-/*
-* This function displays the registration form.
-* It also handles the registration logic when the user clicks the create account button.
-* It uses state varaibles to manage the state of the email, password, confirm password, and error message inputs. 
-*/
 export default function RegisterPage() {
 
-    //State variables
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -30,34 +25,30 @@ export default function RegisterPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate(); //useNavigate is a hook from react-router-dom that allows us to programmatically navigate to different pages in the app (e.g. after successful login, we can navigate to the user's dashboard)
-    const auth = getAuth(); //returns the firebase authentication object
+    const navigate = useNavigate();
+    const auth = getAuth();
 
-    //This function is called when the user clicks the create account button. 
     const registerUser = async (e) => {
         e.preventDefault();
         setError("");
         setLoading(true);
 
-        // Basic frontend validation to check if all required fields are filled in
         if (!firstName || !lastName || !email || !password) {
             setError("All fields are required.");
             setLoading(false);
             return;
         }
 
-        //If the password and confirm password fields do not match, set the error state variable to display an error message to the user
         if (password !== confirmPassword) {
             setError('Passwords do not match');
+            setLoading(false);
             return;
         }
 
         try {
-            // Create Firebase Auth user
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const uid = userCredential.user.uid;
 
-            // Send user data to backend to save in MongoDB
             const response = await fetch("http://localhost:8000/api/user", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -77,7 +68,6 @@ export default function RegisterPage() {
                 throw new Error(data.error || "Failed to create user in database");
             }
 
-            //Success. Redirect to login
             navigate("/login");
         } catch (err) {
             setError(err.message);
@@ -86,140 +76,96 @@ export default function RegisterPage() {
         }
     };
 
-
-    //Adjust the syles for this form later, this is just to make it look less horrible for now
     return (
-        <div style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
-            backgroundColor: "#f4f6f8"
-        }}>
-            <div style={{
-                width: "400px",
-                backgroundColor: "white",
-                padding: "30px",
-                borderRadius: "10px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-            }}>
-                <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
-                    Create WHS 
-                </h1>
-                <h1>Account</h1>
-                {/* Error message */}
-                {error && (
-                    <div style={{
-                        color: "red",
-                        backgroundColor: "#ffe6e6",
-                        padding: "10px",
-                        borderRadius: "5px",
-                        marginBottom: "15px",
-                        textAlign: "center"
-                    }}>
-                        {error}
-                    </div>
-                )}
+        <div className="register-page">
+            <div className="register-container">
+                <h1>Create WHS Account</h1>
+
+                {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={registerUser}>
-                    {/* First Name */}
-                    <input
-                        type="text"
-                        placeholder="First Name"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        style={inputStyle}
-                        required
-                    />
+                    <div className="form-group">
+                        <label>First Name</label>
+                        <input
+                            type="text"
+                            placeholder="Enter first name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                    {/* Last Name */}
-                    <input
-                        type="text"
-                        placeholder="Last Name"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        style={inputStyle}
-                        required
-                    />
+                    <div className="form-group">
+                        <label>Last Name</label>
+                        <input
+                            type="text"
+                            placeholder="Enter last name"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                    {/* Email */}
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        style={inputStyle}
-                        required
-                    />
+                    <div className="form-group">
+                        <label>Email Address</label>
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                    {/* Password */}
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        style={inputStyle}
-                        required
-                    />
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input
+                            type="password"
+                            placeholder="Create password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                    {/* Confirm Password */}
-                    <input
-                        type="password"
-                        placeholder="Confirm Password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        style={inputStyle}
-                        required
-                    />
+                    <div className="form-group">
+                        <label>Confirm Password</label>
+                        <input
+                            type="password"
+                            placeholder="Confirm password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                        />
+                    </div>
 
-                    {/* Role */}
-                    <select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        style={inputStyle}
-                    >
-                        <option value="Student">Student</option>
-                        <option value="Staff">Staff</option>
-                        <option value="Visitor">Visitor</option>
-                        <option value="Contractor">Contractor</option>
-                    </select>
+                    <div className="form-group">
+                        <label>Role</label>
+                        <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                        >
+                            <option value="Student">Student</option>
+                            <option value="Staff">Staff</option>
+                            <option value="Visitor">Visitor</option>
+                            <option value="Contractor">Contractor</option>
+                        </select>
+                    </div>
 
-                    {/* Submit button */}
-                    <button
-                        type="submit"
+                    <button 
+                        type="submit" 
+                        className="register-button"
                         disabled={loading}
-                        style={{
-                            width: "100%",
-                            padding: "10px",
-                            backgroundColor: "#007bff",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            fontWeight: "bold",
-                            marginTop: "10px"
-                        }}
                     >
-                        {loading ? "Registering..." : "Register"}
+                        {loading ? "Registering..." : "Create Account"}
                     </button>
                 </form>
 
-                <p style={{ textAlign: "center", marginTop: "15px" }}>
+                <p className="login-link">
                     Already have an account?{" "}
-                    <Link to="/login" style={{ color: "#007bff" }}>
-                        Login here
-                    </Link>
+                    <Link to="/login">Login here</Link>
                 </p>
             </div>
         </div>
     );
 }
-
-const inputStyle = {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "15px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    fontSize: "16px"
-};
