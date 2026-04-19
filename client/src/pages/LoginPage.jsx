@@ -15,6 +15,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; //Import firebase authentication functions to allow us to authenticate users using firebase
 import './LoginPage.css';
+import { Eye, EyeOff } from 'lucide-react';
 
 /*
 * This function displays the login inputs for the login page and also handles the login logic when the user clicks the login button.
@@ -23,23 +24,91 @@ import './LoginPage.css';
 * Uses firebase authentication to sign in with the provided email and password
 */
 export default function LoginPage() {
-    
+
     //State variables
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(''); //Store any error messages that occur during login
+    const [showPassword, setShowPassword] = useState(false); //manage wether password shown or not
 
     const navigate = useNavigate(); //useNavigate is a hook from react-router-dom that allows us to programmatically navigate to different pages in the app (e.g. after successful login, we can navigate to the user's dashboard)
 
 
     //This function is called when the user clicks the login button. 
     async function login() {
+        setError(''); //clear prior error messages
+
+        if (!validateEmail(email)) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+
+        if (!validatePassword(password)) {
+            setError("Password must be at least 6 characters long and contain an uppercase letter, a lowercase letter, number and special character.");
+            return;
+        }
+
         try {
             await signInWithEmailAndPassword(getAuth(), email, password); //Use firebase authentication to sign in with the email and password entered by the user
             navigate('/userdashboard'); //If login is successful, navigate to the user dashboard page
         } catch (e) {
             setError(e.message); //If there is an error during login (e.g. incorrect email or password), set the error state variable to display an error message to the user
         }
+    }
+
+    function validateEmail(email) {
+        email = email.trim();
+
+        if (!email.includes('@')) { //Check if contains @ symbol
+            return false;
+        }
+
+        const parts = email.split('@'); //Split into 2
+
+        if (parts.length != 2) {
+            return false;
+        }
+
+        const initial = parts[0];
+        const domain = parts[1];
+
+        if (initial.length === 0 || domain.length === 0) { //Check if either part is empty
+            return false;
+        }
+
+        if (!domain.includes('.')) { //Check if domain contains a dot
+            return false;
+        }
+
+        if (email.includes(' ')) { //Check if email contains spaces
+            return false;
+        }
+
+        return true;
+    }
+
+    function validatePassword(password) {
+        if (password.length < 6) { //Check if password is at least 6 characters long
+            return false;
+        }
+
+        let hasUpper = false;
+        let hasLower = false;
+        let hasNumber = false;
+        let hasSpecial = false;
+
+        for (let char of password) { //check if has upper, lower and number 
+            if (char >= 'A' && char <= 'Z') {
+                hasUpper = true;
+            } else if (char >= 'a' && char <= 'z') {
+                hasLower = true;
+            } else if (char >= '0' && char <= '9') {
+                hasNumber = true;
+            } else if (!(char >= 'A' && char <= 'Z') && !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9')) {
+                hasSpecial = true;
+            }
+        }
+        return hasUpper && hasLower && hasNumber && hasSpecial;
     }
 
     return (
@@ -49,29 +118,37 @@ export default function LoginPage() {
 
                 {error && <p className="error-message">{error}</p>}
 
-                <form onSubmit={(e) => { e.preventDefault(); login(); }}>
+                <form onSubmit={(e) => { e.preventDefault(); login(); }}> {/*When the user hits the submit button the login function is called */}
                     <div className="form-group">
                         <label>Email:</label>
                         <input
                             placeholder='Enter email'
                             type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={email}   //Set to the email input value to the email state variable
+                            onChange={(e) => setEmail(e.target.value)} //When the user types in the email input field, it updates the email state variable with the current value
                             required
                         />
                     </div>
 
                     <div className="form-group">
                         <label>Password:</label>
-                        <input
-                            placeholder='Enter password'
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="password-wrapper">
+                            <input
+                                placeholder='Enter password'
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="eye-toggle"
+                                onClick={() => setShowPassword(prev => !prev)}
+                            >
+                                {showPassword ? <EyeOff /> : <Eye />}
+                            </button>
+                        </div>
                     </div>
-
                     <button type="submit" className="login-button">Login</button>
                 </form>
 

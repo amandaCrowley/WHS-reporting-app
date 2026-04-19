@@ -107,3 +107,34 @@
     margin-left: auto;
     margin-right: auto;
 }
+
+/* Container to hold the input and the eye button */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure the password text doesn't go under the button */
+.password-wrapper input {
+    padding-right: 45px; 
+}
+
+/* Eye button styling */
+.eye-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #64748b; /* Slate color to match your palette */
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.eye-toggle:hover {
+    color: #1e40af; /* Deep blue to match your login button */
+}
