@@ -39,8 +39,26 @@ export default function RegisterPage() {
             return;
         }
 
+        if (!validateEmail(email)) {
+            setError("Please enter a valid email address.");
+            setLoading(false);
+            return;
+        }
+
+        if (!validatePassword(password)) {
+            setError("Password must be at least 6 characters long and contain an uppercase letter, a lowercase letter, number and special character.");
+            setLoading(false);
+            return;
+        }
+
         if (password !== confirmPassword) {
             setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
+
+        if (firstName.trim().length < 2 || lastName.trim().length < 2) {
+            setError("First and last name must be at least 2 characters.");
             setLoading(false);
             return;
         }
@@ -68,13 +86,68 @@ export default function RegisterPage() {
                 throw new Error(data.error || "Failed to create user in database");
             }
 
-            navigate("/login");
+            navigate("/login", { state: { message: "Account created successfully. Please log in." } });
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
     };
+
+    function validateEmail(email) {
+        email = email.trim();
+
+        if (!email.includes('@')) { //Check if contains @ symbol
+            return false;
+        }
+
+        const parts = email.split('@'); //Split into 2
+
+        if (parts.length != 2) {
+            return false;
+        }
+
+        const initial = parts[0];
+        const domain = parts[1];
+
+        if (initial.length === 0 || domain.length === 0) { //Check if either part is empty
+            return false;
+        }
+
+        if (!domain.includes('.')) { //Check if domain contains a dot
+            return false;
+        }
+
+        if (email.includes(' ')) { //Check if email contains spaces
+            return false;
+        }
+
+        return true;
+    }
+
+    function validatePassword(password) {
+        if (password.length < 6) { //Check if password is at least 6 characters long
+            return false;
+        }
+
+        let hasUpper = false;
+        let hasLower = false;
+        let hasNumber = false;
+        let hasSpecial = false;
+
+        for (let char of password) { //check if has upper, lower and number 
+            if (char >= 'A' && char <= 'Z') {
+                hasUpper = true;
+            } else if (char >= 'a' && char <= 'z') {
+                hasLower = true;
+            } else if (char >= '0' && char <= '9') {
+                hasNumber = true;
+            } else if (!(char >= 'A' && char <= 'Z') && !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9')) {
+                hasSpecial = true;
+            }
+        }
+        return hasUpper && hasLower && hasNumber && hasSpecial;
+    }
 
     return (
         <div className="register-page">
@@ -152,8 +225,8 @@ export default function RegisterPage() {
                         </select>
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className="register-button"
                         disabled={loading}
                     >

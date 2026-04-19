@@ -43,11 +43,6 @@ export default function LoginPage() {
             return;
         }
 
-        if (!validatePassword(password)) {
-            setError("Password must be at least 6 characters long and contain an uppercase letter, a lowercase letter, number and special character.");
-            return;
-        }
-
         try {
             await signInWithEmailAndPassword(getAuth(), email, password); //Use firebase authentication to sign in with the email and password entered by the user
             navigate('/userdashboard'); //If login is successful, navigate to the user dashboard page
@@ -85,30 +80,6 @@ export default function LoginPage() {
         }
 
         return true;
-    }
-
-    function validatePassword(password) {
-        if (password.length < 6) { //Check if password is at least 6 characters long
-            return false;
-        }
-
-        let hasUpper = false;
-        let hasLower = false;
-        let hasNumber = false;
-        let hasSpecial = false;
-
-        for (let char of password) { //check if has upper, lower and number 
-            if (char >= 'A' && char <= 'Z') {
-                hasUpper = true;
-            } else if (char >= 'a' && char <= 'z') {
-                hasLower = true;
-            } else if (char >= '0' && char <= '9') {
-                hasNumber = true;
-            } else if (!(char >= 'A' && char <= 'Z') && !(char >= 'a' && char <= 'z') && !(char >= '0' && char <= '9')) {
-                hasSpecial = true;
-            }
-        }
-        return hasUpper && hasLower && hasNumber && hasSpecial;
     }
 
     return (
