@@ -21,7 +21,6 @@ export default function UserDashboard() {
     // userData - This is the mongoDB data for the currently logged in user
     // loading - this is true whilst the user data is being fetched
     // error - this will contain any error encountered during fetching
-    // logout - this is the function to log the user out via Firebase auth  
     const { userData, loading, error } = getUserData();
     const [recentIssues, setRecentIssues] = useState([]);
     const [issuesLoading, setIssuesLoading] = useState(true);

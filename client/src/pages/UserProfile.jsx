@@ -14,12 +14,13 @@ import { useEffect, useState } from "react";
 import { getUserData } from "../hooks/getUserData";
 import { usePasswordReset } from "../hooks/usePasswordReset";
 import { useNavigate } from "react-router-dom";
+import { userLogout } from "../hooks/userLogout"
 
 export default function UserProfile() {
   const navigate = useNavigate();
 
   //State variables
-  const { userData, loading, error, logout, updateUser } = getUserData(); //get user data from the custom react hook (getUserData.js)
+  const { userData, loading, error } = getUserData(); //get user data from the custom react hook (getUserData.js)
   const { updateUserPassword, loading: pwLoading, error: pwError } = usePasswordReset(); //custom hook that handles a password update via Firebase (usePasswordReset.js)
 
   //Local password state variables
@@ -30,6 +31,7 @@ export default function UserProfile() {
 
   //Load last name from userData
   const [lastName, setLastName] = useState(userData?.lastName || "");
+  const logout = userLogout();
 
   useEffect(() => {
     if (userData?.lastName) {
