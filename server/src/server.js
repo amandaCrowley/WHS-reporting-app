@@ -345,3 +345,52 @@ app.get('/api/issues/:id', async (req, res) => {
     res.status(500).json({ error: "Failed to fetch issue" });
   }
 });
+
+/**
+* This route allows updating an issue (e.g. description, location, etc.)
+*/
+app.put('/api/issues/:id', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+
+    // Fields that are allowed to be updated
+    const {
+      issueDescription,
+      location,
+      campus,
+      witnessNames,
+      imageURL,
+    } = req.body;
+
+    // Validate ObjectId
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
+
+    // Build update object dynamically (only update provided fields)
+    const updateFields = {};
+
+    if (issueDescription !== undefined) updateFields.issueDescription = issueDescription;
+    if (location !== undefined) updateFields.location = location;
+    if (campus !== undefined) updateFields.campus = campus;
+    if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
+    if (imageURL !== undefined) updateFields.imageURL = imageURL;
+
+    const result = await db.collection("Issue").findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: updateFields },
+      { returnDocument: "after" }
+    );
+
+    if (!result.value) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    res.json(result.value);
+
+  } catch (err) {
+    console.error("Failed to update issue:", err);
+    res.status(500).json({ error: "Failed to update issue" });
+  }
+});

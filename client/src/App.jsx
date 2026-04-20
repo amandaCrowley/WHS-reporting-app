@@ -24,6 +24,7 @@ import IssueDetails from './pages/issueDetails.jsx'
 import UserProfile from './pages/UserProfile.jsx'
 import UserMyIssues from './pages/UserMyIssues.jsx'
 import ReportIssue from './pages/ReportIssue.jsx'
+import EditIssue from './pages/EditIssue.jsx'
 
 
 //Adds routes to the app, so that when the user goes to a specific URL, it will load the corresponding page (e.g. /login will load the LoginPage.jsx component page)
@@ -51,7 +52,10 @@ const routes = [{
     },{
       path: '/myissues',
       element: <UserMyIssues />
-    },,{
+    },{
+      path: '/editIssue/:issueId',
+      element: <EditIssue />
+    },{
       path: '/reportissue',
       element: <ReportIssue />
     }]

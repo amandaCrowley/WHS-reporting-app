@@ -14,7 +14,7 @@ import { userLogout } from "../hooks/userLogout";
 
 export default function IssueDetails() {
   const { issueId } = useParams(); // Get the issue ID from the URL
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const logout = userLogout(); //Handle logout using logout hook
 
   //Local state variables
@@ -30,10 +30,10 @@ export default function IssueDetails() {
       try {
 
         // Call backend API to fetch issue by ID
-        const res = await fetch(`http://localhost:8000/api/issues/${issueId}`); 
+        const res = await fetch(`http://localhost:8000/api/issues/${issueId}`);
         if (!res.ok) throw new Error("Failed to fetch issue");
         const data = await res.json();
-        
+
         setIssue(data);   // Store fetched issue in state
 
       } catch (err) {
@@ -47,10 +47,10 @@ export default function IssueDetails() {
     fetchIssue(); //Call method to fetch the issue by ID from the backend
   }, [issueId]);
 
-    //Display info to the user about what the page is doing
-    if (loading) return <p>Loading user data...</p>;    //This will display whilst the data is being fetched from the database
-    if (error) return <p>{error} Redirecting to login...</p>; //If there is an error, display and redirect
-    if (!issue) return <p>No issue found.</p>;
+  //Display info to the user about what the page is doing
+  if (loading) return <p>Loading user data...</p>;    //This will display whilst the data is being fetched from the database
+  if (error) return <p>{error}</p>; //If there is an error, display 
+  if (!issue) return <p>No issue found.</p>;
 
   return (
 
@@ -72,15 +72,15 @@ export default function IssueDetails() {
         <strong>Location:</strong> {issue.location}, {issue.campus}
       </p>
 
-      {/* Isse reported date */}
+      {/* Issue reported date */}
       <p>
         <strong>Reported on:</strong>{" "}
         {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
           dateStyle: "short",
           timeStyle: "short",
         })}
-      
-      {/* Witness names, if any */}
+
+        {/* Witness names, if any */}
       </p>
       {issue.witnessNames && issue.witnessNames.length > 0 && (
         <p>
@@ -89,8 +89,9 @@ export default function IssueDetails() {
       )}
 
       {/* Assigned to staff memeber */}
-      <p><strong>Assigned to staff:</strong> {issue.assignedTo ? "Yes" : "No"}</p>
-      
+      <strong>Assigned to:</strong>{" "}
+      {issue.assignedTo ? issue.assignedTo : "Unassigned"}
+
       {/* Images, if any */}
       <p>
         <strong>Image/s:</strong>
@@ -102,6 +103,7 @@ export default function IssueDetails() {
       <br />
 
       {/* Navigation buttons */}
+      <button onClick={() => navigate(`/editIssue/${issueId}`)}>Edit Issue</button>
       <button onClick={() => navigate("/myissues")}>Back to my issues</button>
       <button onClick={() => navigate("/userdashboard")}>Back to Dashboard</button>
       <br /><br />
