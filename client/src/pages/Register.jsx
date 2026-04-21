@@ -12,7 +12,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import './Register.css';     // ← CSS is now in separate file
+import '../styles/Register.css';
+import UONLogo from '../images/UONLogo.png'; // import the logo
 
 export default function RegisterPage() {
 
@@ -152,11 +153,15 @@ export default function RegisterPage() {
     return (
         <div className="register-page">
             <div className="register-container">
-                <h1>Create WHS Account</h1>
+                <header className="app-header">
+                    <img src={UONLogo} alt="University of Newcastle logo" className="logo" />
+                </header>
+                <h1>Create WHS Account</h1> <br/>
 
                 {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={registerUser}>
+
                     <div className="form-group">
                         <label>First Name</label>
                         <input

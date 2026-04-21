@@ -10,14 +10,20 @@
  */
 
 import { Link } from 'react-router-dom';
-import './HomePage.css';   // ← Added this line
+import '../styles/HomePage.css';   
+import UONLogo from '../images/UONLogo.png'; // import the logo
 
 export default function HomePage() {
   return (
     <div className="home-page">
+      <header className="app-header">
+        <img src={UONLogo} alt="University of Newcastle logo" className="logo" />
+      </header>
+
       <div className="hero-section">
         <h1>Welcome to the WHS Reporting System</h1>
-        <p>Report issues and stay safe on campus.</p>
+        <br/>
+        <p>Report hazards, incidents, or safety concerns here</p>
       </div>
 
       <div className="actions">

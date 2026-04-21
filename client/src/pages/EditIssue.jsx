@@ -11,7 +11,7 @@ EditIssue.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { userLogout } from "../hooks/userLogout";
-import './EditIssue.css';
+import '../styles/EditIssue.css';
 
 export default function EditIssue() {
     const { issueId } = useParams(); // Get the issue ID from the URL

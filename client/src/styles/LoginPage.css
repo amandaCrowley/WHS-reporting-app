@@ -2,20 +2,33 @@
 
 .login-page {
     min-height: 100vh;
+
     background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+
     display: flex;
-    align-items: Top;
-    justify-content: Top;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 20px;
 }
 
+.login-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px 45px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 460px;
+    backdrop-filter: blur(6px);
+}
+
 .login-page h1 {
     text-align: center;
-    color: #1e40af;
+    color: #1e3a8a;
     font-size: 2.5rem;
     margin-bottom: 10px;
-    font-weight: 700;
 }
 
 .login-page p {
@@ -61,14 +74,14 @@
 
 .form-group input:focus {
     outline: none;
-    border-color: #1e40af;
+    border-color: #1e3a8a;
     box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.15);
 }
 
 /* Login Button */
 .login-button {
     width: 100%;
-    background-color: #1e40af;
+    background-color: #1e3a8a;
     color: white;
     padding: 14px 20px;
     border: none;
@@ -81,7 +94,7 @@
 }
 
 .login-button:hover {
-    background-color: #1e3a8a;
+    background-color: #1e40af;
     transform: translateY(-2px);
 }
 
@@ -91,7 +104,7 @@
 
 /* Link Styling */
 .login-page a {
-    color: #1e40af;
+    color: #172554;
     text-decoration: none;
     font-weight: 600;
 }
@@ -102,10 +115,15 @@
 }
 
 /* Center the form content */
-.login-page > * {
-    max-width: 420px;
-    margin-left: auto;
-    margin-right: auto;
+.login-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+    display: flex;
+    flex-direction: column;        /* 👈 important */
+    align-items: center;           /* center horizontally */
+    justify-content: flex-start;   /* align to top */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
 }
 
 /* Container to hold the input and the eye button */
@@ -136,5 +154,6 @@
 }
 
 .eye-toggle:hover {
-    color: #1e40af; /* Deep blue to match your login button */
+    color: #172554; /* Blue to match your login button */
 }
+

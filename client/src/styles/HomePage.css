@@ -14,9 +14,8 @@
 
 .hero-section h1 {
   font-size: 3.2rem;
-  color: #1e40af;
+  color: #172554;
   margin-bottom: 16px;
-  font-weight: 700;
   line-height: 1.1;
 }
 
@@ -47,13 +46,14 @@
 }
 
 .btn-primary {
-  background-color: #1e40af;
+  background-color: #172554;
+  
   color: white;
-  border: 2px solid #1e40af;
+  border: 2px solid #172554;
 }
 
 .btn-primary:hover {
-  background-color: #172554;
+  background-color: #1e40af;
   border-color: #172554;
   transform: translateY(-3px);
   box-shadow: 0 10px 15px rgba(30, 64, 175, 0.25);
@@ -88,3 +88,9 @@
     max-width: 320px;
   }
 }
+
+.logo {
+  height: 80px;   /* adjust this */
+  width: auto;    /* keeps proportions */
+}
+

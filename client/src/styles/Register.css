@@ -3,33 +3,39 @@
 .register-page {
     min-height: 100vh;
     /* Background Image - Change the URL to your own image if you want */
-    background-image: 
-        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),  /* Dark overlay for better readability */
-        url('https://images.unsplash.com/photo-1581091226825-a6a035c4d3e3?q=80&w=1920'); /* Safety / WHS related background */
-    
+    /*background-image:
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+        /* Dark overlay for better readability */
+        /*url('https://images.unsplash.com/photo-1581091226825-a6a035c4d3e3?q=80&w=1920');
+    /* Safety / WHS related background */
+
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;   /* Optional: nice parallax effect */
+    background-attachment: fixed;
+    /* Optional: nice parallax effect */
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
 }
 
 .register-container {
-    background: rgba(255, 255, 255, 0.95);   /* Slightly transparent white card */
+    background: rgba(255, 255, 255, 0.95);
+    /* Slightly transparent white card */
     padding: 40px 45px;
     border-radius: 16px;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 460px;
-    backdrop-filter: blur(8px);   /* Modern glass effect */
+    backdrop-filter: blur(8px);
+    /* Modern glass effect */
 }
 
 .register-container h1 {
     text-align: center;
-    color: #1e40af;
+    color: #1e3a8a;
     font-size: 2.4rem;
     margin-bottom: 25px;
 }
@@ -75,7 +81,7 @@
 
 .register-button {
     width: 100%;
-    background-color: #1e40af;
+    background-color: #1e3a8a;
     color: white;
     padding: 14px;
     border: none;
@@ -87,7 +93,7 @@
 }
 
 .register-button:hover {
-    background-color: #172554;
+    background-color: #1e40af;
 }
 
 .register-button:disabled {
@@ -102,7 +108,7 @@
 }
 
 .login-link a {
-    color: #1e40af;
+    color: #1e3a8a;
     font-weight: 600;
     text-decoration: none;
 }

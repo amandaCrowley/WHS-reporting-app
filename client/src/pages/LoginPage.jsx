@@ -14,8 +14,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; //Import firebase authentication functions to allow us to authenticate users using firebase
-import './LoginPage.css';
+import '../styles/LoginPage.css';
 import { Eye, EyeOff } from 'lucide-react';
+import UONLogo from '../images/UONLogo.png'; // import the logo
 
 /*
 * This function displays the login inputs for the login page and also handles the login logic when the user clicks the login button.
@@ -83,14 +84,20 @@ export default function LoginPage() {
     }
 
     return (
+
         <div className="login-page">
             <div className="login-container">
-                <h1>Login Page</h1>
+                <header className="app-header">
+                    <img src={UONLogo} alt="University of Newcastle logo" className="logo" />
+                </header>
+                <h1>WHS Login Page</h1>
+
 
                 {error && <p className="error-message">{error}</p>}
 
                 <form onSubmit={(e) => { e.preventDefault(); login(); }}> {/*When the user hits the submit button the login function is called */}
                     <div className="form-group">
+                        <br />
                         <label>Email:</label>
                         <input
                             placeholder='Enter email'
