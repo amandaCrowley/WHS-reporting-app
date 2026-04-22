@@ -1,0 +1,238 @@
+/* ============================================
+   UserProfile.css
+   Matches LoginPage.css design system:
+   - Navy blue (#1e3a8a) primary colour
+   - White card with soft shadow
+   - Linear gradient background
+   - Segoe UI font family
+   ============================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+.profile-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px 20px;
+}
+
+/* ---- Top card: welcome / user info ---- */
+.profile-header-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(6px);
+    padding: 30px 45px;
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #1e3a8a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-avatar span {
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.profile-header-info h1 {
+    color: #1e3a8a;
+    font-size: 1.5rem;
+    margin: 0 0 4px 0;
+}
+
+.profile-header-info p {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* ---- Section cards ---- */
+.profile-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(6px);
+    padding: 32px 45px;
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 24px;
+}
+
+.profile-section h2 {
+    color: #1e3a8a;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+/* ---- Form groups (reused from LoginPage) ---- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #1e3a8a;
+    font-size: 1rem;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2px solid #94a3b8;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.15);
+}
+
+/* ---- Primary button (matches .login-button) ---- */
+.btn-primary {
+    width: 100%;
+    background-color: #1e3a8a;
+    color: white;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 4px;
+}
+
+.btn-primary:hover {
+    background-color: #1e40af;
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* ---- Secondary / outline button ---- */
+.btn-secondary {
+    width: 100%;
+    background-color: transparent;
+    color: #1e3a8a;
+    padding: 12px 20px;
+    border: 2px solid #1e3a8a;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 4px;
+}
+
+.btn-secondary:hover {
+    background-color: #eff6ff;
+    transform: translateY(-2px);
+}
+
+.btn-secondary:active {
+    transform: translateY(0);
+}
+
+/* ---- Danger button (logout) ---- */
+.btn-danger {
+    width: 100%;
+    background-color: transparent;
+    color: #b91c1c;
+    padding: 12px 20px;
+    border: 2px solid #b91c1c;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 4px;
+}
+
+.btn-danger:hover {
+    background-color: #fee2e2;
+    transform: translateY(-2px);
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+}
+
+/* ---- Feedback messages ---- */
+.feedback-message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-top: 16px;
+    text-align: center;
+}
+
+.feedback-message.success {
+    background-color: #dcfce7;
+    color: #166534;
+    border-left: 5px solid #22c55e;
+}
+
+.feedback-message.error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-left: 5px solid #ef4444;
+}
+
+/* ---- Actions section (logout + back) ---- */
+.profile-actions {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(6px);
+    padding: 28px 45px;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ---- Loading / error states ---- */
+.profile-status {
+    color: #475569;
+    font-size: 1rem;
+    margin-top: 40px;
+    text-align: center;
+}

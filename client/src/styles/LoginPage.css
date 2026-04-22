@@ -68,13 +68,15 @@
     font-size: 1rem;
     transition: all 0.3s ease;
     box-sizing: border-box;
+    background-color: #f8fafc;  
+    color: #1e293b;             
 }
-
 .form-group input:focus {
     outline: none;
     border-color: #1e3a8a;
     box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.15);
 }
+
 
 /* Login Button */
 .login-button {
@@ -115,7 +117,7 @@
 /* Center the form content */
 .login-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+    background: linear-gradient(135deg, #f0f4f8 0%, #127df7 100%);
     display: flex;
     flex-direction: column;        
     align-items: center;           

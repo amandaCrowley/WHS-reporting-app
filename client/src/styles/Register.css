@@ -2,13 +2,6 @@
 
 .register-page {
     min-height: 100vh;
-    /* Background Image - Change the URL to your own image if you want */
-    /*background-image:
-        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
-        /* Dark overlay for better readability */
-        /*url('https://images.unsplash.com/photo-1581091226825-a6a035c4d3e3?q=80&w=1920');
-    /* Safety / WHS related background */
-
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -35,8 +28,9 @@
 .register-container h1 {
     text-align: center;
     color: #1e3a8a;
-    font-size: 2.4rem;
+    font-size: 3rem;
     margin-bottom: 25px;
+    line-height: 1.15;
 }
 
 .error-message {

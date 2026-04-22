@@ -1,10 +1,9 @@
 /**
  * UserProfile.jsx
  * 
- * This page will alow users to change their profile information. 
+ * This page will allow users to change their profile information. 
  * At this stage this just includes the user's last name and password.
- * i.e. A user can't change their first name, role or email
- * Perhaps email can be changed on the admin side of the app later on? 
+ * i.e. A user can't change their first name, role or email.
  * 
  * Author/s: Amanda Foxley
  * Date: 2/4/26
@@ -14,155 +13,185 @@ import { useEffect, useState } from "react";
 import { getUserData } from "../hooks/getUserData";
 import { usePasswordReset } from "../hooks/usePasswordReset";
 import { useNavigate } from "react-router-dom";
-import { userLogout } from "../hooks/userLogout"
+import { userLogout } from "../hooks/userLogout";
+import "../styles/UserProfile.css";
 
 export default function UserProfile() {
   const navigate = useNavigate();
 
-  //State variables
-  const { userData, loading, error } = getUserData(); //get user data from the custom react hook (getUserData.js)
-  const { updateUserPassword, loading: pwLoading, error: pwError } = usePasswordReset(); //custom hook that handles a password update via Firebase (usePasswordReset.js)
+  // State variables
+  const { userData, loading, error } = getUserData();
+  const { updateUserPassword, loading: pwLoading, error: pwError } = usePasswordReset();
 
-  //Local password state variables
+  // Local password state variables
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState(""); // "success" or "error"
 
-  //Load last name from userData
+  // Load last name from userData
   const [lastName, setLastName] = useState(userData?.lastName || "");
   const logout = userLogout();
 
   useEffect(() => {
     if (userData?.lastName) {
-      setLastName(userData.lastName); // keep local state/variables in sync with updated backend data 
+      setLastName(userData.lastName);
     }
   }, [userData]);
 
-  //Display info to the user about what the page is doing
-  if (loading) return <p>Loading user data...</p>;    //This will display whilst the data is being fetched from the database
-  if (error) return <p>{error} Redirecting to login...</p>; //If there is an error, display and redirect
-  if (!userData) return <p>No user data found.</p>;
+  // Helper to show feedback
+  const showMessage = (text, type = "success") => {
+    setMessage(text);
+    setMessageType(type);
+  };
 
-  // function to handle updating last name
+  // Loading / error / no-data states
+  if (loading) return <p className="profile-status">Loading user data...</p>;
+  if (error) return <p className="profile-status">{error} Redirecting to login...</p>;
+  if (!userData) return <p className="profile-status">No user data found.</p>;
+
+  // Build initials for avatar
+  const initials =
+    `${userData.firstName?.[0] ?? ""}${userData.lastName?.[0] ?? ""}`.toUpperCase();
+
+  // Handle updating last name
   const handleUpdateLastName = async () => {
-
-    //-----------------Validation checks-------------------
-    //Check that the name isnt empty
     if (lastName.trim() === "") {
-      setMessage("Please enter a last name.");
+      showMessage("Please enter a last name.", "error");
       return;
     }
-
-    //Check not the same as current last name
     if (lastName === userData.lastName) {
-      setMessage("New last name must be different from the current one.");
+      showMessage("New last name must be different from the current one.", "error");
       return;
     }
-
-    //Min length of at lesat 2 characters
     if (lastName.trim().length < 2) {
-      setMessage("Last name must be at least 2 characters.");
+      showMessage("Last name must be at least 2 characters.", "error");
       return;
     }
-
     try {
-      await updateUser({ lastName });  //Calls the getUserData custom hook to update the last name in the MongoDB database
-      setMessage("Last name updated successfully!");
+      await updateUser({ lastName });
+      showMessage("Last name updated successfully!", "success");
     } catch (err) {
-      setMessage("Failed to update last name.");
+      showMessage("Failed to update last name.", "error");
     }
   };
 
-  // function to handle updating password
+  // Handle updating password
   const handleUpdatePassword = async () => {
-
-    // --------password validation checks-------------------
     if (newPassword !== confirmPassword) {
-      setMessage("Passwords do not match.");
+      showMessage("Passwords do not match.", "error");
       return;
     }
-
-    if (!/(?=.*[A-Z])(?=.*[0-9])/.test(newPassword)) { //Use regex to check for 1 uppercase and 1 number
-      setMessage("Password must include at least one uppercase letter and one number.");
+    if (!/(?=.*[A-Z])(?=.*[0-9])/.test(newPassword)) {
+      showMessage(
+        "Password must include at least one uppercase letter and one number.",
+        "error"
+      );
       return;
     }
-
     try {
-      await updateUserPassword(currentPassword, newPassword); //Calls the usePasswordReset custom hook to update Firebase with the new password
-      setMessage("Password updated successfully!");
-
-      // Clear password fields after successful update
+      await updateUserPassword(currentPassword, newPassword);
+      showMessage("Password updated successfully!", "success");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-
-      // If Firebase requires re-login, log the user out
       if (err.message.includes("log in again")) {
-        logout(); // redirect to login page using the getUserData custom hook
+        logout();
         return;
       }
-      setMessage(`Failed to update password: ${err.message}`);
+      showMessage(`Failed to update password: ${err.message}`, "error");
     }
   };
 
   return (
-    <div>
-      <h1>User Profile</h1>
-      <p>Welcome, {userData.firstName} {userData.lastName}!</p>
-      <p>Email: {userData.email}</p>
+    <div className="profile-page">
 
-      <hr />
+      {/* ── Welcome card ── */}
+      <div className="profile-header-card">
+        <div className="profile-avatar">
+          <span>{initials}</span>
+        </div>
+        <div className="profile-header-info">
+          <h1>{userData.firstName} {userData.lastName}</h1>
+          <p>{userData.email}</p>
+        </div>
+      </div>
 
-      {/* Last Name Update Section */}
-      <h2>Update Last Name</h2>
-      <input
-        type="text"
-        placeholder="New last name"
-        value={lastName}
-        onChange={(e) => setLastName(e.target.value)}
-      />
-      <button onClick={handleUpdateLastName}>Update Last Name</button>
-      <hr />
+      {/* ── Update Last Name ── */}
+      <div className="profile-section">
+        <h2>Update Last Name</h2>
+        <div className="form-group">
+          <label>Last Name</label>
+          <input
+            type="text"
+            placeholder="Enter new last name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
+        <button className="btn-primary" onClick={handleUpdateLastName}>
+          Update Last Name
+        </button>
+      </div>
 
-      {/* Password Change Section */}
-      <h2>Change Password</h2>
-      <input
-        type="password"
-        placeholder="Current password"
-        value={currentPassword}
-        onChange={(e) => setCurrentPassword(e.target.value)}
-      />
-      <br />
-      <input
-        type="password"
-        placeholder="New password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-      />
-      <br />
-      <input
-        type="password"
-        placeholder="Confirm new password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-      />
-      <br />
-      <button onClick={handleUpdatePassword}>Update Password</button>
+      {/* ── Change Password ── */}
+      <div className="profile-section">
+        <h2>Change Password</h2>
+        <div className="form-group">
+          <label>Current Password</label>
+          <input
+            type="password"
+            placeholder="Enter current password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label>New Password</label>
+          <input
+            type="password"
+            placeholder="Enter new password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label>Confirm New Password</label>
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </div>
+        <button
+          className="btn-primary"
+          onClick={handleUpdatePassword}
+          disabled={pwLoading}
+        >
+          {pwLoading ? "Updating..." : "Update Password"}
+        </button>
+      </div>
 
-      <br />
-      <br />
-      {/* Feedback message */}
-      {message && <p>{message}</p>}
+      {/* ── Feedback message ── */}
+      {message && (
+        <div className={`profile-section`} style={{ padding: "0", maxWidth: "520px", width: "100%" }}>
+          <p className={`feedback-message ${messageType}`}>{message}</p>
+        </div>
+      )}
 
-      <hr />
+      {/* ── Actions ── */}
+      <div className="profile-actions">
+        <button className="btn-secondary" onClick={() => navigate("/userdashboard")}>
+          ← Back to Dashboard
+        </button>
+        <button className="btn-danger" onClick={logout}>
+          Logout
+        </button>
+      </div>
 
-      {/* Buttons */}
-      <button onClick={logout}>Logout</button>
-      <br />
-      <br />
-      <button onClick={() => navigate("/userdashboard")}>Back to Dashboard</button>
     </div>
   );
 }
