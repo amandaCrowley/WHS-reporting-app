@@ -1,0 +1,116 @@
+/* RegisterPage.css */
+
+.register-page {
+    min-height: 100vh;
+    /* Background Image - Change the URL to your own image if you want */
+    /*background-image:
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)),
+        /* Dark overlay for better readability */
+        /*url('https://images.unsplash.com/photo-1581091226825-a6a035c4d3e3?q=80&w=1920');
+    /* Safety / WHS related background */
+
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    /* Optional: nice parallax effect */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+}
+
+.register-container {
+    background: rgba(255, 255, 255, 0.95);
+    /* Slightly transparent white card */
+    padding: 40px 45px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 460px;
+    backdrop-filter: blur(8px);
+}
+
+.register-container h1 {
+    text-align: center;
+    color: #1e3a8a;
+    font-size: 2.4rem;
+    margin-bottom: 25px;
+}
+
+.error-message {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #1e3a8a;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 13px 16px;
+    border: 2px solid #94a3b8;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #1e40af;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
+}
+
+.register-button {
+    width: 100%;
+    background-color: #1e3a8a;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.register-button:hover {
+    background-color: #1e40af;
+}
+
+.register-button:disabled {
+    background-color: #64748b;
+    cursor: not-allowed;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 25px;
+    color: #475569;
+}
+
+.login-link a {
+    color: #1e3a8a;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}

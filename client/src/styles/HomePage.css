@@ -1,0 +1,94 @@
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: top;
+  justify-content: top;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.hero-section h1 {
+  font-size: 3.2rem;
+  color: #172554;
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+
+.hero-section p {
+  font-size: 1.35rem;
+  color: #334155;
+  max-width: 600px;
+  margin: 0 auto 50px;
+  line-height: 1.5;
+}
+
+/* Action Buttons */
+.actions {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  padding: 16px 32px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.btn-primary {
+  background-color: #172554;
+  
+  color: white;
+  border: 2px solid #172554;
+}
+
+.btn-primary:hover {
+  background-color: #1e40af;
+  border-color: #172554;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px rgba(30, 64, 175, 0.25);
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #1e40af;
+  border: 2px solid #1e40af;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+  color: #172554;
+  border-color: #172554;
+  transform: translateY(-3px);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .hero-section h1 {
+    font-size: 2.6rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+.logo {
+  height: 80px;   
+  width: auto;    
+}
+
