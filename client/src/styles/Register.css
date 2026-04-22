@@ -30,7 +30,6 @@
     width: 100%;
     max-width: 460px;
     backdrop-filter: blur(8px);
-    /* Modern glass effect */
 }
 
 .register-container h1 {
@@ -40,7 +39,6 @@
     margin-bottom: 25px;
 }
 
-/* Rest of your styles remain the same */
 .error-message {
     background-color: #fee2e2;
     color: #b91c1c;

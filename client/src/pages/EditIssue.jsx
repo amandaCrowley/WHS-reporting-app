@@ -121,6 +121,7 @@ export default function EditIssue() {
             <div className="edit-issue-card">
                 <h1>Edit Issue</h1>
 
+                {/* Display error message */}
                 {updateError && <p className="error-text">{updateError}</p>}
 
                 <form className="edit-form" onSubmit={(e) => {
@@ -153,7 +154,7 @@ export default function EditIssue() {
 
                         <p>Witnesses</p>
 
-                        {/* list witnesses */}
+                        {/* witness list */}
                         {formData?.witnessNames?.map((name, index) => (
                             <li key={index} className="witness-item" >
                                 <span>{name}</span>
@@ -167,7 +168,7 @@ export default function EditIssue() {
                             </li>
                         ))}
 
-                        {/* add witness */}
+                        {/* add witness popup*/}
                         <div className="witness-item">
                             <input
                                 type="text"
@@ -193,6 +194,7 @@ export default function EditIssue() {
                         </div>
                     </div>
 
+
                     <div className="update-section">
                         <button type="submit" className="btn primary-btn">
                             Update Issue
@@ -201,31 +203,6 @@ export default function EditIssue() {
                     <button className="btn secondary-btn" onClick={() => navigate("/myissues")}>
                         Back to my issues
                     </button>
-
-
-                    {/* Should put these in a header - Navigation buttons */}
-                    {/* <div className="button-group-secondary">
-                        <button
-                            className="btn"
-                            type="button"
-                            onClick={() => navigate("/myissues")}
-                        >
-                            Cancel
-                        </button>
-
-                        <button
-                            className="btn"
-                            type="button"
-                            onClick={() => navigate("/userdashboard")}
-                        >
-                            Dashboard
-                        </button>
-
-                        <button className="btn" onClick={logout}>
-                            Logout
-                        </button>
-                    </div> */}
-
                 </form>
             </div>
         </div>

@@ -14,7 +14,7 @@
  * Date: 8/4/26
  */
 
-import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword as firebaseUpdatePassword } from "firebase/auth";
+import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword as firebaseUpdatePassword } from "firebase/auth"; //Import Firebase auth function for updating password and re-authentication
 import { useState } from "react";
 
 export function usePasswordReset() {
@@ -36,6 +36,7 @@ export function usePasswordReset() {
 
 
     try {
+
       // -----------------Validation checks-------------------
       if (!currentPassword || !newPassword) {
         throw new Error("Both current and new password are required.");
@@ -48,7 +49,6 @@ export function usePasswordReset() {
       if (currentPassword === newPassword) {
         throw new Error("New password must be different from current password.");
       }
-
 
       //Get the currently logged in user with Firebase getAuth() method
       const auth = getAuth();

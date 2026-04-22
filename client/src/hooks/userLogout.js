@@ -8,12 +8,12 @@
  * Author/s: Amanda Foxley
  * Date: 9/4/26
  */
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth"; //Import FireBase auth functions for signing out
 import { useNavigate } from "react-router-dom";
 
 
 export function userLogout() {
-  const auth = getAuth();        // Firebase auth object to access current logged-in user
+  const auth = getAuth();         // Firebase auth object to access current logged-in user
   const navigate = useNavigate(); // Navigate object to be userd for redirecting the user after logout
 
   /**

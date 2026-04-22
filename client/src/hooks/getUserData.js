@@ -20,7 +20,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth"; //Import FireBase auth functions for accessing current user and signing out
 import { useNavigate } from "react-router-dom";
 
 export function getUserData() {
@@ -72,6 +72,7 @@ export function getUserData() {
                     const data = await res.json();
                     setUserData(data);
                 } catch (err) {
+
                     // Ignore abort errors (already handled by timeout)
                     if (err.name !== "AbortError") {
                         setError(err.message);
@@ -125,6 +126,6 @@ export function getUserData() {
     };
 
 
-    // Return relevant state cvariables/functions for other components/pages to use
+    // Return relevant state variables/functions for other components/pages to use
     return { userData, loading, error, updateUser, setUserData };
 }
