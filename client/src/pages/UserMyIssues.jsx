@@ -6,28 +6,32 @@
  * Users can search for a specific issue by description location or campus
  * They can also filter their issues by status
  * 
- * Author/s: Amanda Foxley
- * Date: 2/4/26
+ * Author/s: Grish Gautam
+ * Date: 23/4/26
  */
 
-//Full list of user’s submitted issues (Search, filter, clickon issue leads to issue details page)
+import "./UserMyIssues.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
-import { userLogout } from "../hooks/userLogout"
-
+import { userLogout } from "../hooks/userLogout";
+import { getUserData } from "../hooks/getUserData";
 
 export default function UserMyIssues() {
   const navigate = useNavigate();
   const logout = userLogout();
+  const { userData } = getUserData();
 
-  //State variables
-  const [issues, setIssues] = useState([]);                           // Stores all issues fetched from backend
-  const [filteredIssues, setFilteredIssues] = useState([]);           // Stores issues filtered by search/status
-  const [loading, setLoading] = useState(true);                       // True while issues are being fetched
+  const displayName = userData?.firstName || userData?.name || "User";
 
-  const [search, setSearch] = useState("");                           // Stores the current search query
-  const [statusFilter, setStatusFilter] = useState("All");            // Stores selected status filter
+  // State variables
+  const [issues, setIssues] = useState([]);
+  const [filteredIssues, setFilteredIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   /**
    * Fetches all issues submitted by the current user from the backend server
@@ -35,128 +39,228 @@ export default function UserMyIssues() {
   useEffect(() => {
     const fetchIssues = async () => {
       try {
-        //Get the currently logged in user with Firebase getAuth() method
-        const auth = getAuth(); 
+        const auth = getAuth();
         const user = auth.currentUser;
 
-        if (!user) return; //User is empty, return
+        if (!user) {
+          setError("No user is currently logged in.");
+          setLoading(false);
+          return;
+        }
 
-        const res = await fetch(
-          `http://localhost:8000/api/issues/user/${user.uid}` //get all issues with this user ID
-        );
-        const data = await res.json(); 
+        const res = await fetch(`http://localhost:8000/api/issues/user/${user.uid}`);
 
-        setIssues(data); // Save the returned issue data in the state variable
+        if (!res.ok) {
+          throw new Error("Failed to fetch issues from server.");
+        }
+
+        const data = await res.json();
+
+        setIssues(data);
         setFilteredIssues(data);
       } catch (err) {
         console.error("Failed to fetch issues:", err);
+        setError("Failed to load your issues.");
       } finally {
-        setLoading(false); // Stop loading regardless of success/failure
+        setLoading(false);
       }
     };
 
-    fetchIssues(); //Call the fetch issues method to retireve the user's issues
+    fetchIssues();
   }, []);
 
-   /**
-   * Filter or search for issues whenever the search input, status filter, or original issues change
-   * 
-   * Allows searching by description, campus, and location
-   * Allows filtering by status
+  /**
+   * Filter or search for issues whenever the search input, status filter,
+   * or original issues change
    */
   useEffect(() => {
-    let temp = issues;
+    let temp = [...issues];
 
-    // Filter by status if not set to retrieve "All" issues
     if (statusFilter !== "All") {
-      temp = temp.filter(issue => issue.status === statusFilter);
+      temp = temp.filter((issue) => issue.status === statusFilter);
     }
 
-    // Filter by search query if something is typed into the search bar
     if (search.trim()) {
       const searchLower = search.toLowerCase();
 
-      temp = temp.filter(issue =>
-        issue.issueDescription?.toLowerCase().includes(searchLower) ||  //search by description
-        issue.campus?.toLowerCase().includes(searchLower) ||            //search by campus
-        issue.location?.toLowerCase().includes(searchLower)             //search by location
+      temp = temp.filter(
+        (issue) =>
+          issue.issueDescription?.toLowerCase().includes(searchLower) ||
+          issue.campus?.toLowerCase().includes(searchLower) ||
+          issue.location?.toLowerCase().includes(searchLower)
       );
     }
 
-    setFilteredIssues(temp); // Update the filtered issues state
+    setFilteredIssues(temp);
   }, [search, statusFilter, issues]);
 
-  // Display loading message while fetching issues
-  if (loading) return <p>Loading your issues...</p>;
+  /**
+   * Returns the CSS class for the issue status badge
+   */
+  const getStatusClass = (status) => {
+    if (status === "Open") return "user-my-issues-status-open";
+    if (status === "In Progress") return "user-my-issues-status-progress";
+    if (status === "Resolved") return "user-my-issues-status-resolved";
+    return "";
+  };
+
+  /**
+   * Formats the reported date for display
+   */
+  const formatReportedDate = (dateValue) => {
+    if (!dateValue) return "N/A";
+
+    return new Date(dateValue).toLocaleDateString("en-AU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="user-my-issues-page">
+        <div className="user-my-issues-loading">Loading your issues...</div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1>My Issues</h1>
+    <div className="user-my-issues-page">
+      <div className="user-my-issues-topbar">
+        <div className="user-my-issues-heading">
+          <h1>My Issues</h1>
+          <p>View and manage all issues you have reported.</p>
+        </div>
 
-      {/* Search bar - can search by issue descriptions + campus + location*/}
-      <input
-        type="text"
-        placeholder="Search issues..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{ marginRight: "10px" }}
-      />
+        <div className="user-my-issues-user">
+          <span className="user-my-issues-user-text">
+            Welcome, {displayName}!
+          </span>
 
-      {/* Filter issues by status */}
-      <select
-        value={statusFilter}
-        onChange={(e) => setStatusFilter(e.target.value)}
-      >
-        <option value="All">All</option>
-        <option value="Open">Open</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Resolved">Resolved</option>
-      </select>
-
-      <hr />
-
-      {/* Issues list */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {filteredIssues.length === 0 && <p>No issues found.</p>}
-
-        {filteredIssues.map(issue => (
-          <div
-
-            key={issue._id}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "10px",
-              marginBottom: "10px",
-              backgroundColor: "#f9f9f9",
-            }}
-            onClick={() => navigate(`/issue/${issue._id}`)}
-          >
-            <strong>{issue.issueDescription}</strong>
-
-            {/* Status badge */}
-            <p>
-              Status: {issue.status}
-            </p>
-            <p>
-              <em>{issue.location} | {issue.campus} </em>
-            </p>
-            <p>
-              Date reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                dateStyle: "short"
-              })}
-            </p>
+          <div className="user-my-issues-avatar-wrap">
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
+              alt="User avatar"
+              className="user-my-issues-avatar"
+            />
           </div>
-        ))}
+        </div>
       </div>
 
-      <br />
-      <button onClick={() => navigate("/userdashboard")}>
-        Back to Dashboard
-      </button>
-      <br />
-      <button onClick={logout}>Logout</button>
+      <div className="user-my-issues-panel">
+        {error && <div className="user-my-issues-error">{error}</div>}
+
+        <div className="user-my-issues-controls">
+          <div className="user-my-issues-search-group">
+            <div className="user-my-issues-search-box">
+              <span className="user-my-issues-search-icon">⌕</span>
+              <input
+                type="text"
+                placeholder="Search by description, campus or location..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="user-my-issues-filter-group">
+            <label htmlFor="statusFilter">Filter by Status</label>
+            <select
+              id="statusFilter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All</option>
+              <option value="Open">Open</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="user-my-issues-list">
+          {filteredIssues.length === 0 ? (
+            <div className="user-my-issues-empty">No issues found.</div>
+          ) : (
+            filteredIssues.map((issue) => (
+              <div
+                key={issue._id}
+                className="user-my-issues-card"
+                onClick={() => navigate(`/issue/${issue._id}`)}
+              >
+                <div className="user-my-issues-card-left">
+                  <h2>{issue.issueDescription}</h2>
+
+                  {issue.additionalDetails ? (
+                    <p>{issue.additionalDetails}</p>
+                  ) : (
+                    <p>{issue.issueDescription}</p>
+                  )}
+
+                  <div className="user-my-issues-meta">
+                    <div className="user-my-issues-meta-item">
+                      <span className="user-my-issues-meta-icon">📍</span>
+                      <span>{issue.location || "Unknown location"}</span>
+                    </div>
+
+                    <span className="user-my-issues-meta-divider">|</span>
+
+                    <div className="user-my-issues-meta-item">
+                      <span className="user-my-issues-meta-icon">🏢</span>
+                      <span>{issue.campus || "Unknown campus"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="user-my-issues-card-right">
+                  <p className="user-my-issues-card-right-label">Status</p>
+                  <span
+                    className={`user-my-issues-status-badge ${getStatusClass(issue.status)}`}
+                  >
+                    {issue.status}
+                  </span>
+
+                  <div className="user-my-issues-date-block">
+                    <p className="user-my-issues-date-title">Date Reported</p>
+                    <p className="user-my-issues-date-value">
+                      {formatReportedDate(issue.dateTimeReported)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="user-my-issues-card-arrow">›</div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="user-my-issues-footer">
+          <div className="user-my-issues-count">
+            Showing 1 to {filteredIssues.length} of {filteredIssues.length} issues
+          </div>
+
+          <div className="user-my-issues-pagination">
+            <button className="user-my-issues-page-btn">‹</button>
+            <button className="user-my-issues-page-btn active">1</button>
+            <button className="user-my-issues-page-btn">2</button>
+            <button className="user-my-issues-page-btn">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="user-my-issues-bottom-actions">
+        <button
+          className="user-my-issues-back-btn"
+          onClick={() => navigate("/userdashboard")}
+        >
+          ← Back to Dashboard
+        </button>
+
+        <button className="user-my-issues-logout-btn" onClick={logout}>
+          ⎋ Logout
+        </button>
+      </div>
     </div>
-    
   );
 }

@@ -1,125 +1,340 @@
 /**
  * UserDashboard.jsx
- * 
- * This page is essentially a logged in user's homepage, it stores various details about the user and their issues.
- * Uses a custom react hook (getUserData.js) to retrieve the user from Firebase auth server and return the object, also handles logout, page errors/loading .
- * 
- * Future work - overview of submitted issues (Summary page) Total issues submitted, status breakdown, Recent issues, quick buttons etc
- * 
- * Author/s: Amanda Foxley
- * Date: 1/4/26
+ *
+ * Desktop dashboard page based on the final Figma / reference UI.
+ * Uses the existing project hooks and routing.
+ *
+ * Interactive buttons implemented:
+ * - Home
+ * - Report Issues
+ * - My Issues
+ * - Profile
+ * - Logout
+ * - Report New Issue
+ * - View My Issues
+ * - Edit Profile
+ *
+ * Author/s: Grish Gautam
  */
 
-import { useEffect, useState } from "react";
-import { getUserData } from "../hooks/getUserData";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { userLogout } from "../hooks/userLogout"
+import { getUserData } from "../hooks/getUserData";
+import { userLogout } from "../hooks/userLogout";
+import "./UserDashboard.css";
 
 export default function UserDashboard() {
+  // Custom hook to get the currently logged-in user's data
+  const { userData, loading, error } = getUserData();
 
-    // Uses custom hook (getUserData) contains the following:
-    // userData - This is the mongoDB data for the currently logged in user
-    // loading - this is true whilst the user data is being fetched
-    // error - this will contain any error encountered during fetching
-    const { userData, loading, error } = getUserData();
-    const [recentIssues, setRecentIssues] = useState([]);
-    const [issuesLoading, setIssuesLoading] = useState(true);
-    const [issuesError, setIssuesError] = useState("");
+  // Stores all issues submitted by the current user
+  const [issues, setIssues] = useState([]);
 
-    const navigate = useNavigate();
-    const logout = userLogout();
+  // Loading state for issue fetching
+  const [issuesLoading, setIssuesLoading] = useState(true);
 
-    // Fetch last 2 issues submitted by this user
-    useEffect(() => {
-        if (!userData) return;
+  // Error state for issue fetching
+  const [issuesError, setIssuesError] = useState("");
 
-        const fetchIssues = async () => {
-            try {
-                setIssuesLoading(true);
+  // Used for page navigation
+  const navigate = useNavigate();
 
-                //limit=2 to only retrieve the 2 latest issues
-                const res = await fetch(
-                    `http://localhost:8000/api/issues/user/${userData.firebaseUid}?limit=2`
-                );
-                if (!res.ok) throw new Error("Failed to fetch issues");
+  // Custom hook for Firebase logout
+  const logout = userLogout();
 
-                const data = await res.json();
-                setRecentIssues(data);
-            } catch (err) {
-                console.error(err);
-                setIssuesError(err.message || "Error fetching issues");
-            } finally {
-                setIssuesLoading(false);
-            }
-        };
+  // Fetch all issues submitted by the logged-in user
+  useEffect(() => {
+    if (!userData) return;
 
-        fetchIssues();
-    }, [userData]);
+    const fetchIssues = async () => {
+      try {
+        setIssuesLoading(true);
+        setIssuesError("");
 
-    //Display info to the user about what the page is doing
-    if (loading) return <p>Loading user data...</p>;    //This will display whilst the data is being fetched from the database
-    if (error) return <p>{error} Redirecting to login...</p>; //If there is an error
-    if (!userData) return <p>No user data found.</p>;
+        const res = await fetch(
+          `http://localhost:8000/api/issues/user/${userData.firebaseUid}`
+        );
 
-    return (
-        <div>
-            <h1>User Dashboard</h1>
+        if (!res.ok) {
+          throw new Error("Failed to fetch issues");
+        }
 
-            {/* Display user details */}
-            <p>Welcome, {userData.firstName} {userData.lastName}!</p>
-            <br />
-            <p>Email: {userData.email}</p>
-            <p>Role: {userData.role}</p>
-            <br />
+        const data = await res.json();
+        setIssues(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        setIssuesError(err.message || "Error fetching issues");
+      } finally {
+        setIssuesLoading(false);
+      }
+    };
 
+    fetchIssues();
+  }, [userData]);
 
-            {/* Recent issues summary */}
-            <h2>Recent Issues</h2>
-            {issuesLoading ? (
-                <p>Loading issues...</p>
-            ) : issuesError ? (
-                <p>Error: {issuesError}</p>
-            ) : recentIssues.length === 0 ? (
-                <p>No issues submitted yet.</p>
-            ) : (
-                <ul style={{ listStyle: "none", paddingLeft: 0 }}>
-                    {recentIssues.map(issue => (
-                        <li
-                            key={issue._id}
-                            style={{
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                padding: "10px",
-                                marginBottom: "10px",
-                                backgroundColor: "#f9f9f9",
-                            }}
-                            onClick={() => navigate(`/issue/${issue._id}`)}
-                        >
-                            <strong>{issue.issueDescription}</strong> <br />
-                            Status:  {issue.status} <br />
-                            <em>{issue.location} | {issue.campus} </em>
-                            <br />
-                            Date reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                                dateStyle: "short" //Just display the date
-                            })}
-                        </li>
-                    ))}
-                </ul>
-            )}
+  // Calculate dashboard summary values from the issues list
+  const stats = useMemo(() => {
+    const total = issues.length;
 
-            {/* Action buttons */}
-            <button onClick={() => navigate("/reportissue")}>Report New Issue</button>
-            <br />
-            
-            {/* Link to view all issues */}
-            {recentIssues.length > 0 && (
-                <button onClick={() => navigate("/myissues")}>View all issues</button>
-            )}
-            <br />
+    const open = issues.filter(
+      (issue) => issue.status?.toLowerCase() === "open"
+    ).length;
 
-            <button onClick={() => navigate("/profile")}>Edit Profile</button>
-            <br />
-            <button onClick={logout}>Logout</button>
+    const inProgress = issues.filter((issue) => {
+      const status = issue.status?.toLowerCase();
+      return status === "in progress" || status === "in-progress";
+    }).length;
+
+    const closed = issues.filter(
+      (issue) => issue.status?.toLowerCase() === "closed"
+    ).length;
+
+    return {
+      total,
+      open,
+      inProgress,
+      closed,
+    };
+  }, [issues]);
+
+  // Sort issues so the newest reported issues appear first in the table
+  const sortedIssues = useMemo(() => {
+    return [...issues].sort((a, b) => {
+      const dateA = new Date(a.dateTimeReported || 0).getTime();
+      const dateB = new Date(b.dateTimeReported || 0).getTime();
+      return dateB - dateA;
+    });
+  }, [issues]);
+
+  if (loading) {
+    return <p className="dashboard-message">Loading user data...</p>;
+  }
+
+  if (error) {
+    return <p className="dashboard-message">{error} Redirecting to login...</p>;
+  }
+
+  if (!userData) {
+    return <p className="dashboard-message">No user data found.</p>;
+  }
+
+  return (
+    <div className="dashboard-shell">
+      {/* Left sidebar navigation */}
+      <aside className="dashboard-sidebar">
+        {/* Sidebar brand/header */}
+        <div className="dashboard-sidebar-brand">
+          <div className="dashboard-brand-icon">📊</div>
+          <div className="dashboard-brand-title">Dashboard</div>
         </div>
-    );
+
+        {/* Sidebar navigation buttons */}
+        <button
+          type="button"
+          className="dashboard-nav-item active"
+          onClick={() => navigate("/userdashboard")}
+        >
+          <span className="dashboard-nav-icon">🏠</span>
+          <span>Home</span>
+        </button>
+
+        <button
+          type="button"
+          className="dashboard-nav-item"
+          onClick={() => navigate("/reportissue")}
+        >
+          <span className="dashboard-nav-icon">📄</span>
+          <span>Report Issues</span>
+        </button>
+
+        <button
+          type="button"
+          className="dashboard-nav-item"
+          onClick={() => navigate("/myissues")}
+        >
+          <span className="dashboard-nav-icon">‼️</span>
+          <span>My Issues</span>
+        </button>
+
+        <button
+          type="button"
+          className="dashboard-nav-item"
+          onClick={() => navigate("/profile")}
+        >
+          <span className="dashboard-nav-icon">👤</span>
+          <span>Profile</span>
+        </button>
+
+        <button
+          type="button"
+          className="dashboard-nav-item logout"
+          onClick={logout}
+        >
+          <span className="dashboard-nav-icon">↪</span>
+          <span>Logout</span>
+        </button>
+      </aside>
+
+      {/* Main dashboard content */}
+      <main className="dashboard-main">
+        {/* Top bar */}
+        <header className="dashboard-topbar">
+  <h1>Dashboard</h1>
+
+  <div className="dashboard-topbar-right">
+    <span className="dashboard-welcome">
+      Welcome, {userData.firstName || "User"}!
+    </span>
+
+    <div className="dashboard-avatar-wrap">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
+        alt="User avatar"
+        className="dashboard-avatar"
+      />
+    </div>
+  </div>
+</header>
+
+        {/* Main content */}
+        <section className="dashboard-content">
+          {/* Stat cards */}
+          <div className="dashboard-stats-grid">
+            <div className="dashboard-card dashboard-card-wide">
+              <div className="dashboard-card-icon">📄</div>
+              <div className="dashboard-card-center">
+                <h2>Total Issues Submitted</h2>
+                <p>{issuesLoading ? "..." : stats.total}</p>
+                <div className="dashboard-divider"></div>
+              </div>
+            </div>
+
+            <div className="dashboard-card small stat-open">
+              <div className="dashboard-card-heading">Open</div>
+              <div className="dashboard-card-row">
+                <div className="dashboard-status-icon warning">!</div>
+                <div className="dashboard-side-number">
+                  {issuesLoading ? "..." : stats.open}
+                </div>
+              </div>
+            </div>
+
+            <div className="dashboard-card small stat-progress">
+              <div className="dashboard-card-heading">In Progress</div>
+              <div className="dashboard-card-row">
+                <div className="dashboard-status-icon neutral">◔</div>
+                <div className="dashboard-side-number">
+                  {issuesLoading ? "..." : stats.inProgress}
+                </div>
+              </div>
+            </div>
+
+            <div className="dashboard-card small stat-updates">
+              <div className="dashboard-card-row">
+                <div>
+                  <div className="dashboard-tools-icon">🛠</div>
+                  <div className="dashboard-card-subtext">Updates Ongoing</div>
+                </div>
+                <div className="dashboard-side-number">
+                  {issuesLoading ? "..." : stats.inProgress}
+                </div>
+              </div>
+            </div>
+
+            <div className="dashboard-card small stat-closed">
+              <div className="dashboard-card-heading">Closed</div>
+              <div className="dashboard-card-row">
+                <div>
+                  <div className="dashboard-status-icon success">✓</div>
+                  <div className="dashboard-card-subtext">
+                    Recently Resolved
+                  </div>
+                </div>
+                <div className="dashboard-side-number">
+                  {issuesLoading ? "..." : stats.closed}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="dashboard-actions-panel">
+            <div className="dashboard-actions">
+              <button
+                type="button"
+                className="primary-action"
+                onClick={() => navigate("/reportissue")}
+              >
+                + Report New Issue
+              </button>
+
+              <button
+                type="button"
+                className="secondary-action"
+                onClick={() => navigate("/myissues")}
+              >
+                View My Issues
+              </button>
+
+              <button
+                type="button"
+                className="secondary-action"
+                onClick={() => navigate("/profile")}
+              >
+                Edit Profile
+              </button>
+            </div>
+
+            {/* Issues table */}
+            <div className="dashboard-table-wrapper">
+              {issuesLoading ? (
+                <p className="dashboard-message">Loading issues...</p>
+              ) : issuesError ? (
+                <p className="dashboard-message">Error: {issuesError}</p>
+              ) : sortedIssues.length === 0 ? (
+                <p className="dashboard-message">No issues submitted yet.</p>
+              ) : (
+                <table className="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Date</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                      <th>View</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedIssues.map((issue) => (
+                      <tr key={issue._id}>
+                        <td>{issue._id ? `#${issue._id.slice(-4)}` : "-"}</td>
+                        <td>
+                          {issue.dateTimeReported
+                            ? new Date(
+                                issue.dateTimeReported
+                              ).toLocaleDateString("en-AU")
+                            : "-"}
+                        </td>
+                        <td>{issue.location || "-"}</td>
+                        <td>{issue.status || "-"}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className="dashboard-view-btn"
+                            onClick={() => navigate(`/issue/${issue._id}`)}
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
