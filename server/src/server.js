@@ -216,13 +216,13 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
 app.post('/api/issue/:userID', async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const { campus, location, issueDescription, witnessNames, imageURL } = req.body;
+    const { campus, title, location, issueDescription, witnessNames, imageURL } = req.body;
     const { userID } = req.params; //User id passed in using the request parameters and not in the JSON body
 
     //Validate required fields
-    if (!location || !issueDescription) {
+    if (!location || !issueDescription || !campus || !title) {
       return res.status(400).json({
-        error: "Missing required fields: Location and Issue description are required."
+        error: "Missing required fields: Location, Issue description, Campus, and Title are required."
       });
     }
 
@@ -261,12 +261,13 @@ app.post('/api/issue/:userID', async (req, res) => {
     //Create new issue object
     const newIssue = {
       campus,
+      title,
       location,
       issueDescription,
       assignedTo: null,
       dateTimeReported: now,               //Set the issue's reported date and time to the current date/time
       reportedBy: new ObjectId(userID),    //Must be an objectID
-      reportedByName: `${userExists.firstName} ${userExists.lastName}` || "",   //Store the user's name if they exist or empty string if not
+      reportedByName: `${userExists.firstName} ${userExists.lastName}`,   //Store the user's name if they exist or empty string if not
       status: "Open",                      //The issue will start off in an open state
       witnessNames: witnessNames || [],    //This is optional, these names are either passed in the JSON request body or they are empty
       imageURL: imageURL || [],             //This is optional as well, a user may choose to attach images to the issue which are stored with an external provider - These are the URL's to the images
