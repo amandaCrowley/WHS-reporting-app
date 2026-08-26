@@ -11,8 +11,11 @@
  */
 
 import{ createBrowserRouter,
+  Navigate,
   RouterProvider,
 } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
 import './App.css'
 import HomePage from './pages/HomePage'
@@ -26,6 +29,31 @@ import UserMyIssues from './pages/UserMyIssues.jsx'
 import ReportIssue from './pages/ReportIssue.jsx'
 import EditIssue from './pages/EditIssue.jsx'
 
+function ProtectedRoute({ children }) {
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    return onAuthStateChanged(getAuth(), (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+  }, []);
+
+  if (authLoading) {
+    return <p>Checking login status...</p>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
+const protectedElement = (element) => (
+  <ProtectedRoute>{element}</ProtectedRoute>
+);
 
 //Adds routes to the app, so that when the user goes to a specific URL, it will load the corresponding page (e.g. /login will load the LoginPage.jsx component page)
 const routes = [{
@@ -42,22 +70,22 @@ const routes = [{
       element: <Register />
     }, {
       path: '/userdashboard',
-      element: <UserDashboard />
+      element: protectedElement(<UserDashboard />)
     },{
       path: '/issue/:issueId',
-      element: <IssueDetails />
+      element: protectedElement(<IssueDetails />)
     },{
       path: '/profile',
-      element: <UserProfile />
+      element: protectedElement(<UserProfile />)
     },{
       path: '/myissues',
-      element: <UserMyIssues />
+      element: protectedElement(<UserMyIssues />)
     },{
       path: '/editIssue/:issueId',
-      element: <EditIssue />
+      element: protectedElement(<EditIssue />)
     },{
       path: '/reportissue',
-      element: <ReportIssue />
+      element: protectedElement(<ReportIssue />)
     }]
 }]
 const router = createBrowserRouter(routes);

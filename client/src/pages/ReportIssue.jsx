@@ -10,7 +10,7 @@
 
 import "./ReportIssue.css";
 import { useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 
@@ -36,6 +36,16 @@ export default function ReportIssue() {
 
   const displayName = userData?.firstName || userData?.name || "User";
 
+  // Small method to remove object URLs created for image previews when the component is unloaded or when the image's state changes, preventing memory leaks
+  useEffect(() => {
+    return () => {
+      images.forEach((img) => {
+        URL.revokeObjectURL(img.preview);
+      });
+    };
+  }, [images]);
+
+  // Method to handle form submission, including validation and sending data to the backend server
   const submitIssue = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -95,7 +105,36 @@ export default function ReportIssue() {
       return;
     }
 
+    // If all validation passes, send the data to the backend
     try {
+
+      let imageURLs = [];
+
+      if (images.length > 0) {
+
+        const imageFormData = new FormData();
+
+        images.forEach((image) => {
+          imageFormData.append("images", image.file);
+        });
+
+        const uploadResponse = await fetch(
+          "http://localhost:8000/api/upload",
+          {
+            method: "POST",
+            body: imageFormData,
+          }
+        );
+
+        const uploadData = await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+          throw new Error(uploadData.error || "Image upload failed.");
+        }
+
+        imageURLs = uploadData.imageURLs;
+      }
+
       const response = await fetch(`http://localhost:8000/api/issue/${userData._id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,7 +144,7 @@ export default function ReportIssue() {
           location: location.trim(),
           issueDescription: issueDescription.trim(),
           witnessNames: witnessList,
-          imageNames: images.map((image) => image.file.name),
+          imageURLs,
         }),
       });
 
@@ -158,10 +197,52 @@ export default function ReportIssue() {
     setWitnessList(updated);
   };
 
+  //Method to handle image selection and previews before submission + validation
   const handleImageChange = (e) => {
     const selectedFiles = Array.from(e.target.files || []);
 
     if (selectedFiles.length === 0) return;
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+    const validTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp"
+    ];
+
+    // Maximum 5 images
+    if (images.length + selectedFiles.length > 5) {
+      setFormError("Maximum 5 images allowed.");
+      return;
+    }
+
+    for (const file of selectedFiles) {
+
+      if (file.size > MAX_SIZE) {
+        setFormError(`${file.name} exceeds 5MB.`);
+        return;
+      }
+
+      if (!validTypes.includes(file.type)) {
+        setFormError(
+          "Only JPG, PNG, GIF and WEBP images are allowed."
+        );
+        return;
+      }
+
+      const duplicate = images.some(
+        (img) =>
+          img.file.name === file.name &&
+          img.file.size === file.size
+      );
+
+      if (duplicate) {
+        setFormError(`${file.name} has already been added.`);
+        return;
+      }
+    }
 
     const newImages = selectedFiles.map((file) => ({
       file,
@@ -256,6 +337,7 @@ export default function ReportIssue() {
                     onChange={(e) => setIssueTitle(e.target.value)}
                   />
 
+                  <br/><br/>
                   <label className="field-label">Description</label>
                   <textarea
                     placeholder="Describe the issue in detail"

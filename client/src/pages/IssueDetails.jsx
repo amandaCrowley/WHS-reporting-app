@@ -21,6 +21,7 @@ export default function IssueDetails() {
   const [issue, setIssue] = useState(null);       // Stores the fetched issue details
   const [loading, setLoading] = useState(true);   // True while fetching the issue
   const [error, setError] = useState("");         // Stores any error messages
+  const [selectedImage, setSelectedImage] = useState(null);
 
   /**
    * Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
@@ -55,7 +56,11 @@ export default function IssueDetails() {
   return (
 
     <div>
+
+
       <h1>Issue Details</h1>
+
+      <strong>Reported by:</strong> {issue.reportedByName}
 
       {/* Issue description */}
       <p>
@@ -90,17 +95,31 @@ export default function IssueDetails() {
 
       {/* Assigned to staff memeber */}
       <strong>Assigned to:</strong>{" "}
-      {issue.assignedTo ? issue.assignedTo : "Unassigned"}
+      {issue.assignedToName || "Unassigned"}
 
+      <br /><br />
       {/* Images, if any */}
-      <p>
-        <strong>Image/s:</strong>
-        {issue.imageURL && issue.imageURL.map((url, i) => (
-          <img key={i} src={url} alt="Issue" style={{ maxWidth: "200px", margin: "5px" }} />
-        ))}
-      </p>
-      <br />
-      <br />
+      {issue.imageURLs?.length > 0 ? (
+        <div style={{ marginTop: "10px" }}>
+          {issue.imageURLs.map((url, index) => (
+            <img
+              key={index}
+              src={url}
+              alt={`Issue ${index + 1}`}
+              onClick={() => setSelectedImage(url)}
+              style={{
+                width: "200px",
+                marginRight: "10px",
+                marginBottom: "10px",
+                cursor: "pointer",
+                borderRadius: "6px",
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <p>No images attached.</p>
+      )}
 
       {/* Navigation buttons */}
       <button onClick={() => navigate(`/editIssue/${issueId}`)}>Edit Issue</button>
@@ -108,6 +127,53 @@ export default function IssueDetails() {
       <button onClick={() => navigate("/userdashboard")}>Back to Dashboard</button>
       <br /><br />
       <button onClick={logout}>Logout</button>
+
+      {/*This section handles the display of a selected image in an overlay when a user clicks on an image thumbnail. It also provides a close button to exit the overlay. */}
+      {/**Display the selected image in an overlay */}
+      {selectedImage && (
+        <div
+          onClick={() => setSelectedImage(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.8)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          {/* Close button properties for the image*/}
+          <button
+            onClick={() => setSelectedImage(null)}
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              fontSize: "32px",
+              background: "transparent",
+              color: "white",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            ×
+          </button>
+
+          {/** Display the selected image with these properties */}
+          <img
+            src={selectedImage}
+            alt="Image of the selected issue"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "90%",
+              maxHeight: "90%",
+              borderRadius: "8px",
+            }}
+          />
+        </div>
+      )}
+
     </div>
   );
 }
