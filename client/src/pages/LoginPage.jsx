@@ -47,8 +47,25 @@ export default function LoginPage() {
         try {
             await signInWithEmailAndPassword(getAuth(), email, password); //Use firebase authentication to sign in with the email and password entered by the user
             navigate('/userdashboard'); //If login is successful, navigate to the user dashboard page
-        } catch (e) {
-            setError(e.message); //If there is an error during login (e.g. incorrect email or password), set the error state variable to display an error message to the user
+        } catch (e) { //catch any potential errors in login process
+            switch (e.code) { //handle different errors in a user-friendly way (ie. not too specific with firebase errors)
+                case 'auth/invalid-credential':
+                case 'auth/invalid-password':
+                case 'auth/user-not-found':
+                    setError('Invalid email or password. Please try again.');
+                    break;
+
+                case 'auth/too-many-requests':
+                    setError('Too many failed login attempts. Please try again later.');
+                    break;
+
+                case 'auth/network-request-failed':
+                    setError('Network error. Please check your internet connection and try again.');
+                    break;
+
+                default: //default error message for other errors not handled above
+                    setError('Unable to login. Please try again later.');
+            }
         }
     }
 
