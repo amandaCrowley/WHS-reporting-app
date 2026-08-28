@@ -74,12 +74,17 @@ export default function EditIssue() {
     */
     const updateIssue = async () => {
         try {
+            const body = new FormData();
+            body.append("issueDescription", formData.issueDescription || "");
+            body.append("location", formData.location || "");
+            body.append("campus", formData.campus || "");
+            body.append("witnessNames", JSON.stringify(formData.witnessNames || []));
+            body.append("imageURL", JSON.stringify(formData.imageURL || []));
+            images.forEach(image => body.append("images", image.file));
+
             const res = await fetch(`http://localhost:8000/api/issues/${issueId}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
+                body
             });
 
             const data = await res.json();
@@ -217,28 +222,20 @@ export default function EditIssue() {
                                     <div
                                         className="edit-image-card"
                                         key={url}
-                                        style={{
-                                            position: "relative",
-                                            display: "inline-block",
-                                            margin: "5px"
-                                        }}
                                     >
                                         <img
                                             src={url}
                                             alt={`Evidence ${index + 1}`}
-                                            style={{
-                                                width: "100px",
-                                                height: "100px",
-                                                objectFit: "cover"
-                                            }}
                                         />
 
                                         <button
                                             type="button"
                                             className="image-remove-btn"
                                             onClick={() => removeExistingImage(url)}
+                                            aria-label={`Remove existing image ${index + 1}`}
+                                            title="Remove image"
                                         >
-                                            ×
+                                            <span aria-hidden="true">×</span>
                                         </button>
                                     </div>
                                 ))}
@@ -270,8 +267,10 @@ export default function EditIssue() {
                                                     prev.filter((_, i) => i !== index)
                                                 );
                                             }}
+                                            aria-label={`Remove new image ${index + 1}`}
+                                            title="Remove image"
                                         >
-                                            ×
+                                            <span aria-hidden="true">×</span>
                                         </button>
                                     </div>
                                 ))}

@@ -10,7 +10,7 @@
 
 import "../styles/ReportIssue.css";
 import { useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 
@@ -36,6 +36,16 @@ export default function ReportIssue() {
 
   const displayName = userData?.firstName || userData?.name || "User";
 
+  // Small method to remove object URLs created for image previews when the component is unloaded or when the image's state changes, preventing memory leaks
+  useEffect(() => {
+    return () => {
+      images.forEach((img) => {
+        URL.revokeObjectURL(img.preview);
+      });
+    };
+  }, [images]);
+
+  // Method to handle form submission, including validation and sending data to the backend server
   const submitIssue = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -59,14 +69,26 @@ export default function ReportIssue() {
       return;
     }
 
-    if (issueTitle.trim().length < 3) {
-      setFormError("Issue title must be at least 3 characters.");
+    if (issueTitle.trim().length < 5) {
+      setFormError("Issue title must be at least 5 characters.");
+      setFormLoading(false);
+      return;
+    }
+
+    if (issueTitle.trim().length > 50) {
+      setFormError("Issue title must be no more than 50 characters.");
       setFormLoading(false);
       return;
     }
 
     if (location.trim().length < 3) {
       setFormError("Location must be at least 3 characters.");
+      setFormLoading(false);
+      return;
+    }
+
+    if (location.trim().length > 100) {
+      setFormError("Location must be no more than 100 characters.");
       setFormLoading(false);
       return;
     }
@@ -83,17 +105,47 @@ export default function ReportIssue() {
       return;
     }
 
+    // If all validation passes, send the data to the backend
     try {
+
+      let imageURLs = [];
+
+      if (images.length > 0) {
+
+        const imageFormData = new FormData();
+
+        images.forEach((image) => {
+          imageFormData.append("images", image.file);
+        });
+
+        const uploadResponse = await fetch(
+          "http://localhost:8000/api/upload",
+          {
+            method: "POST",
+            body: imageFormData,
+          }
+        );
+
+        const uploadData = await uploadResponse.json();
+
+        if (!uploadResponse.ok) {
+          throw new Error(uploadData.error || "Image upload failed.");
+        }
+
+        imageURLs = uploadData.imageURLs;
+      }
+
       const response = await fetch(`http://localhost:8000/api/issue/${userData._id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          issueTitle: issueTitle.trim(),
+          title: issueTitle.trim(),
           campus,
           location: location.trim(),
           issueDescription: issueDescription.trim(),
           witnessNames: witnessList,
-          imageNames: images.map((image) => image.file.name),
+          dateTimeIssueOccurred: new Date().toISOString(),
+          imageURLs,
         }),
       });
 
@@ -116,8 +168,23 @@ export default function ReportIssue() {
 
     if (!witnessName) return;
 
+    if (witnessName.length < 2) {
+      setFormError("Witness name must be at least 2 characters.");
+      return;
+    }
+
+    if (witnessName.length > 50) {
+      setFormError("Witness name must be no more than 50 characters.");
+      return;
+    }
+
     if (witnessList.includes(witnessName)) {
       setFormError("This witness has already been added.");
+      return;
+    }
+
+    if (witnessList.length >= 10) {
+      setFormError("You can add a maximum of 10 witnesses.");
       return;
     }
 
@@ -131,10 +198,52 @@ export default function ReportIssue() {
     setWitnessList(updated);
   };
 
+  //Method to handle image selection and previews before submission + validation
   const handleImageChange = (e) => {
     const selectedFiles = Array.from(e.target.files || []);
 
     if (selectedFiles.length === 0) return;
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+    const validTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp"
+    ];
+
+    // Maximum 5 images
+    if (images.length + selectedFiles.length > 5) {
+      setFormError("Maximum 5 images allowed.");
+      return;
+    }
+
+    for (const file of selectedFiles) {
+
+      if (file.size > MAX_SIZE) {
+        setFormError(`${file.name} exceeds 5MB.`);
+        return;
+      }
+
+      if (!validTypes.includes(file.type)) {
+        setFormError(
+          "Only JPG, PNG, GIF and WEBP images are allowed."
+        );
+        return;
+      }
+
+      const duplicate = images.some(
+        (img) =>
+          img.file.name === file.name &&
+          img.file.size === file.size
+      );
+
+      if (duplicate) {
+        setFormError(`${file.name} has already been added.`);
+        return;
+      }
+    }
 
     const newImages = selectedFiles.map((file) => ({
       file,
@@ -196,24 +305,24 @@ export default function ReportIssue() {
       </aside>
 
       <main className="report-main">
-      <header className="report-header">
-  <div>
-    <h1>Report Issue</h1>
-    <p>Submit details about a safety or maintenance issue.</p>
-  </div>
+        <header className="report-header">
+          <div>
+            <h1>Report Issue</h1>
+            <p>Submit details about a safety or maintenance issue.</p>
+          </div>
 
-  <div className="report-userbox">
-    <span className="report-userbox-text">Welcome, {displayName}!</span>
+          <div className="report-userbox">
+            <span className="report-userbox-text">Welcome, {displayName}!</span>
 
-    <div className="report-avatar-wrap">
-      <img
-        src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
-        alt="User avatar"
-        className="report-avatar"
-      />
-    </div>
-  </div>
-</header>
+            <div className="report-avatar-wrap">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
+                alt="User avatar"
+                className="report-avatar"
+              />
+            </div>
+          </div>
+        </header>
 
         <form className="report-panel" onSubmit={submitIssue}>
           <div className="report-grid">
@@ -224,14 +333,15 @@ export default function ReportIssue() {
                   <label className="field-label">Issue Title</label>
                   <input
                     type="text"
-                    placeholder="Enter issue title..."
+                    placeholder="Enter a short description of the issue"
                     value={issueTitle}
                     onChange={(e) => setIssueTitle(e.target.value)}
                   />
 
+                  <br/><br/>
                   <label className="field-label">Description</label>
                   <textarea
-                    placeholder="Describe the issue..."
+                    placeholder="Describe the issue in detail"
                     value={issueDescription}
                     onChange={(e) => setIssueDescription(e.target.value)}
                   />
@@ -245,7 +355,7 @@ export default function ReportIssue() {
                     value={campus}
                     onChange={(e) => setCampus(e.target.value)}
                   >
-                    <option value="">Select campus...</option>
+                    <option value="">Select campus</option>
                     <option value="Callaghan">Callaghan</option>
                     <option value="Newcastle City">Newcastle City</option>
                     <option value="Ourimbah">Ourimbah</option>
@@ -257,7 +367,7 @@ export default function ReportIssue() {
 
                   <input
                     type="text"
-                    placeholder="Enter the location..."
+                    placeholder="Enter location (e.g. Building A, Room 101)"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                   />
@@ -277,6 +387,7 @@ export default function ReportIssue() {
                             className="pill-remove"
                             onClick={() => removeWitness(index)}
                           >
+                            ×
                           </button>
                         </div>
                       ))}
@@ -286,7 +397,7 @@ export default function ReportIssue() {
                   <div className="witness-input-row">
                     <input
                       type="text"
-                      placeholder="Add witness name..."
+                      placeholder="Add witness names (Press Enter to add)"
                       value={witnessInput}
                       onChange={(e) => setWitnessInput(e.target.value)}
                       onKeyDown={(e) => {

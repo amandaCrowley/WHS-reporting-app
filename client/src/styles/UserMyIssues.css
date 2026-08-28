@@ -289,6 +289,15 @@ html, body, #root {
     line-height: 1.45;
     color: #4b5563;
     max-width: 760px;
+
+  .user-my-issues-description-label {
+    margin: -2px 0 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    color: #64748b;
+  }
   }
   
   .user-my-issues-meta {

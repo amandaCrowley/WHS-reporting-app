@@ -85,6 +85,7 @@ export default function UserMyIssues() {
 
       temp = temp.filter(
         (issue) =>
+          issue.title?.toLowerCase().includes(searchLower) ||
           issue.issueDescription?.toLowerCase().includes(searchLower) ||
           issue.campus?.toLowerCase().includes(searchLower) ||
           issue.location?.toLowerCase().includes(searchLower)
@@ -164,7 +165,7 @@ export default function UserMyIssues() {
       <div className="user-my-issues-topbar">
         <div className="user-my-issues-heading">
           <h1>My Issues</h1>
-          <p>View and manage all issues you have reported.</p>
+          <p>View and manage all your reported issues.</p>
         </div>
 
         <div className="user-my-issues-user">
@@ -191,7 +192,7 @@ export default function UserMyIssues() {
               <span className="user-my-issues-search-icon">⌕</span>
               <input
                 type="text"
-                placeholder="Search by description, campus or location..."
+                placeholder="Search by title, description, campus or location..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -224,7 +225,7 @@ export default function UserMyIssues() {
                 onClick={() => navigate(`/issue/${issue._id}`)}
               >
                 <div className="user-my-issues-card-left">
-                  <h2>{issue.issueDescription}</h2>
+                  <h2>{issue.title}</h2>
 
                   {issue.additionalDetails ? (
                     <p>{issue.additionalDetails}</p>

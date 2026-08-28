@@ -163,6 +163,14 @@ export default function IssueDetails() {
         </header>
 
         <section className="issue-details-card">
+          <div className="issue-details-card-header">Title</div>
+          <div className="issue-details-card-body">
+            <p>{issue.title}</p>
+          </div>
+        </section>
+
+
+        <section className="issue-details-card">
           <div className="issue-details-card-header">Description</div>
           <div className="issue-details-card-body">
             <p>{issue.issueDescription}</p>
