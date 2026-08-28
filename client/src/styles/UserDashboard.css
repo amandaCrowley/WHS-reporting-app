@@ -1,0 +1,336 @@
+/**
+ * UserDashboard.css
+ *
+ * This file contains the styling for the desktop Dashboard page of the
+ * WHS Reporting App. It styles the sidebar navigation, top header,
+ * summary cards, action buttons, and issues table.
+ *
+ * Author/s: Grish Gautam
+ */
+
+/* =========================
+   GLOBAL PAGE STYLING
+   ========================= */
+
+   .dashboard-shell {
+    min-height: 100vh;
+    display: flex;
+    background: #e4e7ec;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111;
+  }
+  
+  .dashboard-sidebar {
+    width: 245px;
+    background: #8eb3e8;
+    border-right: 2px solid #111;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dashboard-sidebar-brand {
+    height: 118px;
+    background: linear-gradient(180deg, #4d63ef 0%, #5f72f1 100%);
+    border-bottom: 2px solid #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .dashboard-brand-icon {
+    font-size: 48px;
+    line-height: 1;
+  }
+  
+  .dashboard-brand-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  .dashboard-nav-item {
+    border: none;
+    border-bottom: 2px solid #111;
+    background: transparent;
+    padding: 22px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    color: #fff;
+  }
+  
+  .dashboard-nav-item.active {
+    background: rgba(255, 255, 255, 0.35);
+  }
+  
+  .dashboard-nav-item.logout {
+    margin-top: auto;
+  }
+  
+  .dashboard-nav-icon {
+    width: 34px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+  }
+  
+  .dashboard-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .dashboard-topbar {
+    height: 94px;
+    background: #efefef;
+    border-bottom: 2px solid #111;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+  }
+  
+  .dashboard-topbar h1 {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 700;
+    color: #111;
+  }
+  
+  .dashboard-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .dashboard-welcome {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1d43d2;
+  }
+  
+  .dashboard-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #9fd2ff;
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 28px;
+  }
+  
+  .dashboard-content {
+    padding: 26px 28px;
+  }
+  
+  .dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+  }
+  
+  .dashboard-card {
+    background: #efefef;
+    border: 2px solid #111;
+    border-radius: 22px;
+    padding: 18px 20px;
+  }
+  
+  .dashboard-card-wide {
+    grid-column: span 12;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .dashboard-card.small {
+    min-height: 140px;
+  }
+  
+  .stat-open,
+  .stat-progress,
+  .stat-updates,
+  .stat-closed {
+    grid-column: span 3;
+  }
+  
+  .dashboard-card-icon {
+    font-size: 54px;
+    line-height: 1;
+  }
+  
+  .dashboard-card-center {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .dashboard-card-center h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827 !important;
+  }
+  
+  .dashboard-card-center p {
+    margin: 8px 0 6px;
+    font-size: 46px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  
+  .dashboard-divider {
+    width: 94px;
+    height: 5px;
+    border-radius: 999px;
+    background: #555;
+    margin: 0 auto;
+  }
+  
+  .dashboard-card-heading {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  
+  .dashboard-card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: calc(100% - 34px);
+  }
+  
+  .dashboard-status-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    font-weight: 700;
+  }
+  
+  .dashboard-status-icon.warning {
+    background: #56aceb;
+    color: #fff;
+  }
+  
+  .dashboard-status-icon.neutral,
+  .dashboard-status-icon.success {
+    background: #f8f8f8;
+    color: #111;
+  }
+  
+  .dashboard-tools-icon {
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  
+  .dashboard-side-number {
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  
+  .dashboard-card-subtext {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  
+  .dashboard-actions-panel {
+    margin-top: 16px;
+    background: #efefef;
+    border: 1px solid #c8c8c8;
+    border-radius: 12px;
+    padding: 20px 16px 24px;
+  }
+  
+  .dashboard-actions {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+  
+  .dashboard-actions button {
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 12px 20px;
+  }
+  
+  .primary-action {
+    border: none;
+    background: #4d63ef;
+    color: #fff;
+  }
+  
+  .secondary-action {
+    border: 1.5px solid #8ab2f1;
+    background: #f5f7fb;
+    color: #3250d0;
+  }
+  
+  .dashboard-table-wrapper {
+    overflow-x: auto;
+    border: 1.5px solid #c9c9c9;
+    border-radius: 8px;
+    background: #efefef;
+  }
+  
+  .dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .dashboard-table th,
+  .dashboard-table td {
+    border: 1px solid #c9c9c9;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 16px;
+  }
+  
+  .dashboard-table th {
+    background: #cdd9ea;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  
+  .dashboard-table td:first-child {
+    font-weight: 700;
+  }
+  
+  .dashboard-view-btn {
+    border: 1.5px solid #8ab2f1;
+    border-radius: 999px;
+    background: #f8fbff;
+    min-width: 82px;
+    height: 34px;
+    font-weight: 700;
+    font-size: 15px;
+    color: #3250d0;
+    cursor: pointer;
+  }
+  
+  .dashboard-message {
+    padding: 20px;
+    font-size: 18px;
+  }
+  

@@ -3,14 +3,14 @@
  * 
  * This page lists all issues submitted by the currently logged in user
  * 
- * Users can search for a specific issue by title description location or campus
+ * Users can search for a specific issue by description location or campus
  * They can also filter their issues by status
  * 
- * Author/s: Grish Gautam & Amanda Foxley
+ * Author/s: Grish Gautam
  * Date: 23/4/26
  */
 
-import "./UserMyIssues.css";
+import "../styles/UserMyIssues.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
@@ -85,7 +85,6 @@ export default function UserMyIssues() {
 
       temp = temp.filter(
         (issue) =>
-          issue.title?.toLowerCase().includes(searchLower) ||
           issue.issueDescription?.toLowerCase().includes(searchLower) ||
           issue.campus?.toLowerCase().includes(searchLower) ||
           issue.location?.toLowerCase().includes(searchLower)
@@ -127,11 +126,45 @@ export default function UserMyIssues() {
   }
 
   return (
+    <div className="report-layout">
+      <aside className="report-sidebar">
+        <div className="sidebar-top">
+          <div className="sidebar-logo">📊</div>
+          <h2>Dashboard</h2>
+        </div>
+ 
+        <nav className="sidebar-nav">
+          <button type="button" className="sidebar-item" onClick={() => navigate("/userdashboard")}>
+            <span className="sidebar-icon">🏠</span>
+            <span>Home</span>
+          </button>
+ 
+          <button type="button" className="sidebar-item" onClick={() => navigate("/reportissue")}>
+            <span className="sidebar-icon">📄</span>
+            <span>Report Issues</span>
+          </button>
+ 
+          <button type="button" className="sidebar-item active">
+            <span className="sidebar-icon">‼️</span>
+            <span>My Issues</span>
+          </button>
+ 
+          <button type="button" className="sidebar-item" onClick={() => navigate("/profile")}>
+            <span className="sidebar-icon">👤</span>
+            <span>Profile</span>
+          </button>
+ 
+          <button type="button" className="sidebar-item" onClick={logout}>
+            <span className="sidebar-icon">↪</span>
+            <span>Logout</span>
+          </button>
+        </nav>
+      </aside>
     <div className="user-my-issues-page">
       <div className="user-my-issues-topbar">
         <div className="user-my-issues-heading">
           <h1>My Issues</h1>
-          <p>View and manage all your reported issues.</p>
+          <p>View and manage all issues you have reported.</p>
         </div>
 
         <div className="user-my-issues-user">
@@ -148,7 +181,7 @@ export default function UserMyIssues() {
           </div>
         </div>
       </div>
-
+      
       <div className="user-my-issues-panel">
         {error && <div className="user-my-issues-error">{error}</div>}
 
@@ -158,7 +191,7 @@ export default function UserMyIssues() {
               <span className="user-my-issues-search-icon">⌕</span>
               <input
                 type="text"
-                placeholder="Search by title, description, campus or location..."
+                placeholder="Search by description, campus or location..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -191,7 +224,7 @@ export default function UserMyIssues() {
                 onClick={() => navigate(`/issue/${issue._id}`)}
               >
                 <div className="user-my-issues-card-left">
-                  <h2>{issue.title}</h2>
+                  <h2>{issue.issueDescription}</h2>
 
                   {issue.additionalDetails ? (
                     <p>{issue.additionalDetails}</p>
@@ -262,6 +295,7 @@ export default function UserMyIssues() {
           ⎋ Logout
         </button>
       </div>
+    </div>  
     </div>
   );
 }

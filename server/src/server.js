@@ -6,7 +6,6 @@
  * Key features:
  * - Connects to MongoDB Atlas
  * - Handles CORS (allows frontend/client pages to talk to this server safely) and JSON request bodies (using req.body, i.e without express.json the req.body would be undefined and we could'nmt recieve JSON requests from the frontend)
- * - Handles file uploads using multer and stores them in Cloudinary
  * - User routes: create user, get all users, get single user by id, update user last name
  * - Issue routes: fetch all issues for a single user, fetch single issue by ID
 
@@ -18,24 +17,8 @@ import express from 'express';
 import cors from "cors";
 import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
-import upload from "./uploadMiddleware.js"; // Middleware for handling file uploads (using multer with memory storage)
-import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
 
 dotenv.config(); //Load environment variables from .env
-
-const getCloudinaryPublicId = (imageURL) => {
-  const uploadMarker = "/image/upload/";
-  const uploadIndex = imageURL.indexOf(uploadMarker);
-
-  if (uploadIndex === -1) return null;
-
-  let assetPath = imageURL.slice(uploadIndex + uploadMarker.length);
-  const versionMatch = assetPath.match(/^(?:[^/]+\/)*v\d+\/(.+)$/);
-
-  if (versionMatch) assetPath = versionMatch[1];
-
-  return decodeURIComponent(assetPath).replace(/\.[^/.]+$/, "");
-};
 
 const PORT = process.env.PORT || 8000; //Use the PORT environment variable if it's set, otherwise default to 8000
 const app = express(); //Create application using express
@@ -204,7 +187,7 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
       { returnDocument: "after", upsert: false } // don't create new if not found
     );
 
-    if (!result) {
+    if (!result.value) {
       // Optional: Instead of returning 404, return current state
       // This avoids errors when UI calls update before fetchUser
       const user = await db.collection("User").findOne({ firebaseUid });
@@ -215,7 +198,7 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
       }
     }
 
-    res.json(result); // updated user
+    res.json(result.value); // updated user
 
   } catch (err) {
     console.error("Failed to update user:", err);
@@ -233,13 +216,13 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
 app.post('/api/issue/:userID', async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const { campus, title, location, issueDescription, witnessNames, imageURLs } = req.body;
+    const { campus, location, issueDescription, witnessNames, imageURL } = req.body;
     const { userID } = req.params; //User id passed in using the request parameters and not in the JSON body
 
     //Validate required fields
-    if (!location || !issueDescription || !campus || !title) {
+    if (!location || !issueDescription) {
       return res.status(400).json({
-        error: "Missing required fields: Location, Issue description, Campus, and Title are required."
+        error: "Missing required fields: Location and Issue description are required."
       });
     }
 
@@ -254,7 +237,7 @@ app.post('/api/issue/:userID', async (req, res) => {
       "Port Macquarie"
     ];
 
-    if (!campus || !validCampus.includes(campus)) {
+    if (!campus && !validCampus.includes(campus)) {
       return res.status(400).json({
         error: `Invalid Campus. Must be one of: ${validCampus.join(", ")}`
       });
@@ -278,16 +261,15 @@ app.post('/api/issue/:userID', async (req, res) => {
     //Create new issue object
     const newIssue = {
       campus,
-      title,
       location,
       issueDescription,
       assignedTo: null,
       dateTimeReported: now,               //Set the issue's reported date and time to the current date/time
       reportedBy: new ObjectId(userID),    //Must be an objectID
-      reportedByName: `${userExists.firstName} ${userExists.lastName}`,   //Store the user's name if they exist or empty string if not
+      reportedByName: `${userExists.firstName} ${userExists.lastName}` || "",   //Store the user's name if they exist or empty string if not
       status: "Open",                      //The issue will start off in an open state
       witnessNames: witnessNames || [],    //This is optional, these names are either passed in the JSON request body or they are empty
-      imageURLs: imageURLs || [],             //This is optional as well, a user may choose to attach images to the issue which are stored with an external provider - These are the URL's to the images
+      imageURL: imageURL || [],             //This is optional as well, a user may choose to attach images to the issue which are stored with an external provider - These are the URL's to the images
     };
 
     //Insert into MongoDB
@@ -327,7 +309,7 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
     let query = { reportedBy: user._id };
     let cursor = db.collection("Issue")
       .find(query)
-      .sort({ "dateTimeReported": -1 }); // latest issues first
+      .sort({ "Date/Time reported": -1 }); // latest issues first
 
     // Check if there is a limit to the number of issues to be returned               
     if (limit > 0) {
@@ -374,12 +356,11 @@ app.put('/api/issues/:id', async (req, res) => {
 
     // Fields that are allowed to be updated
     const {
-      title,
       issueDescription,
       location,
       campus,
       witnessNames,
-      imageURLs,
+      imageURL,
     } = req.body;
 
     // Validate ObjectId
@@ -390,25 +371,11 @@ app.put('/api/issues/:id', async (req, res) => {
     // Build update object dynamically (only update provided fields)
     const updateFields = {};
 
-    if (title !== undefined) updateFields.title = title;
     if (issueDescription !== undefined) updateFields.issueDescription = issueDescription;
     if (location !== undefined) updateFields.location = location;
     if (campus !== undefined) updateFields.campus = campus;
     if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
-
-    if (imageURLs !== undefined) {
-      updateFields.imageURLs = imageURLs;
-    }
-
-    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) });
-
-    if (!issue) {
-      return res.status(404).json({ error: "Issue not found" });
-    }
-
-    const removedImageURLs = imageURLs === undefined
-      ? []
-      : (issue.imageURLs || []).filter((imageURL) => !imageURLs.includes(imageURL));
+    if (imageURL !== undefined) updateFields.imageURL = imageURL;
 
     const result = await db.collection("Issue").findOneAndUpdate(
       { _id: new ObjectId(id) },
@@ -416,122 +383,14 @@ app.put('/api/issues/:id', async (req, res) => {
       { returnDocument: "after" }
     );
 
-    if (!result) {
+    if (!result.value) {
       return res.status(404).json({ error: "Issue not found" });
     }
 
-    for (const imageURL of removedImageURLs) {
-      const publicId = getCloudinaryPublicId(imageURL);
-
-      if (!publicId) {
-        console.error(`Unable to remove invalid Cloudinary image URL: ${imageURL}`);
-        continue;
-      }
-
-      const cloudinaryResult = await cloudinary.uploader.destroy(publicId, {
-        resource_type: "image"
-      });
-
-      if (cloudinaryResult.result !== "ok" && cloudinaryResult.result !== "not found") {
-        console.error(`Failed to remove image from Cloudinary: ${imageURL}`);
-      }
-    }
-
-    res.json(result);
+    res.json(result.value);
 
   } catch (err) {
     console.error("Failed to update issue:", err);
     res.status(500).json({ error: "Failed to update issue" });
   }
 });
-
-app.delete('/api/issues/:id/images', async (req, res) => {
-  try {
-    const db = req.app.locals.db;
-    const { id } = req.params;
-    const { imageURL } = req.body;
-
-    if (!ObjectId.isValid(id) || !imageURL) {
-      return res.status(400).json({ error: "Invalid issue ID or image URL" });
-    }
-
-    const issue = await db.collection("Issue").findOne({
-      _id: new ObjectId(id),
-      imageURLs: imageURL
-    });
-
-    if (!issue) {
-      return res.status(404).json({ error: "Issue or image not found" });
-    }
-
-    const publicId = getCloudinaryPublicId(imageURL);
-
-    if (!publicId) {
-      return res.status(400).json({ error: "Invalid Cloudinary image URL" });
-    }
-
-    const cloudinaryResult = await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image"
-    });
-
-    if (cloudinaryResult.result !== "ok" && cloudinaryResult.result !== "not found") {
-      return res.status(502).json({ error: "Failed to remove image from Cloudinary" });
-    }
-
-    await db.collection("Issue").updateOne(
-      { _id: new ObjectId(id) },
-      { $pull: { imageURLs: imageURL } }
-    );
-
-    res.json({ message: "Image removed successfully" });
-  } catch (err) {
-    console.error("Failed to remove issue image:", err);
-    res.status(500).json({ error: "Failed to remove issue image" });
-  }
-});
-
-//This route handles image uploads using multer middleware to process the files and upload them to Cloudinary, then returns the URLs of the uploaded images to the frontend
-app.post('/api/upload', upload.array("images", 5), async (req, res) => {
-  try {
-    // 1. Enforce that files are actually present
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "No image files were uploaded." });
-    }
-
-    // 2. Loop through all file buffers processed by Multer and prepare Cloudinary promises
-    const uploadPromises = req.files.map((file) => {
-      return new Promise((resolve, reject) => {
-        // Formulate a data URI base64 string from the memory storage buffer
-        const fileBase64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
-        
-        // Execute a secure server-side upload using your configured Cloudinary instance
-        cloudinary.uploader.upload(
-          fileBase64,
-          { 
-            folder: "uon_campus_hazards", // Groups student reports into an organized directory
-            resource_type: "image"
-          },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result.secure_url); // Resolve with secure cloud asset string
-          }
-        );
-      });
-    });
-
-    // 3. Resolve all async cloud uploads concurrently
-    const imageURLs = await Promise.all(uploadPromises);
-
-    // 4. Return the Cloudinary CDN links straight back to the React app to be stored in the MongoDB Issue document as an array of strings
-    return res.status(200).json({ imageURLs });
-
-  }catch (err) {
-    console.error("Cloudinary upload error:");
-    console.error(err);
-
-    res.status(500).json({
-      error: err.message,
-    });
-  }
-});
-
