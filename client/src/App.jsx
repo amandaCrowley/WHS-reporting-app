@@ -10,9 +10,13 @@
  * Date: 1/4/26
  */
 
-import{ createBrowserRouter,
+import { useEffect, useState } from 'react'
+import {
+  createBrowserRouter,
+  Navigate,
   RouterProvider,
 } from 'react-router-dom'
+import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
 import './App.css'
 import HomePage from './pages/HomePage'
@@ -29,6 +33,26 @@ import AdminDashboard from './admin/AdminDashboard.jsx'
 import ManageIssues from './admin/ManageIssues.jsx'
 import UserManagement from './admin/UserManagement.jsx'
 
+function ProtectedRoute({ children }) {
+  const [user, setUser] = useState(null)
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  useEffect(() => {
+    return onAuthStateChanged(getAuth(), (currentUser) => {
+      setUser(currentUser)
+      setCheckingAuth(false)
+    })
+  }, [])
+
+  if (checkingAuth) return <p>Checking authentication...</p>
+  if (!user) return <Navigate to="/login" replace />
+
+  return children
+}
+
+const protectedElement = (element) => (
+  <ProtectedRoute>{element}</ProtectedRoute>
+)
 
 //Adds routes to the app, so that when the user goes to a specific URL, it will load the corresponding page (e.g. /login will load the LoginPage.jsx component page)
 const routes = [{
@@ -45,32 +69,33 @@ const routes = [{
       element: <Register />
     }, {
       path: '/userdashboard',
-      element: <UserDashboard />
+      element: protectedElement(<UserDashboard />)
     },{
       path: '/issue/:issueId',
-      element: <IssueDetails />
+      element: protectedElement(<IssueDetails />)
     },{
       path: '/profile',
-      element: <UserProfile />
+      element: protectedElement(<UserProfile />)
     },{
       path: '/myissues',
-      element: <UserMyIssues />
+      element: protectedElement(<UserMyIssues />)
     },{
       path: '/editIssue/:issueId',
-      element: <EditIssue />
+      element: protectedElement(<EditIssue />)
     },{
       path: '/reportissue',
-      element: <ReportIssue />
+      element: protectedElement(<ReportIssue />)
     },{
       path: '/admin/manageissues',
-      element: <ManageIssues /> 
+      element: protectedElement(<ManageIssues />)
     },{
       path: '/admin/usermanagement',
-      element: <UserManagement /> 
+      element: protectedElement(<UserManagement />)
     },{
       path: '/admin/dashboard',
-      element: <AdminDashboard />}]
-}]
+      element: protectedElement(<AdminDashboard />)
+    }]
+  }]
 const router = createBrowserRouter(routes);
 
 //This is the main App component that is loaded in main.jsx. 
