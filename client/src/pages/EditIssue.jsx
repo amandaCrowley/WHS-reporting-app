@@ -79,7 +79,7 @@ export default function EditIssue() {
             body.append("location", formData.location || "");
             body.append("campus", formData.campus || "");
             body.append("witnessNames", JSON.stringify(formData.witnessNames || []));
-            body.append("imageURL", JSON.stringify(formData.imageURL || []));
+            body.append("imageURLs", JSON.stringify(formData.imageURLs || []));
             images.forEach(image => body.append("images", image.file));
 
             const res = await fetch(`http://localhost:8000/api/issues/${issueId}`, {
@@ -123,7 +123,7 @@ export default function EditIssue() {
     const removeExistingImage = (url) => {
         setFormData(prev => ({
             ...prev,
-            imageURL: (prev.imageURL || []).filter(imageUrl => imageUrl !== url)
+            imageURLs: (prev.imageURLs || []).filter(imageUrl => imageUrl !== url)
         }));
     };
 
@@ -216,9 +216,9 @@ export default function EditIssue() {
                         <p>Issue image/s</p>
 
                         {/* Existing images */}
-                        {formData?.imageURL?.length > 0 && (
+                        {formData?.imageURLs?.length > 0 && (
                             <div className="edit-image-grid">
-                                {formData.imageURL.map((url, index) => (
+                                {formData.imageURLs.map((url, index) => (
                                     <div
                                         className="edit-image-card"
                                         key={url}
@@ -283,7 +283,7 @@ export default function EditIssue() {
                             multiple
                             onChange={(e) => {
                                 const selectedFiles = Array.from(e.target.files || []);
-                                const existingCount = formData?.imageURL?.length || 0;
+                                    const existingCount = formData?.imageURLs?.length || 0;
 
                                 if (selectedFiles.length === 0) return;
 

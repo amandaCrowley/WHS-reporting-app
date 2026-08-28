@@ -233,12 +233,12 @@ export default function IssueDetails() {
           )}
         </div>
 
-        {issue.imageURL && issue.imageURL.length > 0 && (
+        {issue.imageURLs && issue.imageURLs.length > 0 && (
           <section className="issue-details-card">
             <div className="issue-details-card-header">Image/s</div>
             <div className="issue-details-card-body">
               <div className="issue-details-image-row">
-                {issue.imageURL.map((url, i) => (
+                {issue.imageURLs.map((url, i) => (
                   <img
                     key={i}
                     src={url}

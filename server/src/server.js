@@ -37,6 +37,21 @@ const getCloudinaryPublicId = (imageURL) => {
   return decodeURIComponent(assetPath).replace(/\.[^/.]+$/, "");
 };
 
+const uploadFilesToCloudinary = (files = []) => Promise.all(files.map((file) => (
+  new Promise((resolve, reject) => {
+    const fileBase64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+
+    cloudinary.uploader.upload(
+      fileBase64,
+      { folder: "uon_campus_hazards", resource_type: "image" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.secure_url);
+      }
+    );
+  })
+)));
+
 const PORT = process.env.PORT || 8000; //Use the PORT environment variable if it's set, otherwise default to 8000
 const app = express(); //Create application using express
 
@@ -368,10 +383,21 @@ app.get('/api/issues/:id', async (req, res) => {
 /**
 * This route allows updating an issue (e.g. description, location, etc.)
 */
-app.put('/api/issues/:id', async (req, res) => {
+app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { id } = req.params;
+    const body = req.body || {};
+
+    const parseArrayField = (value) => {
+      if (value === undefined) return undefined;
+      if (Array.isArray(value)) return value;
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
+    };
 
     // Fields that are allowed to be updated
     const {
@@ -379,9 +405,9 @@ app.put('/api/issues/:id', async (req, res) => {
       issueDescription,
       location,
       campus,
-      witnessNames,
-      imageURLs,
-    } = req.body;
+    } = body;
+    const witnessNames = parseArrayField(body.witnessNames);
+    const imageURLs = parseArrayField(body.imageURLs ?? body.imageURL);
 
     // Validate ObjectId
     if (!ObjectId.isValid(id)) {
@@ -397,19 +423,28 @@ app.put('/api/issues/:id', async (req, res) => {
     if (campus !== undefined) updateFields.campus = campus;
     if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
 
-    if (imageURLs !== undefined) {
-      updateFields.imageURLs = imageURLs;
-    }
-
     const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) });
 
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });
     }
 
-    const removedImageURLs = imageURLs === undefined
-      ? []
-      : (issue.imageURLs || []).filter((existingImageURL) => !imageURLs.includes(existingImageURL));
+    const retainedImageURLs = imageURLs ?? issue.imageURLs ?? [];
+
+    if (!Array.isArray(retainedImageURLs)) {
+      return res.status(400).json({ error: "imageURLs must be an array" });
+    }
+
+    if (retainedImageURLs.length + (req.files?.length || 0) > 5) {
+      return res.status(400).json({ error: "Maximum 5 images allowed" });
+    }
+
+    const uploadedImageURLs = await uploadFilesToCloudinary(req.files);
+    const updatedImageURLs = [...retainedImageURLs, ...uploadedImageURLs];
+    updateFields.imageURLs = updatedImageURLs;
+
+    const removedImageURLs = (issue.imageURLs || [])
+      .filter((existingImageURL) => !retainedImageURLs.includes(existingImageURL));
 
     const result = await db.collection("Issue").findOneAndUpdate(
       { _id: new ObjectId(id) },
