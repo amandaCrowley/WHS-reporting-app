@@ -101,9 +101,6 @@ export default function IssueDetails() {
 
 
 
-
-
-
   // Maps an issue status to the matching badge class (same classes as UserMyIssues)
   const getStatusClass = (status) => {
     if (status === "Open") return "user-my-issues-status-open";

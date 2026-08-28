@@ -10,13 +10,11 @@ EditIssue.jsx
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { userLogout } from "../hooks/userLogout";
 import '../styles/EditIssue.css';
 
 export default function EditIssue() {
     const { issueId } = useParams(); // Get the issue ID from the URL
     const navigate = useNavigate();
-    const logout = userLogout(); //Handle logout using logout hook
 
     //Local state variables
     const [issue, setIssue] = useState(null);       // Stores the fetched issue details
@@ -31,6 +29,7 @@ export default function EditIssue() {
 
     const [updateError, setUpdateError] = useState("");
     const [witnessInput, setWitnessInput] = useState("");
+    const [images, setImages] = useState([]);
 
     /**
      * Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
@@ -83,7 +82,12 @@ export default function EditIssue() {
                 body: JSON.stringify(formData)
             });
 
-            const updated = await res.json();
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to update issue");
+            }
+
+            const updated = data;
             setIssue(updated);
 
             navigate(`/myissues`); //Navigate back to the user's issues page after successful update
@@ -108,6 +112,13 @@ export default function EditIssue() {
         setFormData(prev => ({
             ...prev,
             witnessNames: (prev.witnessNames || []).filter((_, i) => i !== index)
+        }));
+    };
+
+    const removeExistingImage = (url) => {
+        setFormData(prev => ({
+            ...prev,
+            imageURL: (prev.imageURL || []).filter(imageUrl => imageUrl !== url)
         }));
     };
 
@@ -200,9 +211,9 @@ export default function EditIssue() {
                         <p>Issue image/s</p>
 
                         {/* Existing images */}
-                        {formData?.imageURLs?.length > 0 && (
+                        {formData?.imageURL?.length > 0 && (
                             <div className="edit-image-grid">
-                                {formData.imageURLs.map((url, index) => (
+                                {formData.imageURL.map((url, index) => (
                                     <div
                                         className="edit-image-card"
                                         key={url}
@@ -273,7 +284,7 @@ export default function EditIssue() {
                             multiple
                             onChange={(e) => {
                                 const selectedFiles = Array.from(e.target.files || []);
-                                const existingCount = formData?.imageURLs?.length || 0;
+                                const existingCount = formData?.imageURL?.length || 0;
 
                                 if (selectedFiles.length === 0) return;
 
@@ -322,7 +333,7 @@ export default function EditIssue() {
                             Update Issue
                         </button>
                     </div>
-                    <button className="btn secondary-btn" onClick={() => navigate("/myissues")}>
+                    <button type="button" className="btn secondary-btn" onClick={() => navigate("/myissues")}>
                         Back to my issues
                     </button>
                 </form>
