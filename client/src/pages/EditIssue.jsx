@@ -476,6 +476,7 @@ export default function EditIssue() {
                             </div>
                         )}
 
+                        {/* Image upload input, this is where new images that users upload are displayed */}
                         <input
                             type="file"
                             accept="image/jpeg,image/png,image/gif,image/webp"

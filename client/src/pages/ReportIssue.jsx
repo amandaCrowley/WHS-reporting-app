@@ -466,21 +466,13 @@ export default function ReportIssue() {
             <button type="submit" className="primary-btn" disabled={formLoading}>
               {formLoading ? "Submitting..." : "Submit Issue"}
             </button>
-
-            <button
-              type="button"
-              className="secondary-btn"
-              onClick={() => navigate("/userdashboard")}
-            >
-              Cancel
-            </button>
-
+            
             <button
               type="button"
               className="secondary-btn"
               onClick={() => console.log("Save as draft clicked")}
             >
-              Save as Draft
+              Clear Form
             </button>
           </div>
         </form>
