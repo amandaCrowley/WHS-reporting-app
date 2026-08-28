@@ -114,31 +114,11 @@ export default function EditIssue() {
         }));
     };
 
-    const removeExistingImage = async (imageURL) => {
-        try {
-            setUpdateError("");
-
-            const response = await fetch(`http://localhost:8000/api/issues/${issueId}/images`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ imageURL })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to remove image.");
-            }
-
-            setFormData(prev => ({
-                ...prev,
-                imageURLs: prev.imageURLs.filter(url => url !== imageURL)
-            }));
-        } catch (err) {
-            setUpdateError(err.message);
-        }
+    const removeExistingImage = (imageURL) => {
+        setFormData(prev => ({
+            ...prev,
+            imageURLs: (prev.imageURLs || []).filter(url => url !== imageURL)
+        }));
     };
 
     /**
@@ -553,6 +533,9 @@ export default function EditIssue() {
                     </div>
                     <button type="button" className="btn secondary-btn" onClick={() => navigate("/myissues")}>
                         Back to my issues
+                    </button>
+                    <button type="button" className="btn secondary-btn" onClick={logout}>
+                        Logout
                     </button>
                 </form>
             </div>

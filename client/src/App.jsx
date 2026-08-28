@@ -33,6 +33,7 @@ function ProtectedRoute({ children }) {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // Use Firebase's onAuthStateChanged to listen for authentication state changes
   useEffect(() => {
     return onAuthStateChanged(getAuth(), (currentUser) => {
       setUser(currentUser);
@@ -40,17 +41,20 @@ function ProtectedRoute({ children }) {
     });
   }, []);
 
+  // Show a loading message while checking the user's authentication status
   if (authLoading) {
     return <p>Checking login status...</p>;
   }
 
+  
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />; // If the user is not logged in, redirect them to the login page
   }
 
-  return children;
+  return children; //Otherwise return the page/component
 }
 
+//Use this for logged in pages to ensure that the user is logged in before they can access the page. If they are not logged in, they will be redirected to the login page.
 const protectedElement = (element) => (
   <ProtectedRoute>{element}</ProtectedRoute>
 );

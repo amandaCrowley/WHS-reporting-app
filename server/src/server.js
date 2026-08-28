@@ -400,6 +400,16 @@ app.put('/api/issues/:id', async (req, res) => {
       updateFields.imageURLs = imageURLs;
     }
 
+    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) });
+
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const removedImageURLs = imageURLs === undefined
+      ? []
+      : (issue.imageURLs || []).filter((imageURL) => !imageURLs.includes(imageURL));
+
     const result = await db.collection("Issue").findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: updateFields },
@@ -408,6 +418,23 @@ app.put('/api/issues/:id', async (req, res) => {
 
     if (!result) {
       return res.status(404).json({ error: "Issue not found" });
+    }
+
+    for (const imageURL of removedImageURLs) {
+      const publicId = getCloudinaryPublicId(imageURL);
+
+      if (!publicId) {
+        console.error(`Unable to remove invalid Cloudinary image URL: ${imageURL}`);
+        continue;
+      }
+
+      const cloudinaryResult = await cloudinary.uploader.destroy(publicId, {
+        resource_type: "image"
+      });
+
+      if (cloudinaryResult.result !== "ok" && cloudinaryResult.result !== "not found") {
+        console.error(`Failed to remove image from Cloudinary: ${imageURL}`);
+      }
     }
 
     res.json(result);
