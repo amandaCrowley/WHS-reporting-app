@@ -11,11 +11,8 @@
  */
 
 import{ createBrowserRouter,
-  Navigate,
   RouterProvider,
 } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
 
 import './App.css'
 import HomePage from './pages/HomePage'
@@ -28,36 +25,10 @@ import UserProfile from './pages/UserProfile.jsx'
 import UserMyIssues from './pages/UserMyIssues.jsx'
 import ReportIssue from './pages/ReportIssue.jsx'
 import EditIssue from './pages/EditIssue.jsx'
+import AdminDashboard from './admin/AdminDashboard.jsx'
+import ManageIssues from './admin/ManageIssues.jsx'
+import UserManagement from './admin/UserManagement.jsx'
 
-function ProtectedRoute({ children }) {
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  // Use Firebase's onAuthStateChanged to listen for authentication state changes
-  useEffect(() => {
-    return onAuthStateChanged(getAuth(), (currentUser) => {
-      setUser(currentUser);
-      setAuthLoading(false);
-    });
-  }, []);
-
-  // Show a loading message while checking the user's authentication status
-  if (authLoading) {
-    return <p>Checking login status...</p>;
-  }
-
-  
-  if (!user) {
-    return <Navigate to="/login" replace />; // If the user is not logged in, redirect them to the login page
-  }
-
-  return children; //Otherwise return the page/component
-}
-
-//Use this for logged in pages to ensure that the user is logged in before they can access the page. If they are not logged in, they will be redirected to the login page.
-const protectedElement = (element) => (
-  <ProtectedRoute>{element}</ProtectedRoute>
-);
 
 //Adds routes to the app, so that when the user goes to a specific URL, it will load the corresponding page (e.g. /login will load the LoginPage.jsx component page)
 const routes = [{
@@ -74,23 +45,31 @@ const routes = [{
       element: <Register />
     }, {
       path: '/userdashboard',
-      element: protectedElement(<UserDashboard />)
+      element: <UserDashboard />
     },{
       path: '/issue/:issueId',
-      element: protectedElement(<IssueDetails />)
+      element: <IssueDetails />
     },{
       path: '/profile',
-      element: protectedElement(<UserProfile />)
+      element: <UserProfile />
     },{
       path: '/myissues',
-      element: protectedElement(<UserMyIssues />)
+      element: <UserMyIssues />
     },{
       path: '/editIssue/:issueId',
-      element: protectedElement(<EditIssue />)
+      element: <EditIssue />
     },{
       path: '/reportissue',
-      element: protectedElement(<ReportIssue />)
-    }]
+      element: <ReportIssue />
+    },{
+      path: '/admin/manageissues',
+      element: <ManageIssues /> 
+    },{
+      path: '/admin/usermanagement',
+      element: <UserManagement /> 
+    },{
+      path: '/admin/dashboard',
+      element: <AdminDashboard />}]
 }]
 const router = createBrowserRouter(routes);
 

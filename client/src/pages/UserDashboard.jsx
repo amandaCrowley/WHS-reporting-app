@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
-import "./UserDashboard.css";
+import "../styles/UserDashboard.css";
 
 export default function UserDashboard() {
   // Custom hook to get the currently logged-in user's data

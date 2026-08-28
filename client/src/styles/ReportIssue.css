@@ -1,0 +1,465 @@
+/* ReportIssue.css- This is where the user will report the issues
+author: Grish Gautam
+ */
+
+ *{
+    box-sizing: border-box;
+   }
+   
+   body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f3f3f3;
+    color: #0f172a;
+   }
+   
+   .report-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f3f3f3;
+   }
+   
+   /* SIDEBAR */
+   .report-sidebar {
+    width: 243px;
+    background: #dfe3eb;
+    border-right: 1px solid #c8cfda;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+   }
+   
+   .sidebar-top {
+    background: linear-gradient(180deg, #4560df 0%, #4f5de2 100%);
+    color: white;
+    min-height: 155px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+   }
+   
+   .sidebar-top h2 {
+    margin: 0;
+    font-size: 23px;
+    font-weight: 700;
+   }
+   
+   .sidebar-logo {
+    font-size: 50px;
+    line-height: 1;
+   }
+   
+   .sidebar-nav {
+    padding: 24px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+   }
+   
+   .sidebar-item {
+    width: 100%;
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    border: none;
+    background: transparent;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.2s ease;
+   }
+   
+   .sidebar-item:hover {
+    background: #d3d9e8;
+   }
+   
+   .sidebar-item.active {
+    background: #c7d2f3;
+    position: relative;
+   }
+   
+   .sidebar-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: #4960df;
+   }
+   
+   .sidebar-icon {
+    width: 24px;
+    display: inline-flex;
+    justify-content: center;
+    font-size: 20px;
+   }
+   
+   /* MAIN */
+   .report-main {
+    flex: 1;
+    padding: 28px 28px 24px;
+   }
+   
+   .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+   }
+   
+   .report-header h1 {
+    margin: 0;
+    font-size: 39px;
+    font-weight: 700;
+    color: #0f172a;
+   }
+   
+   .report-header p {
+    margin: 8px 0 0;
+    font-size: 16px;
+    color: #6b7280;
+   }
+   
+   .report-userbox {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: #3154db;
+    font-size: 18px;
+    font-weight: 600;
+   }
+   
+   .report-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #8fd0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+   }
+   
+   /* PANEL */
+   .report-panel {
+    border: 1px solid #d3d9e3;
+    border-radius: 14px;
+    background: #f5f5f5;
+    padding: 24px 22px 22px;
+   }
+   
+   .report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.08fr;
+    gap: 22px;
+    align-items: start;
+   }
+   
+   .report-left-column,
+   .report-right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+   }
+   
+   /* CARD */
+   .report-card {
+    border: 1px solid #c6ceda;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f7f7f7;
+   }
+   
+   .report-card-header {
+    min-height: 58px;
+    padding: 0 24px;
+    background: #e7ebf3;
+    border-bottom: 1px solid #c6ceda;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+   }
+   
+   .report-card-body {
+    padding: 22px 20px;
+   }
+   
+   .field-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #111827;
+   }
+   
+   .report-card input[type="text"],
+   .report-card select,
+   .report-card textarea {
+    width: 100%;
+    border: 1px solid #c9ced8;
+    border-radius: 8px;
+    background: #fff;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+   }
+   
+   .report-card input[type="text"]:focus,
+   .report-card select:focus,
+   .report-card textarea:focus {
+    border-color: #5a63d8;
+    box-shadow: 0 0 0 3px rgba(90, 99, 216, 0.12);
+   }
+   
+   .report-card textarea {
+    min-height: 115px;
+    resize: none;
+   }
+   
+   .report-card select {
+    margin-bottom: 18px;
+    appearance: none;
+   }
+   
+   /* WITNESSES */
+   .witness-pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+   }
+   
+   .witness-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #dce9f7;
+    border: 1px solid #bccddf;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 15px;
+    color: #1f2937;
+   }
+   
+   .pill-remove {
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    color: #1f2937;
+    padding: 0;
+   }
+   
+   /* UPLOAD */
+   .report-upload-card .report-card-body {
+    min-height: 640px;
+   }
+   
+   .hidden-file-input {
+    display: none;
+   }
+   
+   .upload-dropzone {
+    min-height: 282px;
+    border: 1.5px dashed #7c8799;
+    border-radius: 10px;
+    background: #f1f4f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    cursor: pointer;
+    text-align: center;
+    padding: 20px;
+   }
+   
+   .upload-icon {
+    font-size: 52px;
+    line-height: 1;
+    color: #0f172a;
+   }
+   
+   .upload-dropzone p {
+    margin: 0;
+    font-size: 16px;
+    color: #111827;
+   }
+   
+   .upload-btn {
+    border: none;
+    border-radius: 10px;
+    background: #5b5bd6;
+    color: white;
+    padding: 13px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+   }
+   
+   .upload-btn:hover {
+    background: #4d4dc7;
+   }
+   
+   .image-preview-row {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+   }
+   
+   .image-preview-card {
+    width: 205px;
+    height: 150px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    background: #ddd;
+   }
+   
+   .image-preview-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+   }
+   
+   .image-remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    border: 1px solid #8a8a8a;
+    border-radius: 8px;
+    background: white;
+    color: #222;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+   }
+   
+   /* ERROR */
+   .form-error {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #efb2b2;
+    background: #ffe8e8;
+    color: #b42318;
+    font-size: 15px;
+    font-weight: 500;
+   }
+   
+   /* ACTIONS */
+   .report-actions {
+    margin-top: 34px;
+    padding-top: 22px;
+    border-top: 1px solid #d5dbe4;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+   }
+   
+   .primary-btn,
+   .secondary-btn {
+    min-width: 158px;
+    height: 46px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+   }
+   
+   .primary-btn {
+    border: none;
+    background: #5b5bd6;
+    color: white;
+   }
+   
+   .primary-btn:hover {
+    background: #4d4dc7;
+   }
+   
+   .primary-btn:disabled {
+    background: #a6a7eb;
+    cursor: not-allowed;
+   }
+   
+   .secondary-btn {
+    border: 1.5px solid #2f3743;
+    background: white;
+    color: #111827;
+   }
+   
+   .secondary-btn:hover {
+    background: #f7f8fb;
+   }
+   
+   /* RESPONSIVE */
+   @media (max-width: 1200px) {
+    .report-grid {
+      grid-template-columns: 1fr;
+    }
+   
+    .report-upload-card .report-card-body {
+      min-height: unset;
+    }
+   }
+   
+   @media (max-width: 900px) {
+    .report-layout {
+      flex-direction: column;
+    }
+   
+    .report-sidebar {
+      width: 100%;
+    }
+   
+    .sidebar-top {
+      min-height: 120px;
+    }
+   
+    .report-main {
+      padding: 18px 16px 24px;
+    }
+   
+    .report-header {
+      flex-direction: column;
+      gap: 16px;
+    }
+   }
+   
+   @media (max-width: 600px) {
+    .report-header h1 {
+      font-size: 30px;
+    }
+   
+    .report-actions {
+      flex-direction: column;
+    }
+   
+    .primary-btn,
+    .secondary-btn {
+      width: 100%;
+    }
+   
+    .image-preview-card {
+      width: 100%;
+      max-width: 260px;
+    }
+   }
+   
+   

@@ -1,0 +1,339 @@
+
+
+* {
+    box-sizing: border-box;
+}
+
+/* Left sidebar */
+.report-layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    background: #f3f3f3;
+}
+
+.report-sidebar {
+    width: 243px;
+    background: #dfe3eb;
+    border-right: 1px solid #c8cfda;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar-top {
+    background: linear-gradient(180deg, #4560df 0%, #4f5de2 100%);
+    color: white;
+    min-height: 155px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.sidebar-top h2 {
+    margin: 0;
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.sidebar-logo {
+    font-size: 50px;
+    line-height: 1;
+}
+
+.sidebar-nav {
+    padding: 24px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sidebar-item {
+    width: 100%;
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    border: none;
+    background: transparent;
+    color: #0f172a;
+    font-size: 17px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0;
+    transition: background 0.2s ease;
+}
+
+.sidebar-item:hover {
+    background: #d3d9e8;
+}
+
+.sidebar-item.active {
+    background: #c7d2f3;
+    position: relative;
+}
+
+.sidebar-item.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: #4960df;
+}
+
+.sidebar-icon {
+    width: 24px;
+    display: inline-flex;
+    justify-content: center;
+    font-size: 20px;
+}
+
+@media (max-width: 900px) {
+    .report-layout {
+        flex-direction: column;
+    }
+
+    .report-sidebar {
+        width: 100%;
+    }
+
+    .sidebar-top {
+        min-height: 120px;
+    }
+}
+
+/* Issue details Page */
+.issues-details-container {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 36px 44px 32px;
+    background-color: #f8fafc;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #0f172a;
+    box-sizing: border-box;
+}
+
+.issue-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.issue-details-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.issue-details-subtitle {
+    margin: 8px 0 0;
+    font-size: 15px;
+    color: #6b7280;
+    max-width: 640px;
+}
+
+.issue-details-status {
+    background: #ffffff;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    padding: 22px;
+    text-align: center;
+    color: #64748b;
+    font-size: 15px;
+}
+
+.issue-details-status-error {
+    color: #b91c1c;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+/* CARDS */
+.issue-details-card {
+    background: #ffffff;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.issue-details-card-header {
+    min-height: 48px;
+    padding: 0 20px;
+    background: #eef2f8;
+    border-bottom: 1px solid #dbe3ef;
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.issue-details-card-body {
+    padding: 18px 20px;
+}
+
+.issue-details-card-body p {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.issue-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+.issue-details-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #1f2937;
+}
+
+.issue-details-icon {
+    font-size: 16px;
+}
+
+/* WITNESSES (pills) */
+.witness-pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.witness-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #dce9f7;
+    border: 1px solid #bccddf;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+/* IMAGES */
+.issue-details-image-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.issue-details-image {
+    width: 180px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #dbe3ef;
+}
+
+/* status user */
+.user-my-issues-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    padding: 6px 14px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    flex-shrink: 0;
+}
+
+.user-my-issues-status-open {
+    color: #1d4ed8;
+    background-color: #eaf2ff;
+    border-color: #bfd5ff;
+}
+
+.user-my-issues-status-progress {
+    color: #d97706;
+    background-color: #fff4df;
+    border-color: #f6d8a8;
+}
+
+.user-my-issues-status-resolved {
+    color: #15803d;
+    background-color: #e7f7ea;
+    border-color: #b7e2c0;
+}
+
+/* do the things */
+.issue-details-actions {
+    margin-top: 4px;
+    padding-top: 20px;
+    border-top: 1px solid #dbe3ef;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    min-width: 158px;
+    height: 46px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0 20px;
+    transition: background 0.2s ease;
+}
+
+.primary-btn {
+    border: none;
+    background: #5b5bd6;
+    color: white;
+}
+
+.primary-btn:hover {
+    background: #4d4dc7;
+}
+
+.secondary-btn {
+    border: 1.5px solid #2f3743;
+    background: white;
+    color: #111827;
+}
+
+.secondary-btn:hover {
+    background: #f7f8fb;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+    .issues-details-container {
+        padding: 22px 16px 24px;
+    }
+
+    .issue-details-header {
+        flex-direction: column;
+    }
+
+    .issue-details-title {
+        font-size: 26px;
+    }
+
+    .issue-details-actions {
+        flex-direction: column;
+    }
+
+    .issue-details-actions .btn {
+        width: 100%;
+    }
+}

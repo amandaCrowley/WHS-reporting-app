@@ -1,9 +1,3 @@
-.edit-issue-layout {
-    display: flex;
-    min-height: 100vh;
-    background: #f3f3f3;
-}
-
 .edit-issue-page {
     display: flex;
     justify-content: center;
@@ -19,13 +13,6 @@
     padding: 30px;
     border-radius: 14px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border: 1px solid #dbe3f0;
-}
-
-.edit-issue-card h1 {
-    margin: 0 0 20px;
-    font-size: 2rem;
-    color: #0f172a;
 }
 
 .edit-form {
@@ -34,42 +21,29 @@
     gap: 18px;
 }
 
+.h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1e40af;
+    margin-bottom: 20px;
+}
+
 .form-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
-.form-section label,
-.form-section p {
-    margin: 0;
+label {
     font-weight: 600;
     font-size: 14px;
-    color: #111827;
 }
 
-.form-section input,
-.form-section select {
-    width: 100%;
+input, select {
     padding: 10px 12px;
     border-radius: 8px;
-    border: 1px solid #c9ced8;
+    border: 1px solid #ccc;
     font-size: 14px;
-    background: #fff;
-    color: #111827;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.form-section input:focus,
-.form-section select:focus {
-    outline: none;
-    border-color: #5a63d8;
-    box-shadow: 0 0 0 3px rgba(90, 99, 216, 0.12);
-}
-
-.field-error {
-    border-color: #dc2626 !important;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08) !important;
 }
 
 .info-row {
@@ -125,21 +99,21 @@ button {
 }
 
 .error-text {
-    margin: 0;
-    color: #b42318;
-    font-size: 0.82rem;
-    font-weight: 600;
+    color: red;
+    font-weight: bold;
+    text-align: center;
 }
 
 .witness-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 10px;
+
+    padding: 6px 10px;
     margin-bottom: 6px;
-    background: #f4f6fb;
-    border: 1px solid #dfe4ef;
-    border-radius: 8px;
+
+    background: #f5f5f5;
+    border-radius: 6px;
     gap: 8px;
     width: 100%;
     list-style-type: none;
@@ -154,353 +128,26 @@ button {
 .add-btn {
     width: 38px !important;
     height: 38px !important;
+
     min-width: 38px;
     max-width: 38px;
+
     padding: 0 !important;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     font-size: 16px;
     font-weight: 700;
     line-height: 1;
-    border-radius: 6px;
-    background: #e9eefc;
-    color: #2d4ad8;
-}
 
+    border-radius: 6px;
+}
 .update-section {
     margin-top: 20px;
     margin-bottom: 16px;
     display: flex;
     justify-content: center;
-}
-
-.report-sidebar {
-    width: 243px;
-    background: #dfe3eb;
-    border-right: 1px solid #c8cfda;
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-}
-
-.sidebar-top {
-    background: linear-gradient(180deg, #4560df 0%, #4f5de2 100%);
-    color: white;
-    min-height: 155px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.sidebar-top h2 {
-    margin: 0;
-    font-size: 23px;
-    font-weight: 700;
-}
-
-.sidebar-logo {
-    font-size: 50px;
-    line-height: 1;
-}
-
-.sidebar-nav {
-    padding: 24px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.sidebar-item {
-    width: 100%;
-    min-height: 66px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 0 20px;
-    border: none;
-    background: transparent;
-    color: #0f172a;
-    font-size: 17px;
-    font-weight: 500;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 0;
-    transition: background 0.2s ease;
-}
-
-.sidebar-item:hover {
-    background: #d3d9e8;
-}
-
-.sidebar-item.active {
-    background: #c7d2f3;
-    position: relative;
-}
-
-.sidebar-item.active::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 3px;
-    height: 100%;
-    background: #4960df;
-}
-
-.sidebar-icon {
-    width: 24px;
-    display: inline-flex;
-    justify-content: center;
-    font-size: 20px;
-}
-
-.report-main {
-    flex: 1;
-    padding: 28px 28px 24px;
-}
-
-.report-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 18px;
-}
-
-.report-header h1 {
-    margin: 0;
-    font-size: 39px;
-    font-weight: 700;
-    color: #0f172a;
-}
-
-.report-header p {
-    margin: 8px 0 0;
-    font-size: 16px;
-    color: #6b7280;
-}
-
-.report-userbox {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    color: #3154db;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.report-avatar {
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    background: #8fd0ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-}
-
-.report-panel {
-    border: 1px solid #d3d9e3;
-    border-radius: 14px;
-    background: #f5f5f5;
-    padding: 24px 22px 22px;
-}
-
-.report-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.08fr;
-    gap: 22px;
-    align-items: start;
-}
-
-.report-left-column,
-.report-right-column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.report-card {
-    border: 1px solid #c6ceda;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #f7f7f7;
-}
-
-.report-card-header {
-    min-height: 58px;
-    padding: 0 24px;
-    background: #e7ebf3;
-    border-bottom: 1px solid #c6ceda;
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: #111827;
-}
-
-.report-card-body {
-    padding: 22px 20px;
-}
-
-.field-label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 15px;
-    font-weight: 500;
-    color: #111827;
-}
-
-.report-card input[type="text"],
-.report-card select,
-.report-card textarea {
-    width: 100%;
-    border: 1px solid #c9ced8;
-    border-radius: 8px;
-    background: #fff;
-    padding: 12px 14px;
-    font-size: 15px;
-    color: #111827;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.report-card input[type="text"]:focus,
-.report-card select:focus,
-.report-card textarea:focus {
-    border-color: #5a63d8;
-    box-shadow: 0 0 0 3px rgba(90, 99, 216, 0.12);
-}
-
-.report-card textarea {
-    min-height: 115px;
-    resize: vertical;
-}
-
-.witness-pill-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.witness-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: #dce9f7;
-    border: 1px solid #bccddf;
-    border-radius: 8px;
-    padding: 7px 12px;
-    font-size: 15px;
-    color: #1f2937;
-}
-
-.pill-remove {
-    border: none;
-    background: transparent;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    color: #1f2937;
-}
-
-.witness-input-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.edit-image-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 14px;
-}
-
-.edit-image-card {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #e5e7eb;
-}
-
-.edit-image-card img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.image-remove-btn {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    background: rgba(17, 24, 39, 0.68);
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-}
-
-.image-remove-btn:hover {
-    background: rgba(17, 24, 39, 0.9);
-}
-
-.edit-form-footer {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.btn {
-    border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.primary-btn {
-    background: #4960df;
-    color: white;
-}
-
-.secondary-btn {
-    background: #e7ebf3;
-    color: #111827;
-}
-
-.update-banner {
-    margin-bottom: 12px;
-    text-align: left;
-}
-
-@media (max-width: 900px) {
-    .edit-issue-layout {
-        flex-direction: column;
-    }
-
-    .report-sidebar {
-        width: 100%;
-    }
-
-    .report-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
