@@ -12,6 +12,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { Eye, EyeOff } from 'lucide-react';
 import '../styles/Register.css';
 import UONLogo from '../images/UONLogo.png'; // import the logo
 
@@ -22,6 +23,8 @@ export default function RegisterPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [role, setRole] = useState("Student");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -197,24 +200,44 @@ export default function RegisterPage() {
 
                     <div className="form-group">
                         <label>Password</label>
-                        <input
-                            type="password"
-                            placeholder="Create password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                        <div className="password-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Create password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="eye-toggle"
+                                onClick={() => setShowPassword(prev => !prev)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? <EyeOff /> : <Eye />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="form-group">
                         <label>Confirm Password</label>
-                        <input
-                            type="password"
-                            placeholder="Confirm password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
+                        <div className="password-wrapper">
+                            <input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="eye-toggle"
+                                onClick={() => setShowConfirmPassword(prev => !prev)}
+                                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                            >
+                                {showConfirmPassword ? <EyeOff /> : <Eye />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="form-group">

@@ -1,0 +1,67 @@
+/* Admin User Management Styles */
+.admin-user-management {
+  position: relative;
+}
+
+/* Styles for the confirmation pop-up box*/
+.admin-confirmation-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.admin-confirmation-dialog {
+  width: min(100%, 440px);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  border: 1px solid #e2e8f0;
+  padding: 24px 20px 20px;
+}
+
+.admin-confirmation-eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.admin-confirmation-dialog h2 {
+  margin: 0 0 12px;
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.admin-confirmation-dialog p {
+  margin: 0 0 20px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.admin-confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.admin-confirmation-actions button {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: #f8fafc;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.admin-confirmation-confirm {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #ffffff !important;
+}

@@ -14,19 +14,23 @@ import { getUserData } from "../hooks/getUserData";
 import { usePasswordReset } from "../hooks/usePasswordReset";
 import { useNavigate } from "react-router-dom";
 import { userLogout } from "../hooks/userLogout";
+import { Eye, EyeOff } from "lucide-react";
 import "../styles/UserProfile.css";
 
 export default function UserProfile() {
   const navigate = useNavigate();
 
   // State variables
-  const { userData, loading, error } = getUserData();
+  const { userData, loading, error, updateUser } = getUserData();
   const { updateUserPassword, loading: pwLoading, error: pwError } = usePasswordReset();
 
   // Local password state variables
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState(""); // "success" or "error"
 
@@ -57,20 +61,23 @@ export default function UserProfile() {
 
   // Handle updating last name
   const handleUpdateLastName = async () => {
-    if (lastName.trim() === "") {
+    const trimmedLastName = lastName.trim();
+
+    if (trimmedLastName === "") {
       showMessage("Please enter a last name.", "error");
       return;
     }
-    if (lastName === userData.lastName) {
+    if (trimmedLastName === userData.lastName) {
       showMessage("New last name must be different from the current one.", "error");
       return;
     }
-    if (lastName.trim().length < 2) {
+    if (trimmedLastName.length < 2) {
       showMessage("Last name must be at least 2 characters.", "error");
       return;
     }
     try {
-      await updateUser({ lastName });
+      await updateUser({ lastName: trimmedLastName });
+      setLastName(trimmedLastName);
       showMessage("Last name updated successfully!", "success");
     } catch (err) {
       showMessage("Failed to update last name.", "error");
@@ -141,30 +148,60 @@ export default function UserProfile() {
         <h2>Change Password</h2>
         <div className="form-group">
           <label>Current Password</label>
-          <input
-            type="password"
-            placeholder="Enter current password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
+          <div className="password-wrapper">
+            <input
+              type={showCurrentPassword ? "text" : "password"}
+              placeholder="Enter current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="eye-toggle"
+              onClick={() => setShowCurrentPassword((prev) => !prev)}
+              aria-label={showCurrentPassword ? "Hide current password" : "Show current password"}
+            >
+              {showCurrentPassword ? <EyeOff /> : <Eye />}
+            </button>
+          </div>
         </div>
         <div className="form-group">
           <label>New Password</label>
-          <input
-            type="password"
-            placeholder="Enter new password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
+          <div className="password-wrapper">
+            <input
+              type={showNewPassword ? "text" : "password"}
+              placeholder="Enter new password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="eye-toggle"
+              onClick={() => setShowNewPassword((prev) => !prev)}
+              aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+            >
+              {showNewPassword ? <EyeOff /> : <Eye />}
+            </button>
+          </div>
         </div>
         <div className="form-group">
           <label>Confirm New Password</label>
-          <input
-            type="password"
-            placeholder="Confirm new password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <div className="password-wrapper">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="eye-toggle"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+            >
+              {showConfirmPassword ? <EyeOff /> : <Eye />}
+            </button>
+          </div>
         </div>
         <button
           className="btn-primary"

@@ -179,7 +179,7 @@ html, body, #root {
   
   .user-my-issues-controls {
     display: grid;
-    grid-template-columns: 1.9fr 0.7fr;
+    grid-template-columns: 2.2fr 0.8fr 0.8fr;
     gap: 18px; /* Adjusted gap for better spacing 16px to 18px */
     align-items: end;
     margin-bottom: 24px;

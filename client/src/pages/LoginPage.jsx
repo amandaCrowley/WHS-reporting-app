@@ -8,6 +8,8 @@
  * 
  * Uses firebase auth functions to validate users. 
  * 
+ * If a user is an admin, they will be redirected to the admin dashboard page, otherwise they will be redirected to the user dashboard page.
+ * 
  * Author/s: Amanda Foxley
  * Date: 1/4/26
  */
@@ -45,8 +47,18 @@ export default function LoginPage() {
         }
 
         try {
-            await signInWithEmailAndPassword(getAuth(), email, password); //Use firebase authentication to sign in with the email and password entered by the user
-            navigate('/userdashboard'); //If login is successful, navigate to the user dashboard page
+            const userCredential = await signInWithEmailAndPassword(getAuth(), email, password); //Use firebase auth to sign in with the provided email and password. If successful, it returns a userCredential object that contains information about the authenticated user
+            const uid = userCredential.user.uid;
+
+            const response = await fetch(`http://localhost:8000/api/user/${uid}`);
+            const userData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(userData.error || 'Failed to load user profile.');
+            }
+
+            //If the user is an admin, navigate to the admin dashboard, otherwise navigate to the user dashboard
+            navigate(userData.isAdmin ? '/admin/dashboard' : '/userdashboard');
         } catch (e) {
             setError(e.message); //If there is an error during login (e.g. incorrect email or password), set the error state variable to display an error message to the user
         }

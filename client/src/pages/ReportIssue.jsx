@@ -63,7 +63,7 @@ export default function ReportIssue() {
       return;
     }
 
-    if (!userData?._id) {
+    if (!userData?.firebaseUid) {
       setFormError("User not loaded. Please try again.");
       setFormLoading(false);
       return;
@@ -135,7 +135,7 @@ export default function ReportIssue() {
         imageURLs = uploadData.imageURLs;
       }
 
-      const response = await fetch(`http://localhost:8000/api/issue/${userData._id}`, {
+      const response = await fetch(`http://localhost:8000/api/issue/${userData.firebaseUid}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

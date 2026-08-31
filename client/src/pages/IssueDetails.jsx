@@ -3,6 +3,7 @@
  *
  * This page displays all of the details of a single issue, including:
  *  - Description, status, location, campus, reported data and time, witnesses, staff assignment and any images attached to the issue
+ * Admin users can also assign the issue to themselves, unassign the issue, and update the status of the issue.
  *
  * Author/s: Amanda Foxley
  * Date: 2/4/26
@@ -11,21 +12,23 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { userLogout } from "../hooks/userLogout";
+import { getUserData } from "../hooks/getUserData";
 import "../styles/IssueDetails.css";
 
 export default function IssueDetails() {
   const { issueId } = useParams(); // Get the issue ID from the URL
   const navigate = useNavigate();
   const logout = userLogout(); //Handle logout using logout hook
+  const { userData } = getUserData();
 
   //Local state variables
   const [issue, setIssue] = useState(null); // Stores the fetched issue details
   const [loading, setLoading] = useState(true); // True while fetching the issue
   const [error, setError] = useState(""); // Stores any error messages
+  const [assigningIssue, setAssigningIssue] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  /**
-   * Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
-   */
+  // Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
   useEffect(() => {
     const fetchIssue = async () => {
       try {
@@ -43,8 +46,87 @@ export default function IssueDetails() {
       }
     };
 
-    fetchIssue(); //Call method to fetch the issue by ID from the backend
+    fetchIssue();
   }, [issueId]);
+
+  //Helper method to assign the issue to the current user/admin. This will update the assignedTo field in the mongoDB database for that issue to the current user's id.
+  const assignIssueToMe = async () => {
+    if (!userData?.firebaseUid || !issue?._id) return;
+
+    try {
+      setAssigningIssue(true);
+      const response = await fetch(`http://localhost:8000/api/issues/${issue._id}/assign`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firebaseUid: userData.firebaseUid }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to assign issue");
+      }
+
+      const updatedIssue = await response.json();
+      setIssue(updatedIssue);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not assign issue");
+    } finally {
+      setAssigningIssue(false);
+    }
+  };
+
+  // Helper method to unassign the issue from the current user/admin. This will update the assignedTo field in the mongoDB database for that issue to null.
+  const unassignIssue = async () => {
+    if (!issue?._id) return;
+
+    try {
+      setAssigningIssue(true);
+      const response = await fetch(`http://localhost:8000/api/issues/${issue._id}/unassign`, {
+        method: "PUT",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to unassign issue");
+      }
+
+      const updatedIssue = await response.json();
+      setIssue(updatedIssue);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not unassign issue");
+    } finally {
+      setAssigningIssue(false);
+    }
+  };
+
+  //Helper method to update the status of the issue. This will update the status field in the mongoDB database for that issue to the nextStatus value.
+  const updateIssueStatus = async (nextStatus) => {
+    if (!issue?._id) return;
+
+    try {
+      setUpdatingStatus(true);
+      const response = await fetch(`http://localhost:8000/api/issues/${issue._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to update issue status");
+      }
+
+      const updatedIssue = await response.json();
+      setIssue(updatedIssue);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not update issue status");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   // side bar if necessary
   const Sidebar = () => (
@@ -55,41 +137,76 @@ export default function IssueDetails() {
       </div>
 
       <nav className="sidebar-nav">
-        <button
-          type="button"
-          className="sidebar-item"
-          onClick={() => navigate("/userdashboard")}
-        >
-          <span className="sidebar-icon">🏠</span>
-          <span>Home</span>
-        </button>
+        {!userData?.isAdmin && (
+          <>
+            <button
+              type="button"
+              className="sidebar-item"
+              onClick={() => navigate("/userdashboard")}
+            >
+              <span className="sidebar-icon">🏠</span>
+              <span>Home</span>
+            </button>
 
-        <button
-          type="button"
-          className="sidebar-item"
-          onClick={() => navigate("/reportissue")}
-        >
-          <span className="sidebar-icon">📄</span>
-          <span>Report Issues</span>
-        </button>
+            <button
+              type="button"
+              className="sidebar-item"
+              onClick={() => navigate("/reportissue")}
+            >
+              <span className="sidebar-icon">📄</span>
+              <span>Report Issues</span>
+            </button>
 
-        <button
-          type="button"
-          className="sidebar-item active"
-          onClick={() => navigate("/myissues")}
-        >
-          <span className="sidebar-icon">‼️</span>
-          <span>My Issues</span>
-        </button>
+            <button
+              type="button"
+              className="sidebar-item active"
+              onClick={() => navigate("/myissues")}
+            >
+              <span className="sidebar-icon">‼️</span>
+              <span>My Issues</span>
+            </button>
 
-        <button
-          type="button"
-          className="sidebar-item"
-          onClick={() => navigate("/profile")}
-        >
-          <span className="sidebar-icon">👤</span>
-          <span>Profile</span>
-        </button>
+            <button
+              type="button"
+              className="sidebar-item"
+              onClick={() => navigate("/profile")}
+            >
+              <span className="sidebar-icon">👤</span>
+              <span>Profile</span>
+            </button>
+          </>
+        )}
+
+        {userData?.isAdmin && (
+          <>
+            <button
+              type="button"
+              className="sidebar-item"
+              onClick={() => navigate("/admin/dashboard")}
+            >
+              <span className="sidebar-icon">🏠</span>
+              <span>Dashboard</span>
+            </button>
+
+            <button
+              type="button"
+              className="sidebar-item"
+              onClick={() => navigate("/admin/manageissues")}
+            >
+              <span className="sidebar-icon">🛠️</span>
+              <span>Manage Issues</span>
+            </button>
+
+            <button
+              type="button"
+              className="sidebar-item"
+              onClick={() => navigate("/admin/usermanagement")}
+            >
+              <span className="sidebar-icon">👥</span>
+              <span>User Management</span>
+            </button>
+          </>
+        )}
 
         <button type="button" className="sidebar-item" onClick={logout}>
           <span className="sidebar-icon">↪</span>
@@ -101,11 +218,11 @@ export default function IssueDetails() {
 
 
 
-  // Maps an issue status to the matching badge class (same classes as UserMyIssues)
+  // Maps an issue status to the matching CSS class for styling the status badge. This is used to visually differentiate between different issue statuses.
   const getStatusClass = (status) => {
     if (status === "Open") return "user-my-issues-status-open";
     if (status === "In Progress") return "user-my-issues-status-progress";
-    if (status === "Resolved") return "user-my-issues-status-resolved";
+    if (status === "Closed") return "user-my-issues-status-resolved";
     return "";
   };
 
@@ -151,8 +268,9 @@ export default function IssueDetails() {
 
       <div className="issues-details-container">
         <header className="issue-details-header">
-          <div>
-            <h1 className="issue-details-title">Issue Details</h1>
+          <div className="issue-details-heading">
+            <p className="issue-details-eyebrow">Issue report</p>
+            <h1 className="issue-details-title">{issue.title}</h1>
           </div>
 
           <span
@@ -162,115 +280,210 @@ export default function IssueDetails() {
           </span>
         </header>
 
-        <section className="issue-details-card">
-          <div className="issue-details-card-header">Title</div>
-          <div className="issue-details-card-body">
-            <p>{issue.title}</p>
+        <div className="issue-details-summary">
+          <div className="issue-summary-item">
+            <span className="issue-summary-label">Reported by</span>
+            <span>{issue.reportedByName || "Unknown reporter"}</span>
           </div>
-        </section>
-
-
-        <section className="issue-details-card">
-          <div className="issue-details-card-header">Description</div>
-          <div className="issue-details-card-body">
-            <p>{issue.issueDescription}</p>
+          <div className="issue-summary-item">
+            <span className="issue-summary-label">Incident</span>
+            <span>
+              {issue.dateTimeIssueOccurred
+                ? new Date(issue.dateTimeIssueOccurred).toLocaleString("en-AU", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Not recorded"}
+            </span>
           </div>
-        </section>
+          <div className="issue-summary-item">
+            <span className="issue-summary-label">Assigned to</span>
+            <span>{issue.assignedToName || "Unassigned"}</span>
+          </div>
+          <div className="issue-summary-item">
+            <span className="issue-summary-label">Location</span>
+            <span>{issue.location || "Unknown location"}</span>
+          </div>
+          <div className="issue-summary-item">
+            <span className="issue-summary-label">Campus</span>
+            <span>{issue.campus || "Unknown campus"}</span>
+          </div>
+          <div className="issue-summary-item">
+            <span className="issue-summary-label">Witnesses</span>
+            <span>{issue.witnessNames?.length ? `${issue.witnessNames.length} recorded` : "No witnesses"}</span>
+          </div>
+        </div>
 
-        <div className="issue-details-grid">
-          <section className="issue-details-card">
-            <div className="issue-details-card-header">Location</div>
-            <div className="issue-details-card-body">
-              <div className="issue-details-row">
-                <span className="issue-details-icon">📍</span>
-                <span>
-                  {issue.location}, {issue.campus}
-                </span>
+        <div className="issue-details-main-layout">
+          <div className="issue-details-main-column">
+            <section className="issue-details-card">
+              <div className="issue-details-card-header">Description</div>
+              <div className="issue-details-card-body">
+                <p>{issue.issueDescription || "No description provided."}</p>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="issue-details-card">
-            <div className="issue-details-card-header">Reported On</div>
-            <div className="issue-details-card-body">
-              <div className="issue-details-row">
-                <span className="issue-details-icon">🕒</span>
-                <span>
-                  {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
-                </span>
-              </div>
-            </div>
-          </section>
+            {issue.additionalDetails && (
+              <section className="issue-details-card">
+                <div className="issue-details-card-header">Additional details</div>
+                <div className="issue-details-card-body">
+                  <p>{issue.additionalDetails}</p>
+                </div>
+              </section>
+            )}
 
-          <section className="issue-details-card">
-            <div className="issue-details-card-header">Assigned To</div>
-            <div className="issue-details-card-body">
-              <div className="issue-details-row">
-                <span className="issue-details-icon">👤</span>
-                <span>
-                  {issue.assignedTo ? issue.assignedTo : "Unassigned"}
-                </span>
-              </div>
-            </div>
-          </section>
+            {issue.imageURLs && issue.imageURLs.length > 0 && (
+              <section className="issue-details-card">
+                <div className="issue-details-card-header">Evidence</div>
+                <div className="issue-details-card-body">
+                  <div className="issue-details-image-row">
+                    {issue.imageURLs.map((url, i) => (
+                      <img
+                        key={i}
+                        src={url}
+                        alt="Issue evidence"
+                        className="issue-details-image"
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+          </div>
 
-          {issue.witnessNames && issue.witnessNames.length > 0 && (
+          <aside className="issue-details-side-column">
             <section className="issue-details-card">
               <div className="issue-details-card-header">Witnesses</div>
               <div className="issue-details-card-body">
-                <div className="witness-pill-container">
-                  {issue.witnessNames.map((name, i) => (
-                    <span className="witness-pill" key={i}>
-                      {name}
-                    </span>
-                  ))}
+                {issue.witnessNames && issue.witnessNames.length > 0 ? (
+                  <div className="witness-pill-container">
+                    {issue.witnessNames.map((name, i) => (
+                      <span className="witness-pill" key={i}>
+                        {name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="issue-details-empty-text">No witnesses recorded.</p>
+                )}
+              </div>
+            </section>
+
+            <section className="issue-details-card">
+              <div className="issue-details-card-header">Issue snapshot</div>
+              <div className="issue-details-card-body issue-details-meta-list">
+                <div className="issue-meta-row">
+                  <span>Status</span>
+                  <strong>{issue.status}</strong>
+                </div>
+                <div className="issue-meta-row">
+                  <span>Reported</span>
+                  <strong>
+                    {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                  </strong>
+                </div>
+                <div className="issue-meta-row">
+                  <span>Location</span>
+                  <strong>{issue.location || "Unknown"}</strong>
+                </div>
+                <div className="issue-meta-row">
+                  <span>Campus</span>
+                  <strong>{issue.campus || "Unknown"}</strong>
+                </div>
+                <div className="issue-meta-row">
+                  <span>Assigned</span>
+                  <strong>{issue.assignedToName || "Unassigned"}</strong>
                 </div>
               </div>
             </section>
-          )}
+          </aside>
         </div>
 
-        {issue.imageURLs && issue.imageURLs.length > 0 && (
-          <section className="issue-details-card">
-            <div className="issue-details-card-header">Image/s</div>
-            <div className="issue-details-card-body">
-              <div className="issue-details-image-row">
-                {issue.imageURLs.map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt="Issue evidence"
-                    className="issue-details-image"
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
+        {/* Admin actions section - This will be displayed if the current user is an admin user */}
+        {userData?.isAdmin && (
+          <div className="issue-details-actions admin-actions">
+            {!issue.assignedTo || issue.assignedTo === userData?._id ? (
+              <button
+                className="btn primary-btn"
+                type="button"
+                onClick={assignIssueToMe}
+                disabled={assigningIssue || issue.assignedTo === userData?._id || issue.status === "Closed"}
+              >
+                {assigningIssue ? "Assigning..." :
+                  issue.assignedTo === userData?._id ? "Assigned to You" : "Assign to Me"}
+              </button>
+            ) : null}
+
+            {issue.assignedTo && (
+              <button
+                className="btn secondary-btn"
+                type="button"
+                onClick={unassignIssue}
+                disabled={assigningIssue || issue.status === "Closed"}
+                title={issue.status === "Closed" ? "Closed issues cannot be reassigned or unassigned" : undefined}
+                style={issue.status === "Closed" ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+              >
+                {assigningIssue ? "Updating..." : "Unassign"}
+              </button>
+            )}
+
+            <select
+              value={issue.status || "Open"}
+              onChange={(e) => updateIssueStatus(e.target.value)}
+              disabled={updatingStatus}
+            >
+              <option value="Open">Open</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Closed">Closed</option>
+            </select>
+
+            <button
+              className="btn primary-btn"
+              type="button"
+              onClick={() => navigate(`/editIssue/${issueId}`)}
+            >
+              Edit Issue
+            </button>
+
+            <button
+              className="btn secondary-btn"
+              type="button"
+              onClick={() => navigate("/admin/manageissues")}
+            >
+              Back to Manage Issues
+            </button>
+          </div>
         )}
 
-        <div className="issue-details-actions">
-          <button
-            className="btn primary-btn"
-            onClick={() => navigate(`/editIssue/${issueId}`)}
-          >
-            Edit Issue
-          </button>
-          <button
-            className="btn secondary-btn"
-            onClick={() => navigate("/myissues")}
-          >
-            Back to my issues
-          </button>
-          <button
-            className="btn secondary-btn"
-            onClick={() => navigate("/userdashboard")}
-          >
-            Back to Dashboard
-          </button>
-        </div>
+        {/* Normal user actions section - This will be displayed if the current user is NOT an admin user */}
+        {!userData?.isAdmin && (
+          <div className="issue-details-actions">
+            <button
+              className="btn primary-btn"
+              onClick={() => navigate(`/editIssue/${issueId}`)}
+            >
+              Edit Issue
+            </button>
+            <button
+              className="btn secondary-btn"
+              onClick={() => navigate("/myissues")}
+            >
+              Back to my issues
+            </button>
+            <button
+              className="btn secondary-btn"
+              onClick={() => navigate("/userdashboard")}
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

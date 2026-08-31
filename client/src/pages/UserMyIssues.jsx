@@ -32,6 +32,16 @@ export default function UserMyIssues() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [sortOrder, setSortOrder] = useState("newest");
+
+  const sortIssuesByDate = (issueList) => {
+    return [...issueList].sort((a, b) => {
+      const timeA = new Date(a.dateTimeReported || a.createdAt || 0).getTime();
+      const timeB = new Date(b.dateTimeReported || b.createdAt || 0).getTime();
+
+      return sortOrder === "oldest" ? timeA - timeB : timeB - timeA;
+    });
+  };
 
   /**
    * Fetches all issues submitted by the current user from the backend server
@@ -55,9 +65,10 @@ export default function UserMyIssues() {
         }
 
         const data = await res.json();
+        const sortedData = sortIssuesByDate(data);
 
-        setIssues(data);
-        setFilteredIssues(data);
+        setIssues(sortedData);
+        setFilteredIssues(sortedData);
       } catch (err) {
         console.error("Failed to fetch issues:", err);
         setError("Failed to load your issues.");
@@ -67,7 +78,7 @@ export default function UserMyIssues() {
     };
 
     fetchIssues();
-  }, []);
+  }, [sortOrder]);
 
   /**
    * Filter or search for issues whenever the search input, status filter,
@@ -92,8 +103,10 @@ export default function UserMyIssues() {
       );
     }
 
-    setFilteredIssues(temp);
-  }, [search, statusFilter, issues]);
+    const sortedTemp = sortIssuesByDate(temp);
+
+    setFilteredIssues(sortedTemp);
+  }, [search, statusFilter, issues, sortOrder]);
 
   /**
    * Returns the CSS class for the issue status badge
@@ -101,7 +114,7 @@ export default function UserMyIssues() {
   const getStatusClass = (status) => {
     if (status === "Open") return "user-my-issues-status-open";
     if (status === "In Progress") return "user-my-issues-status-progress";
-    if (status === "Resolved") return "user-my-issues-status-resolved";
+    if (status === "Closed") return "user-my-issues-status-resolved";
     return "";
   };
 
@@ -209,7 +222,19 @@ export default function UserMyIssues() {
               <option value="All">All</option>
               <option value="Open">Open</option>
               <option value="In Progress">In Progress</option>
-              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+
+          <div className="user-my-issues-filter-group">
+            <label htmlFor="sortOrder">Sort by Date</label>
+            <select
+              id="sortOrder"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
             </select>
           </div>
         </div>

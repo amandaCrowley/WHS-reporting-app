@@ -10,11 +10,13 @@ EditIssue.jsx
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getUserData } from "../hooks/getUserData";
 import '../styles/EditIssue.css';
 
 export default function EditIssue() {
     const { issueId } = useParams(); // Get the issue ID from the URL
     const navigate = useNavigate();
+    const { userData } = getUserData();
 
     //Local state variables
     const [issue, setIssue] = useState(null);       // Stores the fetched issue details
@@ -94,6 +96,11 @@ export default function EditIssue() {
 
             const updated = data;
             setIssue(updated);
+
+            if (userData?.isAdmin) {
+                navigate("/admin/manageissues");
+                return;
+            }
 
             navigate(`/myissues`); //Navigate back to the user's issues page after successful update
         } catch (err) {
@@ -332,8 +339,23 @@ export default function EditIssue() {
                             Update Issue
                         </button>
                     </div>
-                    <button type="button" className="btn secondary-btn" onClick={() => navigate("/myissues")}>
-                        Back to my issues
+                    <button
+                        type="button"
+                        className="btn secondary-btn"
+                        onClick={() => navigate(`/issue/${issueId}`)}
+                    >
+                        Back to Issue Details
+                    </button>
+
+                    <button
+                        type="button"
+                        className="btn secondary-btn"
+                        
+                        // If the user is an admin, navigate back to the admin manage issues page, otherwise navigate back to the user's my issues page
+                        onClick={() => navigate(userData?.isAdmin ? "/admin/manageissues" : "/myissues")}
+                    >
+                        {/* If the user is an admin, show "Back to Manage Issues", otherwise show "Back to my issues" */}
+                        {userData?.isAdmin ? "Back to Manage Issues" : "Back to my issues"}
                     </button>
                 </form>
             </div>

@@ -20,9 +20,22 @@ import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
 import upload from "./uploadMiddleware.js"; // Middleware for handling file uploads (using multer with memory storage)
 import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
+import { findUserByIdentity } from "./userIdentity.js";
+import {
+  normalizeAndValidateIssueStatus,
+  normalizeIssueStatus,
+  validateAdminEligibility,
+  VALID_ISSUE_STATUSES,
+} from "./issueStatus.js";
 
 dotenv.config(); //Load environment variables from .env
 
+const PORT = process.env.PORT || 8000; //Use the PORT environment variable if it's set, otherwise default to 8000
+const app = express(); //Create application using express
+
+//--------------------------- Image helper Functions --------------------------------
+
+//This function helps get the Cloudinary public ID from the image URL - This is used to delete images from Cloudinary when an issue is deleted or an image is removed from an issue
 const getCloudinaryPublicId = (imageURL) => {
   const uploadMarker = "/image/upload/";
   const uploadIndex = imageURL.indexOf(uploadMarker);
@@ -37,6 +50,7 @@ const getCloudinaryPublicId = (imageURL) => {
   return decodeURIComponent(assetPath).replace(/\.[^/.]+$/, "");
 };
 
+//This function uploads an array of files to Cloudinary and returns an array of their secure URLs
 const uploadFilesToCloudinary = (files = []) => Promise.all(files.map((file) => (
   new Promise((resolve, reject) => {
     const fileBase64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
@@ -51,9 +65,6 @@ const uploadFilesToCloudinary = (files = []) => Promise.all(files.map((file) => 
     );
   })
 )));
-
-const PORT = process.env.PORT || 8000; //Use the PORT environment variable if it's set, otherwise default to 8000
-const app = express(); //Create application using express
 
 // --------------------------Middleware--------------------------------
 app.use(cors());  //Enable CORS to allow requests from the frontend running on a different origin (e.g. http://localhost:5173/)
@@ -169,7 +180,7 @@ app.post('/api/user', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const users = await db.collection("User").find().toArray();
+    const users = await db.collection("User").find().toArray(); //Retrieve all users from the User collection in MongoDB
     res.json(users);
   } catch (err) {
     console.error(err);
@@ -186,7 +197,7 @@ app.get('/api/user/:firebaseUid', async (req, res) => {
     const db = req.app.locals.db;
     const { firebaseUid } = req.params;
 
-    const user = await db.collection("User").findOne({ firebaseUid });
+    const user = await db.collection("User").findOne({ firebaseUid }); //Find the user in the database using their firebaseUid
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -238,6 +249,111 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
   }
 });
 
+/**
+ * Allows an administrator to update another user's role or administrator status.
+ */
+app.put('/api/admin/users/:userId', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { userId } = req.params;
+    const { adminFirebaseUid, firstName, lastName, role, isAdmin } = req.body;
+    const validRoles = ["Student", "Staff", "Visitor", "Contractor"];
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    if (!adminFirebaseUid) {
+      return res.status(400).json({ error: "adminFirebaseUid is required" });
+    }
+
+    const requestingAdmin = await db.collection("User").findOne({ //Find user in the database using their firebaseUid and check if they are an admin
+      firebaseUid: adminFirebaseUid,
+      isAdmin: true,
+    });
+
+    if (!requestingAdmin) {
+      return res.status(403).json({ error: "Administrator access required" });
+    }
+
+    if (isAdmin === false && requestingAdmin._id.toString() === userId) {
+      return res.status(400).json({ error: "You cannot remove your own administrator status" });
+    }
+
+    const updates = {};
+
+    if (firstName !== undefined) {
+      if (typeof firstName !== "string" || firstName.trim().length < 2) {
+        return res.status(400).json({ error: "First name must be at least 2 characters" });
+      }
+      updates.firstName = firstName.trim();
+    }
+
+    if (lastName !== undefined) {
+      if (typeof lastName !== "string" || lastName.trim().length < 2) {
+        return res.status(400).json({ error: "Last name must be at least 2 characters" });
+      }
+      updates.lastName = lastName.trim();
+    }
+
+    if (role !== undefined) {
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({
+          error: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
+        });
+      }
+      updates.role = role; // Add role to updates if valid
+    }
+
+    if (isAdmin !== undefined) {
+      if (typeof isAdmin !== "boolean") {
+        return res.status(400).json({ error: "isAdmin must be a boolean" });
+      }
+
+      const targetUser = await db.collection("User").findOne({ _id: new ObjectId(userId) });
+      const roleToValidate = role ?? targetUser?.role;
+      const adminEligibility = validateAdminEligibility({
+        routeRole: roleToValidate,
+        requestIsAdmin: isAdmin,
+      });
+
+      if (!adminEligibility.valid) {
+        return res.status(400).json({ error: adminEligibility.error });
+      }
+
+      if (!isAdmin) {
+        const adminCount = await db.collection("User").countDocuments({ isAdmin: true });
+
+        // Make sure we don't remove the last admin from the system
+        if (targetUser?.isAdmin && adminCount <= 1) {
+          return res.status(400).json({ error: "The final administrator cannot be removed" });
+        }
+      }
+
+      updates.isAdmin = isAdmin; // Add isAdmin to updates if valid
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: "No user fields to update" });
+    }
+
+    const updatedUser = await db.collection("User").findOneAndUpdate( //Update the user in the database using their ObjectId and return the updated document
+      { _id: new ObjectId(userId) },
+      { $set: updates },
+      { returnDocument: "after" }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error("Failed to update managed user:", err);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
 
 // --------------------- ISSUE ROUTES --------------------------------------
 
@@ -245,11 +361,15 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
 * Add a new issue to the MongoDB database using the logged in user's userID - We may change this later to enable adding an issue without being logged in
 * userID is a URL parameter
 */
-app.post('/api/issue/:userID', async (req, res) => {
+app.post('/api/issue/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { campus, title, location, issueDescription, witnessNames, dateTimeIssueOccurred, imageURLs } = req.body;
-    const { userID } = req.params; //User id passed in using the request parameters and not in the JSON body
+    const { firebaseUid } = req.params;
+
+    if (!firebaseUid) {
+      return res.status(400).json({ error: "Firebase UID is required" });
+    }
 
     //Validate required fields
     if (!location || !issueDescription || !campus || !title) {
@@ -275,38 +395,28 @@ app.post('/api/issue/:userID', async (req, res) => {
       });
     }
 
-    //Validate the userID
-    if (!ObjectId.isValid(userID)) {
-      return res.status(400).json({ error: "Invalid user ID" });
-    }
-
-    const userObjectId = new ObjectId(userID);
-
-    //CHeck that the userID exists in the user database
-    const userExists = await db.collection("User").findOne({ _id: userObjectId }); //Retrieve the user data if they do exist
+    const userExists = await findUserByIdentity(db, firebaseUid);
     if (!userExists) {
       return res.status(404).json({ error: "User not found" });
     }
 
     const now = new Date();
 
-    //Create new issue object
     const newIssue = {
       campus,
       title,
       location,
       issueDescription,
       assignedTo: null,
-      dateTimeReported: now,               //Set the issue's reported date and time to the current date/time
+      dateTimeReported: now,
       dateTimeIssueOccurred: dateTimeIssueOccurred ? new Date(dateTimeIssueOccurred) : now,
-      reportedBy: new ObjectId(userID),    //Must be an objectID
-      reportedByName: `${userExists.firstName} ${userExists.lastName}`,   //Store the user's name if they exist or empty string if not
-      status: "Open",                      //The issue will start off in an open state
-      witnessNames: witnessNames || [],    //This is optional, these names are either passed in the JSON request body or they are empty
-      imageURLs: imageURLs || [],             //This is optional as well, a user may choose to attach images to the issue which are stored with an external provider - These are the URL's to the images
+      reportedBy: userExists._id,
+      reportedByName: `${userExists.firstName} ${userExists.lastName}`,
+      status: "Open",
+      witnessNames: witnessNames || [],
+      imageURLs: imageURLs || [],
     };
 
-    //Insert into MongoDB
     const result = await db.collection("Issue").insertOne(newIssue);
 
     res.status(201).json({ message: "Issue created successfully", issueId: result.insertedId });
@@ -328,8 +438,7 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
     // Optional query parameter i.e.  ?limit=5  - would be limited to only return 5 issues
     const limit = parseInt(req.query.limit) || 0; // 0 = no limit
 
-    // Find the user in MongoDB first to get their ObjectId
-    const user = await db.collection("User").findOne({ firebaseUid });
+    const user = await findUserByIdentity(db, firebaseUid);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -359,6 +468,256 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
   }
 });
 
+// Add the current assignee's display name without storing duplicate data in Issue documents
+const issueWithAssigneeName = (db, query, limit) => {
+  const pipeline = [
+    { $match: query },
+    { $sort: { dateTimeReported: -1 } },
+  ];
+
+  if (limit) pipeline.push({ $limit: limit });
+
+  // Join the user and issue collections to get the assigned user's name for each issue. 
+  // This uses a $lookup stage to perform a left outer join on the User collection, matching the assignedTo field in the Issue collection with the _id field in the User collection. 
+  // The result is stored in an array called assignee. Then, it uses a $set stage to create a new field called assignedToName, which contains the full name of the assigned user 
+  // if they exist, or "Unassigned" if there is no assigned user. Finally, it uses a $project stage to remove the assignee array from the final output.
+  pipeline.push(
+    {
+      $lookup: {
+        from: "User",
+        localField: "assignedTo",
+        foreignField: "_id",
+        as: "assignee",
+      },
+    },
+    {
+      $set: {
+        assignedToName: {
+          $cond: [
+            { $eq: [{ $size: "$assignee" }, 0] },
+            { $cond: [{ $eq: ["$assignedTo", null] }, "Unassigned", "Assigned admin"] },
+            {
+              $let: {
+                vars: { matchedAssignee: { $arrayElemAt: ["$assignee", 0] } },
+                in: {
+                  $trim: {
+                    input: {
+                      $concat: [
+                        { $ifNull: ["$$matchedAssignee.firstName", ""] },
+                        " ",
+                        { $ifNull: ["$$matchedAssignee.lastName", ""] },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+    { $project: { assignee: 0 } },
+  );
+
+  return db.collection("Issue").aggregate(pipeline).toArray();
+};
+
+/**
+ * Get all issues in the system for admin management - This route is used to populate the "All Issues" section of the admin dashboard. It retrieves all issues from the MongoDB database and sorts them by dateTimeReported in descending order (most recent first).
+ */
+app.get('/api/issues', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+
+    const issues = await issueWithAssigneeName(db, {});
+
+    res.json(issues);
+  } catch (err) {
+    console.error("Failed to fetch all issues:", err);
+    res.status(500).json({ error: "Failed to fetch all issues" });
+  }
+});
+
+/**
+ * Get the issue data required by the admin dashboard.
+ */
+app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { firebaseUid } = req.params;
+    const user = await db.collection("User").findOne({ firebaseUid }); //get the user using their firebase ID
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!user.isAdmin) {
+      return res.status(403).json({ error: "Administrator access required" });
+    }
+
+    const issueCollection = db.collection("Issue"); // Get the Issue collection from the database
+
+    // Helper function to get issues for the dashboard with optional limit (This is used to get the 5 most recent unassigned issues)
+    const getDashboardIssues = (query, limit) => { 
+      const pipeline = [
+        { $match: query },
+        { $sort: { dateTimeReported: -1 } },
+      ];
+
+
+      if (limit) pipeline.push({ $limit: limit }); 
+
+      //This pipeline joins the Issue collection with the User collection to get the assigned user's name for each issue. It uses a $lookup stage to perform a left outer join on the User collection, matching the assignedTo field in the Issue collection with the _id field in the User collection. The result is stored in an array called assignee. Then, it uses a $set stage to create a new field called assignedToName, which contains the full name of the assigned user if they exist, or "Unassigned" if there is no assigned user. Finally, it uses a $project stage to remove the assignee array from the final output.
+      pipeline.push(
+        {
+          $lookup: {
+            from: "User",
+            localField: "assignedTo",
+            foreignField: "_id",
+            as: "assignee",
+          },
+        },
+        {
+          // Create a new field assignedToName based on the assignee array
+          $set: {
+            assignedToName: {
+
+              // If there is no assignee, check if assignedTo is null. If so, return "Unassigned". If assignedTo is not null, return "Assigned admin". If there is an assignee, concatenate their first and last name.
+              $cond: [
+                { $eq: [{ $size: "$assignee" }, 0] }, 
+                { $cond: [{ $eq: ["$assignedTo", null] }, "Unassigned", "Assigned admin"] },
+                {
+                  // Define a variable for the matched assignee
+                  $let: { 
+                    vars: { matchedAssignee: { $arrayElemAt: ["$assignee", 0] } }, // Get the first (and only) matched assignee
+                    in: {
+                      $trim: {
+                        input: {
+                          $concat: [ // Concatenate first and last name with a space in between
+                            { $ifNull: ["$$matchedAssignee.firstName", ""] }, 
+                            " ",
+                            { $ifNull: ["$$matchedAssignee.lastName", ""] },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+        { $project: { assignee: 0 } }, // Remove the assignee array from the final output
+      );
+
+      return issueCollection.aggregate(pipeline).toArray(); //Return the result of the joined query as an array of issues with the assigned user's name included
+    };
+
+    //Get the total number of issues, as well as counts for each status and assignment type, and retrieve the assigned issues and recent unassigned issues for the dashboard
+    const [total, open, inProgress, closed, unassigned, assignedToMe, assignedIssues, recentIssues] =
+      await Promise.all([
+        issueCollection.countDocuments(),
+        issueCollection.countDocuments({ status: "Open" }),
+        issueCollection.countDocuments({ status: "In Progress" }),
+        issueCollection.countDocuments({ status: "Closed" }),
+        issueCollection.countDocuments({ assignedTo: null }),
+        issueCollection.countDocuments({ assignedTo: user._id }),
+        getDashboardIssues({ assignedTo: user._id }),
+        getDashboardIssues({ assignedTo: null }, 5), // Get the 5 most recent unassigned issues
+      ]);
+
+    //Return the dashboard data as a JSON response
+    res.json({
+      stats: { total, open, inProgress, closed, unassigned, assignedToMe },
+      assignedIssues,
+      recentIssues,
+    });
+  } catch (err) {
+    console.error("Failed to fetch admin dashboard data:", err);
+    res.status(500).json({ error: "Failed to fetch admin dashboard data" });
+  }
+});
+
+/**
+ * Allows an admin user to assign an issue to themselves
+ */
+app.put('/api/issues/:id/assign', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+    const { firebaseUid } = req.body;
+
+    if (!firebaseUid) {
+      return res.status(400).json({ error: "firebaseUid is required" });
+    }
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
+
+    const user = await db.collection("User").findOne({ firebaseUid }); // Retrieve the admin user from the database using the provided Firebase UID
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Retrieve the issue from the database using the provided issue ID if it exists
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const result = await db.collection("Issue").findOneAndUpdate( // Update the issue in MongoDB to assign it to the admin user and return the updated document
+      { _id: new ObjectId(id) },
+      { $set: { assignedTo: user._id } },
+      { returnDocument: "after" }
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
+    res.json(enrichedIssues[0]);
+  } catch (err) {
+    console.error("Failed to assign issue:", err);
+    res.status(500).json({ error: "Failed to assign issue" });
+  }
+});
+
+/**
+ * Allows an admin user to clear the admin assignment on an issue
+ */
+app.put('/api/issues/:id/unassign', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
+
+    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Retrieve the issue from the database using the provided issue ID if it exists
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const result = await db.collection("Issue").findOneAndUpdate( // Update the issue in MongoDB to clear the assignment by setting assignedTo to null and return the updated document
+      { _id: new ObjectId(id) },
+      { $set: { assignedTo: null } }, //Change it back to null to clear the assignment
+      { returnDocument: "after" }
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
+    res.json(enrichedIssues[0]);
+  } catch (err) {
+    console.error("Failed to unassign issue:", err);
+    res.status(500).json({ error: "Failed to unassign issue" });
+  }
+});
+
 /**
  * This route retrieves a single issue with a matching IssueID
  */
@@ -367,12 +726,12 @@ app.get('/api/issues/:id', async (req, res) => {
     const db = req.app.locals.db;
     const { id } = req.params;
 
-    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Convert string ID to ObjectId and find matching issue
+    const issues = await issueWithAssigneeName(db, { _id: new ObjectId(id) }, 1); // Convert string ID to ObjectId and find matching issue
 
-    if (!issue)
+    if (issues.length === 0)
       return res.status(404).json({ error: "Issue not found" });
 
-    res.json(issue); //Send back the issue
+    res.json(issues[0]); //Send back the issue
 
   } catch (err) {
     console.error(err);
@@ -405,6 +764,7 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       issueDescription,
       location,
       campus,
+      status,
     } = body;
     const witnessNames = parseArrayField(body.witnessNames);
     const imageURLs = parseArrayField(body.imageURLs ?? body.imageURL);
@@ -416,37 +776,43 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
 
     // Build update object dynamically (only update provided fields)
     const updateFields = {};
-
     if (title !== undefined) updateFields.title = title;
     if (issueDescription !== undefined) updateFields.issueDescription = issueDescription;
     if (location !== undefined) updateFields.location = location;
     if (campus !== undefined) updateFields.campus = campus;
+    if (status !== undefined) {
+      const validation = normalizeAndValidateIssueStatus(status);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+      updateFields.status = validation.normalizedStatus;
+    }
     if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
 
-    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) });
+    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Retrieve the issue from the database if it exists
 
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });
     }
 
-    const retainedImageURLs = imageURLs ?? issue.imageURLs ?? [];
+    const retainedImageURLs = imageURLs ?? issue.imageURLs ?? []; // Use the provided imageURLs or fallback to existing ones
 
     if (!Array.isArray(retainedImageURLs)) {
       return res.status(400).json({ error: "imageURLs must be an array" });
     }
 
-    if (retainedImageURLs.length + (req.files?.length || 0) > 5) {
+    if (retainedImageURLs.length + (req.files?.length || 0) > 5) { //Only allow a maximum of 5 images to be associated with an issue
       return res.status(400).json({ error: "Maximum 5 images allowed" });
     }
 
-    const uploadedImageURLs = await uploadFilesToCloudinary(req.files);
-    const updatedImageURLs = [...retainedImageURLs, ...uploadedImageURLs];
-    updateFields.imageURLs = updatedImageURLs;
+    const uploadedImageURLs = await uploadFilesToCloudinary(req.files);     // Upload new images to Cloudinary and get their URLs
+    const updatedImageURLs = [...retainedImageURLs, ...uploadedImageURLs];  // Combine retained and newly uploaded image URLs
+    updateFields.imageURLs = updatedImageURLs;                              // Update the imageURLs field in the issue document
 
-    const removedImageURLs = (issue.imageURLs || [])
+    const removedImageURLs = (issue.imageURLs || []) //Get the existing image URLs from the issue and filter out the ones that are retained, leaving only the removed ones
       .filter((existingImageURL) => !retainedImageURLs.includes(existingImageURL));
 
-    const result = await db.collection("Issue").findOneAndUpdate(
+    const result = await db.collection("Issue").findOneAndUpdate( //Update the issue in mongoDB with the new fields and return the updated MongoDB document
       { _id: new ObjectId(id) },
       { $set: updateFields },
       { returnDocument: "after" }
@@ -456,6 +822,7 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       return res.status(404).json({ error: "Issue not found" });
     }
 
+    // Remove images from Cloudinary that are no longer associated with the issue
     for (const imageURL of removedImageURLs) {
       const publicId = getCloudinaryPublicId(imageURL);
 
@@ -464,6 +831,7 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
         continue;
       }
 
+      // Remove the image from Cloudinary using the public ID
       const cloudinaryResult = await cloudinary.uploader.destroy(publicId, {
         resource_type: "image"
       });
@@ -473,7 +841,8 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       }
     }
 
-    res.json(result);
+    const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
+    res.json(enrichedIssues[0]);
 
   } catch (err) {
     console.error("Failed to update issue:", err);
@@ -481,6 +850,10 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
   }
 });
 
+//--------------------- IMAGE ROUTES ----------------------------
+// This route allows a user to remove an image from an issue. It takes the issue ID as a URL parameter and the image URL to be removed in the request body. 
+// The route first checks if the issue exists and if the image URL is associated with that issue. 
+// If both checks pass, it removes the image from Cloudinary and updates the issue document in MongoDB to remove the image URL from the imageURLs array.
 app.delete('/api/issues/:id/images', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -491,22 +864,22 @@ app.delete('/api/issues/:id/images', async (req, res) => {
       return res.status(400).json({ error: "Invalid issue ID or image URL" });
     }
 
-    const issue = await db.collection("Issue").findOne({
+    const issue = await db.collection("Issue").findOne({ //Retrieve the issue from the database if it exists and check if the image's imageURL is in the stored issue's imageURLs array
       _id: new ObjectId(id),
-      imageURLs: imageURL
+      imageURLs: imageURL 
     });
 
     if (!issue) {
       return res.status(404).json({ error: "Issue or image not found" });
     }
 
-    const publicId = getCloudinaryPublicId(imageURL);
+    const publicId = getCloudinaryPublicId(imageURL); //Extract the public ID from the Cloudinary image URL to identify the image in Cloudinary for deletion
 
     if (!publicId) {
       return res.status(400).json({ error: "Invalid Cloudinary image URL" });
     }
 
-    const cloudinaryResult = await cloudinary.uploader.destroy(publicId, {
+    const cloudinaryResult = await cloudinary.uploader.destroy(publicId, { //Remove the image from Cloudinary using the public ID
       resource_type: "image"
     });
 
@@ -514,6 +887,7 @@ app.delete('/api/issues/:id/images', async (req, res) => {
       return res.status(502).json({ error: "Failed to remove image from Cloudinary" });
     }
 
+    //update the issue document in MongoDB to remove the image URL from the imageURLs array
     await db.collection("Issue").updateOne(
       { _id: new ObjectId(id) },
       { $pull: { imageURLs: imageURL } }
@@ -529,7 +903,8 @@ app.delete('/api/issues/:id/images', async (req, res) => {
 //This route handles image uploads using multer middleware to process the files and upload them to Cloudinary, then returns the URLs of the uploaded images to the frontend
 app.post('/api/upload', upload.array("images", 5), async (req, res) => {
   try {
-    // 1. Enforce that files are actually present
+
+    // 1. Check that files are actually present
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "No image files were uploaded." });
     }
@@ -537,7 +912,8 @@ app.post('/api/upload', upload.array("images", 5), async (req, res) => {
     // 2. Loop through all file buffers processed by Multer and prepare Cloudinary promises
     const uploadPromises = req.files.map((file) => {
       return new Promise((resolve, reject) => {
-        // Formulate a data URI base64 string from the memory storage buffer
+
+        // Create a data URI base64 string from the memory storage buffer
         const fileBase64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
         
         // Execute a secure server-side upload using your configured Cloudinary instance
