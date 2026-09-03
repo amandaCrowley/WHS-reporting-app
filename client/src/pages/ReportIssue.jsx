@@ -1,9 +1,9 @@
 /**
  * ReportIssue.jsx
- * 
+ *
  * This page is used to submit a user's issues/hazards they have encountered on UoN campuses
  * It contains a form to submit new issues (description, location, images etc)
- * 
+ *
  * Author/s: Amanda Foxley / Grish Gautam
  * Date: 8/4/26
  */
@@ -34,7 +34,25 @@ export default function ReportIssue() {
 
   const [images, setImages] = useState([]);
 
+  // Drafts saved locally so the user can come back and finish the report later
+  const [drafts, setDrafts] = useState([]);
+  const [draftMessage, setDraftMessage] = useState("");
+  const [editingDraftId, setEditingDraftId] = useState(null);
+
   const displayName = userData?.firstName || userData?.name || "User";
+
+  // Each user gets their own draft list in localStorage
+  const draftStorageKey = `reportIssueDrafts_${userData?.firebaseUid || "guest"}`;
+
+  // Load any previously saved drafts for this user when the page loads
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(draftStorageKey)) || [];
+      setDrafts(saved);
+    } catch {
+      setDrafts([]);
+    }
+  }, [draftStorageKey]);
 
   // Small method to remove object URLs created for image previews when the component is unloaded or when the image's state changes, preventing memory leaks
   useEffect(() => {
@@ -107,24 +125,19 @@ export default function ReportIssue() {
 
     // If all validation passes, send the data to the backend
     try {
-
       let imageURLs = [];
 
       if (images.length > 0) {
-
         const imageFormData = new FormData();
 
         images.forEach((image) => {
           imageFormData.append("images", image.file);
         });
 
-        const uploadResponse = await fetch(
-          "http://localhost:8000/api/upload",
-          {
-            method: "POST",
-            body: imageFormData,
-          }
-        );
+        const uploadResponse = await fetch("http://localhost:8000/api/upload", {
+          method: "POST",
+          body: imageFormData,
+        });
 
         const uploadData = await uploadResponse.json();
 
@@ -135,19 +148,22 @@ export default function ReportIssue() {
         imageURLs = uploadData.imageURLs;
       }
 
-      const response = await fetch(`http://localhost:8000/api/issue/${userData.firebaseUid}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: issueTitle.trim(),
-          campus,
-          location: location.trim(),
-          issueDescription: issueDescription.trim(),
-          witnessNames: witnessList,
-          dateTimeIssueOccurred: new Date().toISOString(),
-          imageURLs,
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:8000/api/issue/${userData.firebaseUid}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: issueTitle.trim(),
+            campus,
+            location: location.trim(),
+            issueDescription: issueDescription.trim(),
+            witnessNames: witnessList,
+            dateTimeIssueOccurred: new Date().toISOString(),
+            imageURLs,
+          }),
+        },
+      );
 
       const data = await response.json();
 
@@ -155,11 +171,76 @@ export default function ReportIssue() {
         throw new Error(data.error || "Failed to submit issue.");
       }
 
+      if (editingDraftId) {
+        deleteDraft(editingDraftId);
+      }
+
       navigate("/myissues");
     } catch (err) {
       setFormError(err.message);
     } finally {
       setFormLoading(false);
+    }
+  };
+
+  // Save the current form values as a draft in localStorage (images are not saved,
+  // since File objects can't be stored in localStorage — only the preview data would fit
+  // and that's not worth persisting across reloads)
+  const saveDraft = () => {
+    setFormError("");
+
+    if (!issueTitle.trim() && !location.trim() && !issueDescription.trim()) {
+      setFormError("Nothing to save — fill in at least one field first.");
+      return;
+    }
+
+    const draftData = {
+      id: editingDraftId || Date.now(),
+      issueTitle,
+      campus,
+      location,
+      issueDescription,
+      witnessList,
+      savedAt: new Date().toISOString(),
+    };
+
+    setDrafts((prev) => {
+      const withoutOld = prev.filter((d) => d.id !== draftData.id);
+      const updated = [draftData, ...withoutOld];
+      localStorage.setItem(draftStorageKey, JSON.stringify(updated));
+      return updated;
+    });
+
+    setEditingDraftId(draftData.id);
+    setDraftMessage("Draft saved.");
+    setTimeout(() => setDraftMessage(""), 2500);
+  };
+
+  // Load a saved draft back into the form so the user can keep editing it
+  const loadDraft = (draft) => {
+    setIssueTitle(draft.issueTitle || "");
+    setCampus(draft.campus || "");
+    setLocation(draft.location || "");
+    setIssueDescription(draft.issueDescription || "");
+    setWitnessList(draft.witnessList || []);
+    setEditingDraftId(draft.id);
+    setFormError("");
+    setDraftMessage("Draft loaded — continue editing below.");
+    setTimeout(() => setDraftMessage(""), 2500);
+  };
+
+  // Remove a draft from localStorage and from the list on screen
+  const deleteDraft = (id) => {
+    if (!window.confirm("Delete this draft? This cannot be undone.")) return;
+
+    setDrafts((prev) => {
+      const updated = prev.filter((d) => d.id !== id);
+      localStorage.setItem(draftStorageKey, JSON.stringify(updated));
+      return updated;
+    });
+
+    if (editingDraftId === id) {
+      setEditingDraftId(null);
     }
   };
 
@@ -206,12 +287,7 @@ export default function ReportIssue() {
 
     const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
-    const validTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp"
-    ];
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
     // Maximum 5 images
     if (images.length + selectedFiles.length > 5) {
@@ -220,23 +296,18 @@ export default function ReportIssue() {
     }
 
     for (const file of selectedFiles) {
-
       if (file.size > MAX_SIZE) {
         setFormError(`${file.name} exceeds 5MB.`);
         return;
       }
 
       if (!validTypes.includes(file.type)) {
-        setFormError(
-          "Only JPG, PNG, GIF and WEBP images are allowed."
-        );
+        setFormError("Only JPG, PNG, GIF and WEBP images are allowed.");
         return;
       }
 
       const duplicate = images.some(
-        (img) =>
-          img.file.name === file.name &&
-          img.file.size === file.size
+        (img) => img.file.name === file.name && img.file.size === file.size,
       );
 
       if (duplicate) {
@@ -277,7 +348,11 @@ export default function ReportIssue() {
         </div>
 
         <nav className="sidebar-nav">
-          <button type="button" className="sidebar-item" onClick={() => navigate("/userdashboard")}>
+          <button
+            type="button"
+            className="sidebar-item"
+            onClick={() => navigate("/userdashboard")}
+          >
             <span className="sidebar-icon">🏠</span>
             <span>Home</span>
           </button>
@@ -287,12 +362,20 @@ export default function ReportIssue() {
             <span>Report Issues</span>
           </button>
 
-          <button type="button" className="sidebar-item" onClick={() => navigate("/myissues")}>
+          <button
+            type="button"
+            className="sidebar-item"
+            onClick={() => navigate("/myissues")}
+          >
             <span className="sidebar-icon">‼️</span>
             <span>My Issues</span>
           </button>
 
-          <button type="button" className="sidebar-item" onClick={() => navigate("/profile")}>
+          <button
+            type="button"
+            className="sidebar-item"
+            onClick={() => navigate("/profile")}
+          >
             <span className="sidebar-icon">👤</span>
             <span>Profile</span>
           </button>
@@ -338,7 +421,8 @@ export default function ReportIssue() {
                     onChange={(e) => setIssueTitle(e.target.value)}
                   />
 
-                  <br/><br/>
+                  <br />
+                  <br />
                   <label className="field-label">Description</label>
                   <textarea
                     placeholder="Describe the issue in detail"
@@ -360,7 +444,9 @@ export default function ReportIssue() {
                     <option value="Newcastle City">Newcastle City</option>
                     <option value="Ourimbah">Ourimbah</option>
                     <option value="Gosford Hospital">Gosford Hospital</option>
-                    <option value="Gosford Mann Street">Gosford Mann Street</option>
+                    <option value="Gosford Mann Street">
+                      Gosford Mann Street
+                    </option>
                     <option value="Sydney">Sydney</option>
                     <option value="Port Macquarie">Port Macquarie</option>
                   </select>
@@ -444,7 +530,10 @@ export default function ReportIssue() {
                     <div className="image-preview-row">
                       {images.map((image, index) => (
                         <div className="image-preview-card" key={index}>
-                          <img src={image.preview} alt={`Evidence ${index + 1}`} />
+                          <img
+                            src={image.preview}
+                            alt={`Evidence ${index + 1}`}
+                          />
                           <button
                             type="button"
                             className="image-remove-btn"
@@ -462,20 +551,63 @@ export default function ReportIssue() {
           </div>
 
           {formError && <div className="form-error">{formError}</div>}
+          {draftMessage && <div className="draft-message">{draftMessage}</div>}
 
           <div className="report-actions">
-            <button type="submit" className="primary-btn" disabled={formLoading}>
+            <button
+              type="submit"
+              className="primary-btn"
+              disabled={formLoading}
+            >
               {formLoading ? "Submitting..." : "Submit Issue"}
             </button>
-            
-            <button
-              type="button"
-              className="secondary-btn"
-              onClick={() => console.log("Save as draft clicked")}
-            >
-              Clear Form
+
+            <button type="button" className="secondary-btn" onClick={saveDraft}>
+              Save as Draft
             </button>
           </div>
+
+          {drafts.length > 0 && (
+            <section className="report-card draft-list-card">
+              <div className="report-card-header">
+                Saved Drafts ({drafts.length})
+              </div>
+              <div className="report-card-body">
+                <div className="draft-list">
+                  {drafts.map((draft) => (
+                    <div className="draft-item" key={draft.id}>
+                      <div className="draft-item-info">
+                        <span className="draft-item-title">
+                          {draft.issueTitle?.trim() || "(No title)"}
+                        </span>
+                        <span className="draft-item-meta">
+                          {draft.campus || "No campus"} ·{" "}
+                          {new Date(draft.savedAt).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="draft-item-actions">
+                        <button
+                          type="button"
+                          className="secondary-btn draft-btn"
+                          onClick={() => loadDraft(draft)}
+                        >
+                          Continue Editing
+                        </button>
+                        <button
+                          type="button"
+                          className="secondary-btn draft-btn"
+                          onClick={() => deleteDraft(draft.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
         </form>
       </main>
     </div>

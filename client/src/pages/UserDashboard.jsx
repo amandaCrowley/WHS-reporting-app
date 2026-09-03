@@ -258,32 +258,7 @@ export default function UserDashboard() {
           </div>
 
           {/* Action buttons */}
-          <div className="dashboard-actions-panel">
-            <div className="dashboard-actions">
-              <button
-                type="button"
-                className="primary-action"
-                onClick={() => navigate("/reportissue")}
-              >
-                + Report New Issue
-              </button>
-
-              <button
-                type="button"
-                className="secondary-action"
-                onClick={() => navigate("/myissues")}
-              >
-                View My Issues
-              </button>
-
-              <button
-                type="button"
-                className="secondary-action"
-                onClick={() => navigate("/profile")}
-              >
-                Edit Profile
-              </button>
-            </div>
+         
 
             {/* Issues table */}
             <div className="dashboard-table-wrapper">
@@ -332,7 +307,6 @@ export default function UserDashboard() {
                 </table>
               )}
             </div>
-          </div>
         </section>
       </main>
     </div>

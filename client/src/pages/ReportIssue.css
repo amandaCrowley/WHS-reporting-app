@@ -442,24 +442,5 @@ author: Grish Gautam
     }
    }
    
-   @media (max-width: 600px) {
-    .report-header h1 {
-      font-size: 30px;
-    }
-   
-    .report-actions {
-      flex-direction: column;
-    }
-   
-    .primary-btn,
-    .secondary-btn {
-      width: 100%;
-    }
-   
-    .image-preview-card {
-      width: 100%;
-      max-width: 260px;
-    }
-   }
-   
+
    
