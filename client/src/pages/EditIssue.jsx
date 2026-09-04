@@ -2,7 +2,8 @@
 EditIssue.jsx
  * 
  * This page allows users to edit the details of a single issue, including:
- *  - Description, location, campus, witnesses and any images attached to the issue
+ *  - Title, Description, location, campus, witnesses and any images attached to the issue
+ *  - Admins can also add progress comments to the issue
  * 
  * Author/s: Amanda Foxley
  * Date: 2/4/26
@@ -23,14 +24,19 @@ export default function EditIssue() {
     const [loading, setLoading] = useState(true);   // True while fetching the issue
     const [error, setError] = useState("");         // Stores any error messages
     const [formData, setFormData] = useState({      // Stores the form data for editing the issue
+        title: "",
         issueDescription: "",
         location: "",
         campus: "",
+        priority: "Medium",
+        comments: [],
+        imageURLs: [],
         witnessNames: []
     });
 
     const [updateError, setUpdateError] = useState("");
     const [witnessInput, setWitnessInput] = useState("");
+    const [commentInput, setCommentInput] = useState("");
     const [images, setImages] = useState([]);
 
     /**
@@ -47,6 +53,13 @@ export default function EditIssue() {
                 setIssue(data);   // Store fetched issue in state
                 setFormData({
                     ...data,
+                    title: data.title || "",
+                    issueDescription: data.issueDescription || "",
+                    location: data.location || "",
+                    campus: data.campus || "",
+                    priority: data.priority || "Medium",
+                    comments: [],
+                    imageURLs: data.imageURLs || [],
                     witnessNames: data.witnessNames || []
                 });
 
@@ -77,9 +90,13 @@ export default function EditIssue() {
     const updateIssue = async () => {
         try {
             const body = new FormData();
+            body.append("title", formData.title || "");
             body.append("issueDescription", formData.issueDescription || "");
             body.append("location", formData.location || "");
             body.append("campus", formData.campus || "");
+            if (userData?.isAdmin) {
+                body.append("priority", formData.priority || "Medium");
+            }
             body.append("witnessNames", JSON.stringify(formData.witnessNames || []));
             body.append("imageURLs", JSON.stringify(formData.imageURLs || []));
             images.forEach(image => body.append("images", image.file));
@@ -96,6 +113,20 @@ export default function EditIssue() {
 
             const updated = data;
             setIssue(updated);
+
+            if (userData?.isAdmin && formData.comments.length > 0) {
+                await Promise.all(formData.comments.map(async (comment) => {
+                    const commentResponse = await fetch(`http://localhost:8000/api/issues/${issueId}/comments`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ firebaseUid: userData.firebaseUid, comment }),
+                    });
+                    const commentData = await commentResponse.json();
+                    if (!commentResponse.ok) {
+                        throw new Error(commentData.error || "Failed to add comment");
+                    }
+                }));
+            }
 
             if (userData?.isAdmin) {
                 navigate("/admin/manageissues");
@@ -127,6 +158,24 @@ export default function EditIssue() {
         }));
     };
 
+    const addComment = () => {
+        const comment = commentInput.trim();
+        if (!comment) return;
+
+        setFormData(prev => ({
+            ...prev,
+            comments: [...(prev.comments || []), comment]
+        }));
+        setCommentInput("");
+    };
+
+    const removeComment = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            comments: (prev.comments || []).filter((_, commentIndex) => commentIndex !== index)
+        }));
+    };
+
     const removeExistingImage = (url) => {
         setFormData(prev => ({
             ...prev,
@@ -151,10 +200,27 @@ export default function EditIssue() {
                     e.preventDefault();
                     updateIssue();
                 }}>
-
+                    <div className="form-section">
+                        <label>Title</label>
+                        <input name="title" value={formData?.title || ""} onChange={handleUpdateClick} />
+                    </div>
                     <div className="form-section">
                         <label>Description</label>
-                        <input name="issueDescription" value={formData?.issueDescription || ""} onChange={handleUpdateClick} />
+                        <textarea
+                            name="issueDescription"
+                            value={formData?.issueDescription || ""}
+                            onChange={handleUpdateClick}
+                            minLength={10}
+                            maxLength={300}
+                            style={{
+                                width: "100%",
+                                height: "100px",
+                                resize: "vertical",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                padding: "10px",
+                                boxSizing: "border-box"
+                            }} />
                     </div>
 
                     <div className="form-section">
@@ -172,6 +238,22 @@ export default function EditIssue() {
                             <option value="Port Macquarie">Port Macquarie</option>
                         </select>
                     </div>
+                    {userData?.isAdmin && (
+                        <div className="form-section">
+                            <label htmlFor="priority">Priority</label>
+                            <select
+                                id="priority"
+                                name="priority"
+                                value={formData?.priority || "Medium"}
+                                onChange={handleUpdateClick}
+                            >
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                    )}
                     <div className="form-section">
                         <hr />
 
@@ -179,7 +261,7 @@ export default function EditIssue() {
 
                         {/* witness list */}
                         {formData?.witnessNames?.map((name, index) => (
-                            <li key={index} className="witness-item" >
+                            <li key={index} className="multiple-item" >
                                 <span>{name}</span>
                                 <button
                                     type="button"
@@ -192,7 +274,7 @@ export default function EditIssue() {
                         ))}
 
                         {/* add witness popup*/}
-                        <div className="witness-item">
+                        <div className="multiple-item">
                             <input
                                 type="text"
                                 placeholder="Add witness name"
@@ -216,6 +298,50 @@ export default function EditIssue() {
                             </button>
                         </div>
                     </div>
+
+                    {userData?.isAdmin && (
+                    <>
+                        <div className="form-section">
+                            <label>Progress or resolution comments</label>
+                            {formData.comments?.map((comment, index) => (
+                                <div className="multiple-item" key={`${comment}-${index}`}>
+                                    <span>{comment}</span>
+                                    <button
+                                        type="button"
+                                        className="btn add-btn"
+                                        onClick={() => removeComment(index)}
+                                        aria-label={`Remove comment ${index + 1}`}
+                                    >
+                                        x
+                                    </button>
+                                </div>
+                            ))}
+                            <div className="multiple-item">
+                                <textarea
+                                value={commentInput}
+                                onChange={(e) => setCommentInput(e.target.value)}
+                                maxLength={300}
+                                placeholder="Add comment"
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault();
+                                        addComment();
+                                    }
+                                }}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn add-btn"
+                                    onClick={addComment}
+                                    aria-label="Add comment"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                    )}
+
 
                     <div className="form-section">
                         <hr />
@@ -290,7 +416,7 @@ export default function EditIssue() {
                             multiple
                             onChange={(e) => {
                                 const selectedFiles = Array.from(e.target.files || []);
-                                    const existingCount = formData?.imageURLs?.length || 0;
+                                const existingCount = formData?.imageURLs?.length || 0;
 
                                 if (selectedFiles.length === 0) return;
 
@@ -350,7 +476,7 @@ export default function EditIssue() {
                     <button
                         type="button"
                         className="btn secondary-btn"
-                        
+
                         // If the user is an admin, navigate back to the admin manage issues page, otherwise navigate back to the user's my issues page
                         onClick={() => navigate(userData?.isAdmin ? "/admin/manageissues" : "/myissues")}
                     >

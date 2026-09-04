@@ -3,7 +3,7 @@
  *
  * This page is displayed when an admin user navigates to the manage issues page.
  * It displays a list of all issues in the system, with options to filter, search, and sort the issues.
- * Admin users can also assign issues to themselves, unassign issues, and update the status of issues.
+ * Admin users can also assign issues to themselves and unassign issues.
  *
  * Author/s: Dinh Dinh & Amanda Foxley
  * Date: 27/8/26
@@ -24,9 +24,9 @@ export default function ManageIssues() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [assignmentFilter, setAssignmentFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
   const [assigningIssueId, setAssigningIssueId] = useState(null);
-  const [updatingStatusId, setUpdatingStatusId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const issuesPerPage = 10;
 
@@ -38,7 +38,7 @@ export default function ManageIssues() {
         throw new Error("Failed to fetch system issues");
       }
 
-      
+
       const data = await response.json();
       setIssues(Array.isArray(data) ? data : []);
       setFilteredIssues(Array.isArray(data) ? data : []);
@@ -56,7 +56,7 @@ export default function ManageIssues() {
     fetchIssues();
   }, []);
 
-  // Filter and sort issues whenever the issues, search, statusFilter, assignmentFilter, userData, or sortBy state changes
+  // Filter and sort issues whenever the issues, search, statusFilter, assignmentFilter, priorityFilter, userData, or sortBy state changes
   useEffect(() => {
     let temp = [...issues];
 
@@ -76,6 +76,11 @@ export default function ManageIssues() {
         if (assignmentFilter === "Unassigned") return !issue.assignedTo;
         return true;
       });
+    }
+
+    // Filter by priority
+    if (priorityFilter !== "All") {
+      temp = temp.filter((issue) => issue.priority === priorityFilter);
     }
 
     // Filter by search term on title, description, campus, location, or reporter
@@ -106,7 +111,7 @@ export default function ManageIssues() {
 
     setFilteredIssues(temp); // Update the filtered issues state
     setCurrentPage(1);
-  }, [issues, search, statusFilter, assignmentFilter, userData, sortBy]);
+  }, [issues, search, statusFilter, assignmentFilter, priorityFilter, userData, sortBy]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredIssues.length / issuesPerPage); // Calculate total pages based on filtered issues and issues per page
@@ -177,37 +182,6 @@ export default function ManageIssues() {
     }
   };
 
-  // Function to update the status of an issue - can be open, in progress or closed. Admins can change the status of any issue
-  const updateIssueStatus = async (issueId, nextStatus) => { //nextStatus is the new status
-    try {
-      setUpdatingStatusId(issueId);
-
-      const response = await fetch(`http://localhost:8000/api/issues/${issueId}`, { //get the issue from mongoDB using it's id
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }), //update the status of the issue to the new status
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to update issue status");
-      }
-
-      const updatedIssue = await response.json();
-      setIssues((currentIssues) => // update the current issues state with the updated issue these will be displayed on the manage issues page
-        currentIssues.map((issue) =>
-          issue._id === issueId ? updatedIssue : issue
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      alert(err.message || "Could not update issue status");
-    } finally {
-      setUpdatingStatusId(null);
-    }
-  };
-
-
   return (
     <div className="admin-manage-issues">
       <div>
@@ -229,7 +203,7 @@ export default function ManageIssues() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="All">All</option>
+          <option value="All">All statuses</option>
           <option value="Open">Open</option>
           <option value="In Progress">In Progress</option>
           <option value="Closed">Closed</option>
@@ -251,6 +225,17 @@ export default function ManageIssues() {
         >
           <option value="Newest">Newest first</option>
           <option value="Oldest">Oldest first</option>
+
+        </select>
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value)}
+        >
+          <option value="All">All Priorities</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+          <option value="Critical">Critical</option>
         </select>
       </div>
 
@@ -271,6 +256,7 @@ export default function ManageIssues() {
                 <strong>{issue.title}</strong>
                 <div>{issue.location} · {issue.campus}</div>
                 <div>Status: {issue.status}</div>
+                <div>Priority: {issue.priority || "Not set"}</div>
                 <div>Reported by: {issue.reportedByName || "Unknown"}</div>
                 <div>
                   Reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
@@ -280,20 +266,6 @@ export default function ManageIssues() {
                 </div>
                 <div>
                   Assigned to: {issue.assignedToName || "Unassigned"}
-                </div>
-
-                <div>
-                  <label htmlFor={`status-${issue._id}`}>Status:</label>
-                  <select
-                    id={`status-${issue._id}`}
-                    value={issue.status || "Open"}
-                    onChange={(e) => updateIssueStatus(issue._id, e.target.value)}
-                    disabled={updatingStatusId === issue._id}
-                  >
-                    <option value="Open">Open</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Closed">Closed</option>
-                  </select>
                 </div>
 
                 <button

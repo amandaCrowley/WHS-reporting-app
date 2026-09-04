@@ -413,6 +413,7 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
       reportedBy: userExists._id,
       reportedByName: `${userExists.firstName} ${userExists.lastName}`,
       status: "Open",
+      priority: "Medium",
       witnessNames: witnessNames || [],
       imageURLs: imageURLs || [],
     };
@@ -521,6 +522,57 @@ const issueWithAssigneeName = (db, query, limit) => {
 
   return db.collection("Issue").aggregate(pipeline).toArray();
 };
+
+const getIssueComments = (db, issueId) => db.collection("IssueComments")
+  .find({ issueId })
+  .sort({ dateTimeCommented: 1 })
+  .toArray();
+
+app.post('/api/issues/:id/comments', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+    const { firebaseUid, comment } = req.body || {};
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
+
+    const trimmedComment = typeof comment === "string" ? comment.trim() : "";
+    if (!trimmedComment || trimmedComment.length > 300) {
+      return res.status(400).json({ error: "Comment must be between 1 and 300 characters" });
+    }
+
+    const admin = await findUserByIdentity(db, firebaseUid);
+    if (!admin) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    if (!admin.isAdmin) {
+      return res.status(403).json({ error: "Only admins can add comments" });
+    }
+
+    const issueId = new ObjectId(id);
+    const issue = await db.collection("Issue").findOne({ _id: issueId }, { projection: { _id: 1 } });
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const commentedByName = `${admin.firstName || ""} ${admin.lastName || ""}`.trim();
+    const newComment = {
+      issueId,
+      commentedBy: admin._id,
+      commentedByName,
+      comment: trimmedComment,
+      dateTimeCommented: new Date(),
+    };
+
+    const result = await db.collection("IssueComments").insertOne(newComment);
+    res.status(201).json({ ...newComment, _id: result.insertedId });
+  } catch (err) {
+    console.error("Failed to add issue comment:", err);
+    res.status(500).json({ error: "Failed to add issue comment" });
+  }
+});
 
 /**
  * Get all issues in the system for admin management - This route is used to populate the "All Issues" section of the admin dashboard. It retrieves all issues from the MongoDB database and sorts them by dateTimeReported in descending order (most recent first).
@@ -676,7 +728,8 @@ app.put('/api/issues/:id/assign', async (req, res) => {
     }
 
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
-    res.json(enrichedIssues[0]);
+    const issueComments = await getIssueComments(db, result._id);
+    res.json({ ...enrichedIssues[0], issueComments });
   } catch (err) {
     console.error("Failed to assign issue:", err);
     res.status(500).json({ error: "Failed to assign issue" });
@@ -711,7 +764,8 @@ app.put('/api/issues/:id/unassign', async (req, res) => {
     }
 
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
-    res.json(enrichedIssues[0]);
+    const issueComments = await getIssueComments(db, result._id);
+    res.json({ ...enrichedIssues[0], issueComments });
   } catch (err) {
     console.error("Failed to unassign issue:", err);
     res.status(500).json({ error: "Failed to unassign issue" });
@@ -731,7 +785,8 @@ app.get('/api/issues/:id', async (req, res) => {
     if (issues.length === 0)
       return res.status(404).json({ error: "Issue not found" });
 
-    res.json(issues[0]); //Send back the issue
+    const issueComments = await getIssueComments(db, new ObjectId(id));
+    res.json({ ...issues[0], issueComments }); //Send back the issue and its comments
 
   } catch (err) {
     console.error(err);
@@ -765,6 +820,7 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       location,
       campus,
       status,
+      priority,
     } = body;
     const witnessNames = parseArrayField(body.witnessNames);
     const imageURLs = parseArrayField(body.imageURLs ?? body.imageURL);
@@ -780,6 +836,13 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
     if (issueDescription !== undefined) updateFields.issueDescription = issueDescription;
     if (location !== undefined) updateFields.location = location;
     if (campus !== undefined) updateFields.campus = campus;
+    if (priority !== undefined) {
+      const validPriorities = ["Low", "Medium", "High", "Critical"];
+      if (!validPriorities.includes(priority)) {
+        return res.status(400).json({ error: "Priority must be Low, Medium, High, or Critical" });
+      }
+      updateFields.priority = priority;
+    }
     if (status !== undefined) {
       const validation = normalizeAndValidateIssueStatus(status);
       if (!validation.valid) {
@@ -788,11 +851,22 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       updateFields.status = validation.normalizedStatus;
     }
     if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
-
     const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Retrieve the issue from the database if it exists
 
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });
+    }
+
+    if (updateFields.status === "Closed") {
+      const commentCount = await db.collection("IssueComments").countDocuments({
+        issueId: new ObjectId(id),
+        comment: { $type: "string", $regex: /\S/ },
+      });
+      if (commentCount === 0) {
+        return res.status(400).json({
+          error: "Add at least one progress or resolution comment before closing this issue",
+        });
+      }
     }
 
     const retainedImageURLs = imageURLs ?? issue.imageURLs ?? []; // Use the provided imageURLs or fallback to existing ones
@@ -842,7 +916,8 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
     }
 
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
-    res.json(enrichedIssues[0]);
+    const issueComments = await getIssueComments(db, result._id);
+    res.json({ ...enrichedIssues[0], issueComments });
 
   } catch (err) {
     console.error("Failed to update issue:", err);

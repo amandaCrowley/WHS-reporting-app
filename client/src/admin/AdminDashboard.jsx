@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     };
 
     fetchDashboardData(); // Call the method to fetch dashboard data when the component mounts or when userData changes
-  }, [userData]); 
+  }, [userData]);
 
   // Display loading or error messages if data is still being fetched or if there was an error fetching user data
   if (loading) {
@@ -105,47 +105,51 @@ export default function AdminDashboard() {
             <p>{dashboardStats.unassigned}</p>
           </div>
           <div>
-            <h3>Assigned to Me</h3>
+            <h3>My assigned issues</h3>
             <p>{dashboardStats.assignedToMe}</p>
           </div>
         </div>
       </section>
 
       <section>
-        <h2>Assigned to this admin</h2>
-
+        <h2>My assigned issues</h2>
+        <p style={{ fontStyle: "italic" }}>Open and in-progress issues currently assigned to you.</p>
         {issuesLoading ? (
           <p>Loading assigned issues...</p>
         ) : assignedIssues.length === 0 ? (
-          <p>No issues assigned to this admin user.</p>
+          <p>No open issues assigned to you.</p>
         ) : (
-          
-          // List to display all issues assigned to this admin
+
+          // List to display all issues assigned to this admin that have not been closed
           <ul>
-            {assignedIssues.map((issue) => (
-              <li key={issue._id}>
-                <strong>{issue.title}</strong>
-                <div>{issue.location} · {issue.campus}</div>
-                <div>Status: {issue.status}</div>
-                <div>Assigned to: {issue.assignedToName || "Unassigned"}</div>
-                <div>
-                  Reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
-                </div>
-                <button type="button" onClick={() => navigate(`/issue/${issue._id}`)}>
-                  View issue
-                </button>
-              </li>
-            ))}
+
+            {assignedIssues
+              .filter((issue) => issue.status !== "Closed")
+              .map((issue) => (
+                <li key={issue._id}>
+                  <strong>{issue.title}</strong>
+                  <div>{issue.location} · {issue.campus}</div>
+                  <div>Status: {issue.status}</div>
+                  <div>Priority: {issue.priority || "Not set"}</div>
+                  <div>Assigned to: {issue.assignedToName || "Unassigned"}</div>
+                  <div>
+                    Reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                  </div>
+                  <button type="button" onClick={() => navigate(`/issue/${issue._id}`)}>
+                    View Issue
+                  </button>
+                </li>
+              ))}
           </ul>
         )}
       </section>
 
       <section>
-        <h2>Most recent unassigned Issues</h2>
-
+        <h2>Recent Unassigned Issues</h2>
+        <p style={{ fontStyle: "italic" }}>The most recently reported issues that are not currently assigned to an admin.</p>
         {issuesLoading ? (
           <p>Loading recent issues...</p>
         ) : recentIssues.length === 0 ? (
@@ -159,6 +163,7 @@ export default function AdminDashboard() {
                 <strong>{issue.title}</strong>
                 <div>{issue.campus} · {issue.location}</div>
                 <div>Status: {issue.status}</div>
+                <div>Priority: {issue.priority || "Not set"}</div>
                 <div>Assigned to: {issue.assignedToName || "Unassigned"}</div>
                 <div>
                   {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
@@ -167,7 +172,7 @@ export default function AdminDashboard() {
                   })}
                 </div>
                 <button type="button" onClick={() => navigate(`/issue/${issue._id}`)}>
-                  View issue
+                  View Issue
                 </button>
               </li>
             ))}

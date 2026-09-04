@@ -258,6 +258,74 @@
     font-size: 14px;
 }
 
+.issue-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.issue-comment {
+    padding: 12px 14px;
+    border-left: 3px solid #4960df;
+    background: #f8fafc;
+}
+
+.issue-comment p {
+    margin: 0 0 7px;
+    white-space: pre-wrap;
+}
+
+.issue-comment small {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.issue-comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.issue-comment-form textarea {
+    min-height: 90px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    resize: vertical;
+    font: inherit;
+}
+
+.issue-comment-form button {
+    align-self: flex-start;
+    background: #4960df;
+    color: #ffffff;
+}
+
+.issue-comment-form button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.issue-comment-error {
+    color: #b91c1c !important;
+    font-size: 14px !important;
+}
+
+.issue-status-error {
+    flex-basis: 100%;
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 14px;
+}
+
 .issue-details-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -455,4 +523,18 @@
     .issue-details-actions .btn {
         width: 100%;
     }
+}
+
+.issue-comment-form textarea {
+    min-height: 90px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #1f2937;
+    background: #ffffff;
+    box-sizing: border-box;
 }

@@ -27,6 +27,10 @@ export default function IssueDetails() {
   const [error, setError] = useState(""); // Stores any error messages
   const [assigningIssue, setAssigningIssue] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [commentError, setCommentError] = useState("");
+  const [addingComment, setAddingComment] = useState(false);
+  const [statusError, setStatusError] = useState("");
 
   // Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
   useEffect(() => {
@@ -48,6 +52,31 @@ export default function IssueDetails() {
 
     fetchIssue();
   }, [issueId]);
+
+  const addComment = async (event) => {
+    event.preventDefault();
+    const comment = newComment.trim();
+    if (!comment || !userData?.firebaseUid) return;
+
+    try {
+      setAddingComment(true);
+      setCommentError("");
+      const response = await fetch(`http://localhost:8000/api/issues/${issueId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firebaseUid: userData.firebaseUid, comment }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to add comment");
+
+      setIssue(prev => ({ ...prev, issueComments: [...(prev.issueComments || []), data] }));
+      setNewComment("");
+    } catch (err) {
+      setCommentError(err.message);
+    } finally {
+      setAddingComment(false);
+    }
+  };
 
   //Helper method to assign the issue to the current user/admin. This will update the assignedTo field in the mongoDB database for that issue to the current user's id.
   const assignIssueToMe = async () => {
@@ -104,9 +133,14 @@ export default function IssueDetails() {
   //Helper method to update the status of the issue. This will update the status field in the mongoDB database for that issue to the nextStatus value.
   const updateIssueStatus = async (nextStatus) => {
     if (!issue?._id) return;
+    if (nextStatus === "Closed" && !issue.issueComments?.some((issueComment) => issueComment.comment?.trim())) {
+      setStatusError("Add at least one resolution comment stating how the issue was resolved before closing this issue.");
+      return;
+    }
 
     try {
       setUpdatingStatus(true);
+      setStatusError("");
       const response = await fetch(`http://localhost:8000/api/issues/${issue._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -290,12 +324,12 @@ export default function IssueDetails() {
             <span>
               {issue.dateTimeIssueOccurred
                 ? new Date(issue.dateTimeIssueOccurred).toLocaleString("en-AU", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
                 : "Not recorded"}
             </span>
           </div>
@@ -352,8 +386,75 @@ export default function IssueDetails() {
                 </div>
               </section>
             )}
+
+            <section className="issue-details-card">
+              <div className="issue-details-card-header">Admin Comments</div>
+
+              <div className="issue-details-card-body">
+
+                {/* Existing comments */}
+                {issue.issueComments?.length ? (
+                  <div className="issue-comments-list">
+                    {issue.issueComments.map((issueComment) => (
+                      <div
+                        className="issue-comment"
+                        key={issueComment._id}
+                      >
+                        <p>{issueComment.comment}</p>
+
+                        <small>
+                          {issueComment.commentedByName} ·{" "}
+                          {new Date(
+                            issueComment.dateTimeCommented
+                          ).toLocaleString("en-AU")}
+                        </small>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="issue-details-empty-text">
+                    No comments recorded.
+                  </p>
+                )}
+
+                {/* Add a new comment */}
+                {userData?.isAdmin && (
+                  <form
+                    className="issue-comment-form"
+                    onSubmit={addComment}
+                  >
+                    <textarea
+                      value={newComment}
+                      onChange={(event) =>
+                        setNewComment(event.target.value)
+                      }
+                      maxLength={300}
+                      placeholder="Add a progress or resolution comment"
+                      aria-label="New admin comment"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={
+                        addingComment || !newComment.trim()
+                      }
+                    >
+                      {addingComment ? "Adding..." : "Add comment"}
+                    </button>
+
+                    {commentError && (
+                      <p className="issue-comment-error">
+                        {commentError}
+                      </p>
+                    )}
+                  </form>
+                )}
+
+              </div>
+            </section>
           </div>
 
+          {/* Side column for witness information */}
           <aside className="issue-details-side-column">
             <section className="issue-details-card">
               <div className="issue-details-card-header">Witnesses</div>
@@ -372,15 +473,37 @@ export default function IssueDetails() {
               </div>
             </section>
 
+            {/* Side column for additional relevant information */}
             <section className="issue-details-card">
               <div className="issue-details-card-header">Issue snapshot</div>
               <div className="issue-details-card-body issue-details-meta-list">
                 <div className="issue-meta-row">
                   <span>Status</span>
-                  <strong>{issue.status}</strong>
+                  {userData?.isAdmin ? (
+                    <select
+                      value={issue.status || "Open"}
+                      onChange={(e) => updateIssueStatus(e.target.value)}
+                      disabled={updatingStatus}
+                      title="Change the issue status"
+                    >
+                      <option value="Open">Open</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Closed">Closed</option>
+                    </select>
+                  ) : (
+                    <strong>{issue.status}</strong>
+                  )}
+                </div>
+
+                {statusError && (
+                  <p className="issue-status-error">{statusError}</p>
+                )}
+                <div className="issue-meta-row">
+                  <span>Priority</span>
+                  <strong>{issue.priority || "Not set"}</strong>
                 </div>
                 <div className="issue-meta-row">
-                  <span>Reported</span>
+                  <span>Reported date</span>
                   <strong>
                     {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
                       dateStyle: "short",
@@ -408,6 +531,7 @@ export default function IssueDetails() {
         {/* Admin actions section - This will be displayed if the current user is an admin user */}
         {userData?.isAdmin && (
           <div className="issue-details-actions admin-actions">
+            {statusError && <p className="issue-status-error">{statusError}</p>}
             {!issue.assignedTo || issue.assignedTo === userData?._id ? (
               <button
                 className="btn primary-btn"
@@ -433,20 +557,21 @@ export default function IssueDetails() {
               </button>
             )}
 
-            <select
-              value={issue.status || "Open"}
-              onChange={(e) => updateIssueStatus(e.target.value)}
-              disabled={updatingStatus}
-            >
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Closed">Closed</option>
-            </select>
-
             <button
               className="btn primary-btn"
               type="button"
               onClick={() => navigate(`/editIssue/${issueId}`)}
+              disabled={issue.status === "Closed"}
+              title={
+                issue.status === "Closed"
+                  ? "Closed issues cannot be edited"
+                  : "Edit this issue"
+              }
+              style={
+                issue.status === "Closed"
+                  ? { opacity: 0.5, cursor: "not-allowed" }
+                  : undefined
+              }
             >
               Edit Issue
             </button>
