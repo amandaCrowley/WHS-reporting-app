@@ -52,7 +52,7 @@ import { userLogout } from "../hooks/userLogout";
 
 import UONLogo from "../images/UONLogo.png";
 
-import "../styles/UserDashboard.css";
+import "./UserDashboard.css";
 
 export default function UserDashboard() {
   const { userData, loading, error } = getUserData();
