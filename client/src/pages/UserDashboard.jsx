@@ -17,32 +17,56 @@
  * Author/s: Grish Gautam
  */
 
+/**
+ * UserDashboard.jsx
+ *
+ * Dashboard page for the WHS Reporting App.
+ * UI updated to match the University of Newcastle dashboard design.
+ *
+ * Existing issue fetching, statistics, routing, and logout behaviour
+ * remain unchanged.
+ *
+ * Author/s: Grish Gautam
+ */
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import {
+  LayoutDashboard,
+  House,
+  ClipboardList,
+  CircleAlert,
+  UserRound,
+  LogOut,
+  FileText,
+  Clock3,
+  Wrench,
+  Check,
+  Plus,
+  ChevronDown,
+} from "lucide-react";
+
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
+
+import UONLogo from "../images/UONLogo.png";
+
 import "../styles/UserDashboard.css";
 
 export default function UserDashboard() {
-  // Custom hook to get the currently logged-in user's data
   const { userData, loading, error } = getUserData();
 
-  // Stores all issues submitted by the current user
   const [issues, setIssues] = useState([]);
-
-  // Loading state for issue fetching
   const [issuesLoading, setIssuesLoading] = useState(true);
-
-  // Error state for issue fetching
   const [issuesError, setIssuesError] = useState("");
 
-  // Used for page navigation
   const navigate = useNavigate();
-
-  // Custom hook for Firebase logout
   const logout = userLogout();
 
-  // Fetch all issues submitted by the logged-in user
+  /**
+   * Fetch all issues submitted by the logged-in user.
+   */
   useEffect(() => {
     if (!userData) return;
 
@@ -60,9 +84,11 @@ export default function UserDashboard() {
         }
 
         const data = await res.json();
+
         setIssues(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
+
         setIssuesError(err.message || "Error fetching issues");
       } finally {
         setIssuesLoading(false);
@@ -72,7 +98,9 @@ export default function UserDashboard() {
     fetchIssues();
   }, [userData]);
 
-  // Calculate dashboard summary values from the issues list
+  /**
+   * Calculate dashboard statistics.
+   */
   const stats = useMemo(() => {
     const total = issues.length;
 
@@ -82,6 +110,7 @@ export default function UserDashboard() {
 
     const inProgress = issues.filter((issue) => {
       const status = issue.status?.toLowerCase();
+
       return status === "in progress" || status === "in-progress";
     }).length;
 
@@ -97,179 +126,302 @@ export default function UserDashboard() {
     };
   }, [issues]);
 
-  // Sort issues so the newest reported issues appear first in the table
+  /**
+   * Newest issues appear first.
+   */
   const sortedIssues = useMemo(() => {
     return [...issues].sort((a, b) => {
       const dateA = new Date(a.dateTimeReported || 0).getTime();
       const dateB = new Date(b.dateTimeReported || 0).getTime();
+
       return dateB - dateA;
     });
   }, [issues]);
 
   if (loading) {
-    return <p className="dashboard-message">Loading user data...</p>;
+    return <p className="user-dashboard-message">Loading user data...</p>;
   }
 
   if (error) {
-    return <p className="dashboard-message">{error} Redirecting to login...</p>;
+    return (
+      <p className="user-dashboard-message">
+        {error} Redirecting to login...
+      </p>
+    );
   }
 
   if (!userData) {
-    return <p className="dashboard-message">No user data found.</p>;
+    return <p className="user-dashboard-message">No user data found.</p>;
   }
 
   return (
-    <div className="dashboard-shell">
-      {/* Left sidebar navigation */}
-      <aside className="dashboard-sidebar">
-        {/* Sidebar brand/header */}
-        <div className="dashboard-sidebar-brand">
-          <div className="dashboard-brand-icon">📊</div>
-          <div className="dashboard-brand-title">Dashboard</div>
+    <div className="user-dashboard">
+      {/* =========================
+          LEFT SIDEBAR
+      ========================== */}
+
+      <aside className="user-dashboard-sidebar">
+        <div className="user-dashboard-logo">
+          <img
+            src={UONLogo}
+            alt="The University of Newcastle Australia"
+          />
         </div>
 
-        {/* Sidebar navigation buttons */}
-        <button
-          type="button"
-          className="dashboard-nav-item active"
-          onClick={() => navigate("/userdashboard")}
-        >
-          <span className="dashboard-nav-icon">🏠</span>
-          <span>Home</span>
-        </button>
+        <nav className="user-dashboard-nav">
+          <button
+            type="button"
+            className="user-dashboard-nav-item active"
+            onClick={() => navigate("/userdashboard")}
+          >
+            <LayoutDashboard />
+            <span>Dashboard</span>
+          </button>
 
-        <button
-          type="button"
-          className="dashboard-nav-item"
-          onClick={() => navigate("/reportissue")}
-        >
-          <span className="dashboard-nav-icon">📄</span>
-          <span>Report Issues</span>
-        </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/userdashboard")}
+          >
+            <House />
+            <span>Home</span>
+          </button>
 
-        <button
-          type="button"
-          className="dashboard-nav-item"
-          onClick={() => navigate("/myissues")}
-        >
-          <span className="dashboard-nav-icon">‼️</span>
-          <span>My Issues</span>
-        </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/reportissue")}
+          >
+            <ClipboardList />
+            <span>Report Issues</span>
+          </button>
 
-        <button
-          type="button"
-          className="dashboard-nav-item"
-          onClick={() => navigate("/profile")}
-        >
-          <span className="dashboard-nav-icon">👤</span>
-          <span>Profile</span>
-        </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/myissues")}
+          >
+            <CircleAlert />
+            <span>My Issues</span>
+          </button>
 
-        <button
-          type="button"
-          className="dashboard-nav-item logout"
-          onClick={logout}
-        >
-          <span className="dashboard-nav-icon">↪</span>
-          <span>Logout</span>
-        </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/profile")}
+          >
+            <UserRound />
+            <span>Profile</span>
+          </button>
+        </nav>
+
+        <div className="user-dashboard-logout-section">
+          <button
+            type="button"
+            className="user-dashboard-logout"
+            onClick={logout}
+          >
+            <LogOut />
+            <span>Logout</span>
+          </button>
+        </div>
       </aside>
 
-      {/* Main dashboard content */}
-      <main className="dashboard-main">
-        {/* Top bar */}
-        <header className="dashboard-topbar">
-  <h1>Dashboard</h1>
+      {/* =========================
+          RIGHT SIDE
+      ========================== */}
 
-  <div className="dashboard-topbar-right">
-    <span className="dashboard-welcome">
-      Welcome, {userData.firstName || "User"}!
-    </span>
+      <div className="user-dashboard-main">
+        {/* Top header */}
 
-    <div className="dashboard-avatar-wrap">
-      <img
-        src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
-        alt="User avatar"
-        className="dashboard-avatar"
-      />
-    </div>
-  </div>
-</header>
+        <header className="user-dashboard-header">
+          <h1>Dashboard</h1>
 
-        {/* Main content */}
-        <section className="dashboard-content">
-          {/* Stat cards */}
-          <div className="dashboard-stats-grid">
-            <div className="dashboard-card dashboard-card-wide">
-              <div className="dashboard-card-icon">📄</div>
-              <div className="dashboard-card-center">
+          <div className="user-dashboard-header-user">
+            <span>
+              Welcome, {userData.firstName || "User"}!
+            </span>
+
+            <div className="user-dashboard-avatar">
+              <UserRound />
+            </div>
+
+            <ChevronDown className="user-dashboard-chevron" />
+          </div>
+        </header>
+
+        {/* Main dashboard content */}
+
+        <main className="user-dashboard-content">
+          {/* =========================
+              TOTAL ISSUES BANNER
+          ========================== */}
+
+          <section className="user-dashboard-total-card">
+            <div className="user-dashboard-total-content">
+              <div className="user-dashboard-total-icon">
+                <FileText />
+              </div>
+
+              <div>
                 <h2>Total Issues Submitted</h2>
-                <p>{issuesLoading ? "..." : stats.total}</p>
-                <div className="dashboard-divider"></div>
+
+                <p>
+                  {issuesLoading ? "..." : stats.total}
+                </p>
               </div>
             </div>
 
-            <div className="dashboard-card small stat-open">
-              <div className="dashboard-card-heading">Open</div>
-              <div className="dashboard-card-row">
-                <div className="dashboard-status-icon warning">!</div>
-                <div className="dashboard-side-number">
+            <div
+              className="user-dashboard-watermark"
+              aria-hidden="true"
+            >
+              <div className="watermark-circle watermark-circle-one" />
+              <div className="watermark-circle watermark-circle-two" />
+              <div className="watermark-circle watermark-circle-three" />
+            </div>
+          </section>
+
+          {/* =========================
+              STATUS CARDS
+          ========================== */}
+
+          <section className="user-dashboard-status-grid">
+            {/* OPEN */}
+
+            <article className="user-dashboard-status-card status-open">
+              <div className="user-dashboard-status-icon">
+                <CircleAlert />
+              </div>
+
+              <div className="user-dashboard-status-content">
+                <h3>Open</h3>
+
+                <strong>
                   {issuesLoading ? "..." : stats.open}
-                </div>
-              </div>
-            </div>
+                </strong>
 
-            <div className="dashboard-card small stat-progress">
-              <div className="dashboard-card-heading">In Progress</div>
-              <div className="dashboard-card-row">
-                <div className="dashboard-status-icon neutral">◔</div>
-                <div className="dashboard-side-number">
+                <p>Requires attention</p>
+              </div>
+            </article>
+
+            {/* IN PROGRESS */}
+
+            <article className="user-dashboard-status-card status-progress">
+              <div className="user-dashboard-status-icon">
+                <Clock3 />
+              </div>
+
+              <div className="user-dashboard-status-content">
+                <h3>In Progress</h3>
+
+                <strong>
                   {issuesLoading ? "..." : stats.inProgress}
-                </div>
-              </div>
-            </div>
+                </strong>
 
-            <div className="dashboard-card small stat-updates">
-              <div className="dashboard-card-row">
-                <div>
-                  <div className="dashboard-tools-icon">🛠</div>
-                  <div className="dashboard-card-subtext">Updates Ongoing</div>
-                </div>
-                <div className="dashboard-side-number">
+                <p>Being worked on</p>
+              </div>
+            </article>
+
+            {/* UPDATES */}
+
+            <article className="user-dashboard-status-card status-updates">
+              <div className="user-dashboard-status-icon">
+                <Wrench />
+              </div>
+
+              <div className="user-dashboard-status-content">
+                <h3>Updates Ongoing</h3>
+
+                <strong>
                   {issuesLoading ? "..." : stats.inProgress}
-                </div>
-              </div>
-            </div>
+                </strong>
 
-            <div className="dashboard-card small stat-closed">
-              <div className="dashboard-card-heading">Closed</div>
-              <div className="dashboard-card-row">
-                <div>
-                  <div className="dashboard-status-icon success">✓</div>
-                  <div className="dashboard-card-subtext">
-                    Recently Resolved
+                <p>Awaiting updates</p>
+              </div>
+            </article>
+
+            {/* CLOSED */}
+
+            <article className="user-dashboard-status-card status-closed">
+              <div className="user-dashboard-status-icon">
+                <Check />
+              </div>
+
+              <div className="user-dashboard-status-content">
+                <h3>Closed</h3>
+
+                <strong>
+                  {issuesLoading ? "..." : stats.closed}
+                </strong>
+
+                <p>Recently resolved</p>
+              </div>
+            </article>
+          </section>
+
+          {/* =========================
+              ISSUES AREA
+          ========================== */}
+
+          <section className="user-dashboard-issues-panel">
+            {issuesLoading ? (
+              <div className="user-dashboard-panel-message">
+                Loading issues...
+              </div>
+            ) : issuesError ? (
+              <div className="user-dashboard-panel-message">
+                Error: {issuesError}
+              </div>
+            ) : sortedIssues.length === 0 ? (
+              /* Empty state shown in target UI */
+
+              <div className="user-dashboard-empty">
+                <div className="user-dashboard-empty-illustration">
+                  <div className="empty-clipboard">
+                    <div className="empty-clipboard-clip" />
+
+                    <div className="empty-clipboard-paper">
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                  </div>
+
+                  <div className="empty-leaves left-leaves">
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+
+                  <div className="empty-leaves right-leaves">
+                    <i />
+                    <i />
+                    <i />
                   </div>
                 </div>
-                <div className="dashboard-side-number">
-                  {issuesLoading ? "..." : stats.closed}
-                </div>
+
+                <h2>No issues submitted yet</h2>
+
+                <p>
+                  When you report an issue, it will appear here.
+                </p>
+
+                <button
+                  type="button"
+                  className="user-dashboard-report-button"
+                  onClick={() => navigate("/reportissue")}
+                >
+                  <Plus />
+
+                  <span>Report New Issue</span>
+                </button>
               </div>
-            </div>
-          </div>
+            ) : (
+              /* Existing issue information remains available */
 
-          {/* Action buttons */}
-         
-
-            {/* Issues table */}
-            <div className="dashboard-table-wrapper">
-              {issuesLoading ? (
-                <p className="dashboard-message">Loading issues...</p>
-              ) : issuesError ? (
-                <p className="dashboard-message">Error: {issuesError}</p>
-              ) : sortedIssues.length === 0 ? (
-                <p className="dashboard-message">No issues submitted yet.</p>
-              ) : (
-                <table className="dashboard-table">
+              <div className="user-dashboard-table-container">
+                <table className="user-dashboard-table">
                   <thead>
                     <tr>
                       <th>ID</th>
@@ -279,10 +431,16 @@ export default function UserDashboard() {
                       <th>View</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {sortedIssues.map((issue) => (
                       <tr key={issue._id}>
-                        <td>{issue._id ? `#${issue._id.slice(-4)}` : "-"}</td>
+                        <td>
+                          {issue._id
+                            ? `#${issue._id.slice(-4)}`
+                            : "-"}
+                        </td>
+
                         <td>
                           {issue.dateTimeReported
                             ? new Date(
@@ -290,13 +448,18 @@ export default function UserDashboard() {
                               ).toLocaleDateString("en-AU")
                             : "-"}
                         </td>
+
                         <td>{issue.location || "-"}</td>
+
                         <td>{issue.status || "-"}</td>
+
                         <td>
                           <button
                             type="button"
-                            className="dashboard-view-btn"
-                            onClick={() => navigate(`/issue/${issue._id}`)}
+                            className="user-dashboard-view-button"
+                            onClick={() =>
+                              navigate(`/issue/${issue._id}`)
+                            }
                           >
                             View
                           </button>
@@ -305,10 +468,11 @@ export default function UserDashboard() {
                     ))}
                   </tbody>
                 </table>
-              )}
-            </div>
-        </section>
-      </main>
+              </div>
+            )}
+          </section>
+        </main>
+      </div>
     </div>
   );
 }

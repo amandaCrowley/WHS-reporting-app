@@ -1,21 +1,41 @@
 /**
  * UserMyIssues.jsx
- * 
- * This page lists all issues submitted by the currently logged in user
- * 
- * Users can search for a specific issue by description location or campus
- * They can also filter their issues by status
- * 
+ *
+ * This page lists all issues submitted by the currently logged in user.
+ * Users can search for a specific issue by description, location or campus.
+ * They can also filter their issues by status.
+ *
  * Author/s: Grish Gautam
- * Date: 23/4/26
+ * Date: 09/09/26
  */
 
-import "../styles/UserMyIssues.css";
+import "./UserDashboard.css";
+import "./UserMyIssues.css";
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
+
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
+
+import UONLogo from "../images/UONLogo.png";
+
+import {
+  LayoutDashboard,
+  Home,
+  FilePlus2,
+  CircleAlert,
+  UserRound,
+  LogOut,
+  Search,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Building2,
+  ClipboardList,
+} from "lucide-react";
 
 export default function UserMyIssues() {
   const navigate = useNavigate();
@@ -24,7 +44,6 @@ export default function UserMyIssues() {
 
   const displayName = userData?.firstName || userData?.name || "User";
 
-  // State variables
   const [issues, setIssues] = useState([]);
   const [filteredIssues, setFilteredIssues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,15 +55,22 @@ export default function UserMyIssues() {
 
   const sortIssuesByDate = (issueList) => {
     return [...issueList].sort((a, b) => {
-      const timeA = new Date(a.dateTimeReported || a.createdAt || 0).getTime();
-      const timeB = new Date(b.dateTimeReported || b.createdAt || 0).getTime();
+      const timeA = new Date(
+        a.dateTimeReported || a.createdAt || 0
+      ).getTime();
 
-      return sortOrder === "oldest" ? timeA - timeB : timeB - timeA;
+      const timeB = new Date(
+        b.dateTimeReported || b.createdAt || 0
+      ).getTime();
+
+      return sortOrder === "oldest"
+        ? timeA - timeB
+        : timeB - timeA;
     });
   };
 
   /**
-   * Fetches all issues submitted by the current user from the backend server
+   * Fetch all issues submitted by current user
    */
   useEffect(() => {
     const fetchIssues = async () => {
@@ -58,7 +84,9 @@ export default function UserMyIssues() {
           return;
         }
 
-        const res = await fetch(`http://localhost:8000/api/issues/user/${user.uid}`);
+        const res = await fetch(
+          `http://localhost:8000/api/issues/user/${user.uid}`
+        );
 
         if (!res.ok) {
           throw new Error("Failed to fetch issues from server.");
@@ -81,14 +109,15 @@ export default function UserMyIssues() {
   }, [sortOrder]);
 
   /**
-   * Filter or search for issues whenever the search input, status filter,
-   * or original issues change
+   * Search and filter
    */
   useEffect(() => {
     let temp = [...issues];
 
     if (statusFilter !== "All") {
-      temp = temp.filter((issue) => issue.status === statusFilter);
+      temp = temp.filter(
+        (issue) => issue.status === statusFilter
+      );
     }
 
     if (search.trim()) {
@@ -97,32 +126,37 @@ export default function UserMyIssues() {
       temp = temp.filter(
         (issue) =>
           issue.title?.toLowerCase().includes(searchLower) ||
-          issue.issueDescription?.toLowerCase().includes(searchLower) ||
+          issue.issueDescription
+            ?.toLowerCase()
+            .includes(searchLower) ||
           issue.campus?.toLowerCase().includes(searchLower) ||
           issue.location?.toLowerCase().includes(searchLower)
       );
     }
 
-    const sortedTemp = sortIssuesByDate(temp);
-
-    setFilteredIssues(sortedTemp);
+    setFilteredIssues(sortIssuesByDate(temp));
   }, [search, statusFilter, issues, sortOrder]);
 
-  /**
-   * Returns the CSS class for the issue status badge
-   */
   const getStatusClass = (status) => {
-    if (status === "Open") return "user-my-issues-status-open";
-    if (status === "In Progress") return "user-my-issues-status-progress";
-    if (status === "Closed") return "user-my-issues-status-resolved";
+    if (status === "Open") {
+      return "user-my-issues-status-open";
+    }
+
+    if (status === "In Progress") {
+      return "user-my-issues-status-progress";
+    }
+
+    if (status === "Closed") {
+      return "user-my-issues-status-resolved";
+    }
+
     return "";
   };
 
-  /**
-   * Formats the reported date for display
-   */
   const formatReportedDate = (dateValue) => {
-    if (!dateValue) return "N/A";
+    if (!dateValue) {
+      return "N/A";
+    }
 
     return new Date(dateValue).toLocaleDateString("en-AU", {
       day: "2-digit",
@@ -133,195 +167,398 @@ export default function UserMyIssues() {
 
   if (loading) {
     return (
-      <div className="user-my-issues-page">
-        <div className="user-my-issues-loading">Loading your issues...</div>
+      <div className="user-my-issues-loading-screen">
+        Loading your issues...
       </div>
     );
   }
 
   return (
-    <div className="report-layout">
-      <aside className="report-sidebar">
-        <div className="sidebar-top">
-          <div className="sidebar-logo">📊</div>
-          <h2>Dashboard</h2>
+    <div className="user-my-issues-shell">
+
+      {/* =========================
+          SHARED DASHBOARD SIDEBAR
+      ========================== */}
+
+      <aside className="user-dashboard-sidebar">
+
+        <div className="user-dashboard-logo">
+          <img
+            src={UONLogo}
+            alt="University of Newcastle Australia"
+          />
         </div>
- 
-        <nav className="sidebar-nav">
-          <button type="button" className="sidebar-item" onClick={() => navigate("/userdashboard")}>
-            <span className="sidebar-icon">🏠</span>
+
+        <nav className="user-dashboard-nav">
+
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/userdashboard")}
+          >
+            <LayoutDashboard />
+            <span>Dashboard</span>
+          </button>
+
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/userdashboard")}
+          >
+            <Home />
             <span>Home</span>
           </button>
- 
-          <button type="button" className="sidebar-item" onClick={() => navigate("/reportissue")}>
-            <span className="sidebar-icon">📄</span>
+
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/reportissue")}
+          >
+            <FilePlus2 />
             <span>Report Issues</span>
           </button>
- 
-          <button type="button" className="sidebar-item active">
-            <span className="sidebar-icon">‼️</span>
+
+          <button
+            type="button"
+            className="user-dashboard-nav-item active"
+          >
+            <CircleAlert />
             <span>My Issues</span>
           </button>
- 
-          <button type="button" className="sidebar-item" onClick={() => navigate("/profile")}>
-            <span className="sidebar-icon">👤</span>
+
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/profile")}
+          >
+            <UserRound />
             <span>Profile</span>
           </button>
- 
-          <button type="button" className="sidebar-item" onClick={logout}>
-            <span className="sidebar-icon">↪</span>
+
+        </nav>
+
+        <div className="user-dashboard-logout-section">
+
+          <button
+            type="button"
+            className="user-dashboard-logout"
+            onClick={logout}
+          >
+            <LogOut />
             <span>Logout</span>
           </button>
-        </nav>
+
+        </div>
+
       </aside>
-    <div className="user-my-issues-page">
-      <div className="user-my-issues-topbar">
-        <div className="user-my-issues-heading">
+
+      {/* =========================
+          MAIN
+      ========================== */}
+
+      <main className="user-my-issues-main">
+
+        {/* HEADER */}
+
+        <header className="user-my-issues-header">
+
           <h1>My Issues</h1>
-          <p>View and manage all your reported issues.</p>
-        </div>
 
-        <div className="user-my-issues-user">
-          <span className="user-my-issues-user-text">
-            Welcome, {displayName}!
-          </span>
+          <div className="user-my-issues-header-user">
 
-          <div className="user-my-issues-avatar-wrap">
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
-              alt="User avatar"
-              className="user-my-issues-avatar"
-            />
-          </div>
-        </div>
-      </div>
-      
-      <div className="user-my-issues-panel">
-        {error && <div className="user-my-issues-error">{error}</div>}
+            <span>
+              Welcome, {displayName}!
+            </span>
 
-        <div className="user-my-issues-controls">
-          <div className="user-my-issues-search-group">
-            <div className="user-my-issues-search-box">
-              <span className="user-my-issues-search-icon">⌕</span>
-              <input
-                type="text"
-                placeholder="Search by title, description, campus or location..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+            <div className="user-my-issues-avatar-wrap">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
+                alt="User avatar"
+                className="user-my-issues-avatar"
               />
             </div>
+
+            <ChevronDown className="user-my-issues-user-chevron" />
+
           </div>
 
-          <div className="user-my-issues-filter-group">
-            <label htmlFor="statusFilter">Filter by Status</label>
-            <select
-              id="statusFilter"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="All">All</option>
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Closed">Closed</option>
-            </select>
+        </header>
+
+        {/* CONTENT */}
+
+        <section className="user-my-issues-content">
+
+          <div className="user-my-issues-page-heading">
+
+            <h2>My Issues</h2>
+
+            <p>
+              View and manage all issues you have reported.
+            </p>
+
           </div>
 
-          <div className="user-my-issues-filter-group">
-            <label htmlFor="sortOrder">Sort by Date</label>
-            <select
-              id="sortOrder"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            >
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-            </select>
-          </div>
-        </div>
+          <div className="user-my-issues-panel">
 
-        <div className="user-my-issues-list">
-          {filteredIssues.length === 0 ? (
-            <div className="user-my-issues-empty">No issues found.</div>
-          ) : (
-            filteredIssues.map((issue) => (
-              <div
-                key={issue._id}
-                className="user-my-issues-card"
-                onClick={() => navigate(`/issue/${issue._id}`)}
-              >
-                <div className="user-my-issues-card-left">
-                  <h2>{issue.title}</h2>
-
-                  {issue.additionalDetails ? (
-                    <p>{issue.additionalDetails}</p>
-                  ) : (
-                    <p>{issue.issueDescription}</p>
-                  )}
-
-                  <div className="user-my-issues-meta">
-                    <div className="user-my-issues-meta-item">
-                      <span className="user-my-issues-meta-icon">📍</span>
-                      <span>{issue.location || "Unknown location"}</span>
-                    </div>
-
-                    <span className="user-my-issues-meta-divider">|</span>
-
-                    <div className="user-my-issues-meta-item">
-                      <span className="user-my-issues-meta-icon">🏢</span>
-                      <span>{issue.campus || "Unknown campus"}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="user-my-issues-card-right">
-                  <p className="user-my-issues-card-right-label">Status</p>
-                  <span
-                    className={`user-my-issues-status-badge ${getStatusClass(issue.status)}`}
-                  >
-                    {issue.status}
-                  </span>
-
-                  <div className="user-my-issues-date-block">
-                    <p className="user-my-issues-date-title">Date Reported</p>
-                    <p className="user-my-issues-date-value">
-                      {formatReportedDate(issue.dateTimeReported)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="user-my-issues-card-arrow">›</div>
+            {error && (
+              <div className="user-my-issues-error">
+                {error}
               </div>
-            ))
-          )}
-        </div>
+            )}
 
-        <div className="user-my-issues-footer">
-          <div className="user-my-issues-count">
-            Showing 1 to {filteredIssues.length} of {filteredIssues.length} issues
+            {/* SEARCH AND FILTERS */}
+
+            <div className="user-my-issues-controls">
+
+              <div className="user-my-issues-search-group">
+
+                <div className="user-my-issues-search-box">
+
+                  <Search />
+
+                  <input
+                    type="text"
+                    placeholder="Search by description, campus or location..."
+                    value={search}
+                    onChange={(e) =>
+                      setSearch(e.target.value)
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="user-my-issues-filter-group">
+
+                <label htmlFor="statusFilter">
+                  Filter by Status
+                </label>
+
+                <div className="user-my-issues-select-wrap">
+
+                  <select
+                    id="statusFilter"
+                    value={statusFilter}
+                    onChange={(e) =>
+                      setStatusFilter(e.target.value)
+                    }
+                  >
+                    <option value="All">All</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">
+                      In Progress
+                    </option>
+                    <option value="Closed">Closed</option>
+                  </select>
+
+                  <ChevronDown />
+
+                </div>
+
+              </div>
+
+              <div className="user-my-issues-filter-group">
+
+                <label htmlFor="sortOrder">
+                  Sort by Date
+                </label>
+
+                <div className="user-my-issues-select-wrap">
+
+                  <select
+                    id="sortOrder"
+                    value={sortOrder}
+                    onChange={(e) =>
+                      setSortOrder(e.target.value)
+                    }
+                  >
+                    <option value="newest">
+                      Newest first
+                    </option>
+
+                    <option value="oldest">
+                      Oldest first
+                    </option>
+                  </select>
+
+                  <ChevronDown />
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* ISSUE LIST */}
+
+            <div className="user-my-issues-list">
+
+              {filteredIssues.length === 0 ? (
+
+                <div className="user-my-issues-empty">
+
+                  <div className="user-my-issues-empty-icon">
+                    <ClipboardList />
+                  </div>
+
+                  <h3>No issues found.</h3>
+
+                  <p>
+                    You haven't reported any issues yet.
+                  </p>
+
+                </div>
+
+              ) : (
+
+                filteredIssues.map((issue) => (
+
+                  <div
+                    key={issue._id}
+                    className="user-my-issues-card"
+                    onClick={() =>
+                      navigate(`/issue/${issue._id}`)
+                    }
+                  >
+
+                    <div className="user-my-issues-card-left">
+
+                      <h2>
+                        {issue.title}
+                      </h2>
+
+                      {issue.additionalDetails ? (
+                        <p>{issue.additionalDetails}</p>
+                      ) : (
+                        <p>{issue.issueDescription}</p>
+                      )}
+
+                      <div className="user-my-issues-meta">
+
+                        <div className="user-my-issues-meta-item">
+
+                          <MapPin />
+
+                          <span>
+                            {issue.location ||
+                              "Unknown location"}
+                          </span>
+
+                        </div>
+
+                        <div className="user-my-issues-meta-item">
+
+                          <Building2 />
+
+                          <span>
+                            {issue.campus ||
+                              "Unknown campus"}
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    <div className="user-my-issues-card-right">
+
+                      <div>
+
+                        <p className="user-my-issues-card-right-label">
+                          Status
+                        </p>
+
+                        <span
+                          className={`user-my-issues-status-badge ${getStatusClass(
+                            issue.status
+                          )}`}
+                        >
+                          {issue.status}
+                        </span>
+
+                      </div>
+
+                      <div className="user-my-issues-date-block">
+
+                        <p className="user-my-issues-date-title">
+                          Date Reported
+                        </p>
+
+                        <p className="user-my-issues-date-value">
+                          {formatReportedDate(
+                            issue.dateTimeReported
+                          )}
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    <ChevronRight className="user-my-issues-card-arrow" />
+
+                  </div>
+
+                ))
+
+              )}
+
+            </div>
+
+            {/* FOOTER */}
+
+            <div className="user-my-issues-footer">
+
+              <div className="user-my-issues-count">
+
+                Showing{" "}
+                {filteredIssues.length > 0 ? 1 : 0} to{" "}
+                {filteredIssues.length} of{" "}
+                {filteredIssues.length} issues
+
+              </div>
+
+              <div className="user-my-issues-pagination">
+
+                <button
+                  type="button"
+                  className="user-my-issues-page-btn"
+                >
+                  <ChevronLeft />
+                </button>
+
+                <button
+                  type="button"
+                  className="user-my-issues-page-btn active"
+                >
+                  1
+                </button>
+
+                <button
+                  type="button"
+                  className="user-my-issues-page-btn"
+                >
+                  2
+                </button>
+
+                <button
+                  type="button"
+                  className="user-my-issues-page-btn"
+                >
+                  <ChevronRight />
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
 
-          <div className="user-my-issues-pagination">
-            <button className="user-my-issues-page-btn">‹</button>
-            <button className="user-my-issues-page-btn active">1</button>
-            <button className="user-my-issues-page-btn">2</button>
-            <button className="user-my-issues-page-btn">›</button>
-          </div>
-        </div>
-      </div>
+        </section>
 
-      <div className="user-my-issues-bottom-actions">
-        <button
-          className="user-my-issues-back-btn"
-          onClick={() => navigate("/userdashboard")}
-        >
-          ← Back to Dashboard
-        </button>
+      </main>
 
-        <button className="user-my-issues-logout-btn" onClick={logout}>
-          ⎋ Logout
-        </button>
-      </div>
-    </div>  
     </div>
   );
 }
