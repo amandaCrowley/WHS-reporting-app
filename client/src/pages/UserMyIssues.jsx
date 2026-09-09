@@ -395,7 +395,9 @@ export default function UserMyIssues() {
                     key={issue._id}
                     className="user-my-issues-card"
                     onClick={() =>
-                      navigate(`/issue/${issue._id}`)
+                      navigate(`/issue/${issue._id}`, {
+                        state: { from: "myissues" },
+                      })
                     }
                   >
 

@@ -283,7 +283,7 @@ export default function EditIssue() {
                                 <FilePlus2 />
                                 <span>Report Issues</span>
                             </button>
-                            <button type="button" className="user-dashboard-nav-item active" onClick={() => navigate("/myissues")}>
+                            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/myissues")}>
                                 <CircleAlert />
                                 <span>My Issues</span>
                             </button>
@@ -298,7 +298,7 @@ export default function EditIssue() {
                                 <LayoutDashboard />
                                 <span>Dashboard</span>
                             </button>
-                            <button type="button" className="user-dashboard-nav-item active" onClick={() => navigate("/admin/manageissues")}>
+                            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/manageissues")}>
                                 <Wrench />
                                 <span>Manage Issues</span>
                             </button>

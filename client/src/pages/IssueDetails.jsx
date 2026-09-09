@@ -176,7 +176,6 @@ export default function IssueDetails() {
   const displayName = userData?.firstName || userData?.name || "User";
   const initials =
     `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
-
   const Sidebar = () => (
     <aside className="user-dashboard-sidebar">
       <div className="user-dashboard-logo">
@@ -206,7 +205,7 @@ export default function IssueDetails() {
 
             <button
               type="button"
-              className="user-dashboard-nav-item active"
+              className="user-dashboard-nav-item"
               onClick={() => navigate("/myissues")}
             >
               <CircleAlert />

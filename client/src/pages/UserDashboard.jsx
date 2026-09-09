@@ -427,7 +427,9 @@ export default function UserDashboard() {
                             type="button"
                             className="user-dashboard-view-button"
                             onClick={() =>
-                              navigate(`/issue/${issue._id}`)
+                              navigate(`/issue/${issue._id}`, {
+                                state: { from: "dashboard" },
+                              })
                             }
                           >
                             View
