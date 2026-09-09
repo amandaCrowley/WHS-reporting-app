@@ -9,7 +9,7 @@
  * - userData: Stores the current user's data from the backend using the Firebase UID of the authenticated user.
  * - loading: boolean, true while fetching user data - state for pages/components to use to incdicate the loading status of the fetch operation
  * - error: string, any error encountered during fetching - state for pages/components to use to incdicate the error status of the fetch operation
- * - updateUser: updates allowed fields (currently only `lastName`) in the database
+ * - updateUser: updates the user's first and last name in the database
  * - setUserData: `setUserData()` allows direct manipulation of local user data without a backend call.
  * 
  * Usage:
@@ -99,18 +99,18 @@ export function getUserData() {
     }, [auth, navigate]);
 
     /**
-      * Update user profile fields (currently only lastName)
-      * @param {Object} param0 Object containing { lastName }
+    * Update user profile name fields
+    * @param {Object} param0 Object containing { firstName, lastName }
       * @returns Updated user data from backend
     */
-    const updateUser = async ({ lastName }) => {
+    const updateUser = async ({ firstName, lastName }) => {
         if (!userData?.firebaseUid) throw new Error("User not loaded yet");
 
         try {
             const res = await fetch(`http://localhost:8000/api/user/${userData.firebaseUid}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ lastName }),
+                body: JSON.stringify({ firstName, lastName }),
             });
 
             const data = await res.json();

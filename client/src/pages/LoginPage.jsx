@@ -59,8 +59,26 @@ export default function LoginPage() {
 
             //If the user is an admin, navigate to the admin dashboard, otherwise navigate to the user dashboard
             navigate(userData.isAdmin ? '/admin/dashboard' : '/userdashboard');
-        } catch (e) {
-            setError(e.message); //If there is an error during login (e.g. incorrect email or password), set the error state variable to display an error message to the user
+        } catch (e) //catch any potential errors in login process
+            {
+            switch (e.code) { //handle different errors in a user-friendly way (ie. not too specific with firebase errors)
+                case 'auth/invalid-credential':
+                case 'auth/invalid-password':
+                case 'auth/user-not-found':
+                    setError('Invalid email or password. Please try again.');
+                    break;
+
+                case 'auth/too-many-requests':
+                    setError('Too many failed login attempts. Please try again later.');
+                    break;
+
+                case 'auth/network-request-failed':
+                    setError('Network error. Please check your internet connection and try again.');
+                    break;
+
+                default: //default error message for other errors not handled above
+                    setError('Unable to login. Please try again later.');
+            }
         }
     }
 
@@ -104,7 +122,7 @@ export default function LoginPage() {
                 </header>
                 <h1>WHS Login Page</h1>
 
-
+                <br/>
                 {error && <p className="error-message">{error}</p>}
 
                 <form onSubmit={(e) => { e.preventDefault(); login(); }}> {/*When the user hits the submit button the login function is called */}

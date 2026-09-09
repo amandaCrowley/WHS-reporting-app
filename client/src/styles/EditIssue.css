@@ -241,3 +241,349 @@ button {
     display: flex;
     justify-content: center;
 }
+
+/* Match the shared user page and Report Issue layout. */
+.edit-issue-shell {
+    background: #f5f7fb;
+    color: #07142f;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.edit-issue-content {
+    width: 100%;
+    padding: 31px 24px 40px;
+    background: linear-gradient(135deg, #f8f9fc 0%, #f3f6fb 100%);
+}
+
+.edit-issue-card {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.edit-issue-heading {
+    margin-bottom: 20px;
+}
+
+.edit-issue-heading h2 {
+    margin: 0;
+    color: #06132e;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.7px;
+}
+
+.edit-issue-heading p {
+    margin: 5px 0 0;
+    color: #59667e;
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.edit-form {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "left right";
+    gap: 12px;
+    align-items: start;
+}
+
+.edit-left-column {
+    grid-area: left;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.edit-right-column {
+    grid-area: right;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.edit-form .form-section {
+    min-width: 0;
+    gap: 7px;
+    padding: 14px 16px 16px;
+    background: #ffffff;
+    border: 1px solid #e1e5ec;
+    border-radius: 9px;
+    box-shadow: 0 2px 8px rgba(13, 32, 62, 0.025);
+}
+
+.edit-form .form-section > label,
+.edit-form .form-section > p {
+    display: block;
+    margin: 0 0 7px;
+    color: #111c36;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.edit-form .edit-section-title {
+    min-height: 47px;
+    margin: -14px -16px 7px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(180deg, #f3f5f8 0%, #eef1f5 100%);
+    border-bottom: 1px solid #e4e8ef;
+    color: #07142f;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.edit-form .form-section input,
+.edit-form .form-section select,
+.edit-form .form-section textarea {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid #cfd6e2;
+    border-radius: 6px;
+    outline: none;
+    background: #ffffff;
+    color: #17223c;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-sizing: border-box;
+}
+
+.edit-form .form-section input,
+.edit-form .form-section select {
+    height: 39px;
+    padding: 0 11px;
+}
+
+.edit-form .form-section textarea {
+    min-height: 116px;
+    padding: 11px;
+    line-height: 1.45;
+    resize: vertical;
+}
+
+.edit-form .form-section input:focus,
+.edit-form .form-section select:focus,
+.edit-form .form-section textarea:focus {
+    border-color: #0a68f0;
+    box-shadow: 0 0 0 2px rgba(10, 104, 240, 0.08);
+}
+
+.edit-form .form-section hr {
+    width: 100%;
+    margin: 0 0 4px;
+    border: 0;
+    border-top: 1px solid #e4e8ef;
+}
+
+.edit-form .multiple-item {
+    padding: 6px 10px;
+    background: #f7f9fc;
+    border: 1px solid #e5eaf1;
+    border-radius: 6px;
+}
+
+.edit-form .multiple-item input,
+.edit-form .multiple-item textarea {
+    border: 0;
+    box-shadow: none;
+}
+
+.edit-hidden-file {
+    display: none;
+}
+
+.edit-upload-zone {
+    min-height: 238px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px dashed #9aaac0;
+    border-radius: 7px;
+    background: #ffffff;
+    text-align: center;
+    cursor: pointer;
+}
+
+.edit-upload-zone:hover,
+.edit-upload-zone:focus-visible {
+    border-color: #0867f2;
+    background: #fbfdff;
+    outline: none;
+}
+
+.edit-upload-icon {
+    width: 47px;
+    height: 47px;
+    margin-bottom: 10px;
+    color: #076be9;
+    stroke-width: 1.6;
+}
+
+.edit-upload-zone h3 {
+    margin: 0 0 4px;
+    color: #101b35;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.edit-upload-zone p {
+    margin: 0 0 14px;
+    color: #69758b;
+    font-size: 11px;
+}
+
+.edit-upload-button {
+    height: 39px;
+    min-width: 147px;
+    padding: 0 19px;
+    border: 0;
+    border-radius: 6px;
+    background: #0867f2;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(8, 103, 242, 0.13);
+}
+
+.edit-upload-button:hover {
+    background: #0059d8;
+}
+
+.edit-images-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.edit-images-section .edit-upload-zone {
+    order: 1;
+}
+
+.edit-images-section .edit-image-grid {
+    order: 2;
+}
+
+.edit-right-column .edit-images-section {
+    order: 1;
+}
+
+.edit-right-column .edit-witness-section {
+    order: 2;
+}
+
+.edit-right-column .edit-comments-section {
+    order: 3;
+}
+
+.edit-form .btn,
+.edit-form .button-group button,
+.edit-form > button {
+    min-height: 39px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.edit-form .update-section {
+    grid-column: 1 / -1;
+    margin: 4px 0 0;
+}
+
+.edit-form .update-section .primary-btn {
+    min-width: 180px;
+    background: #0867f2;
+    color: #ffffff;
+}
+
+.edit-form .edit-actions-panel .primary-btn:hover,
+.edit-form .edit-actions-panel .secondary-btn:hover {
+    filter: brightness(0.96);
+}
+
+.edit-actions-panel {
+    width: 100%;
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #e1e5ec;
+    border-radius: 9px;
+}
+
+.edit-actions-panel .btn {
+    height: 46px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.edit-actions-panel .primary-btn {
+    border: 1px solid #0867f2;
+    background: #0867f2;
+    color: #ffffff;
+}
+
+.edit-actions-panel .secondary-btn {
+    border: 1px solid #0867f2;
+    background: #ffffff;
+    color: #0867f2;
+}
+
+.error-text {
+    grid-column: 1 / -1;
+    margin: 0 0 4px;
+    padding: 12px 16px;
+    border: 1px solid #f3c8c8;
+    border-radius: 6px;
+    background: #fff5f5;
+    color: #b42318;
+    font-size: 14px;
+    text-align: left;
+}
+
+@media (max-width: 850px) {
+    .edit-issue-content {
+        padding: 23px 20px 35px;
+    }
+
+    .edit-form {
+        grid-template-columns: 1fr;
+        grid-template-areas: none;
+    }
+
+    .edit-left-column,
+    .edit-right-column {
+        grid-area: auto;
+    }
+
+    .edit-form .update-section,
+    .edit-actions-panel,
+    .error-text {
+        grid-column: auto;
+    }
+
+    .edit-actions-panel {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .edit-issue-heading h2 {
+        font-size: 28px;
+    }
+}

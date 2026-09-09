@@ -104,7 +104,7 @@
 
   gap: 13px;
 
-  color: var(--uon-blue);
+  color: var(--text-primary);
 }
 
 .report-issue-user > span {
@@ -132,6 +132,25 @@
   object-fit: cover;
 }
 
+.report-issue-user .profile-avatar {
+  width: 50px;
+  height: 50px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.report-issue-user .profile-avatar span {
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 600;
+}
+
 .report-issue-user > svg {
   width: 18px;
   height: 18px;
@@ -149,9 +168,7 @@
   width: 100%;
 
   padding:
-    31px
-    31px
-    40px;
+    31px 24px 40px;
 }
 
 .report-issue-heading {
@@ -180,14 +197,20 @@
 }
 
 /* =========================
-   FORM GRID
+   FORM
 ========================= */
 
 .report-issue-form {
   width: 100%;
 }
 
+/* =========================
+   FORM GRID
+========================= */
+
 .report-issue-grid {
+  width: 100%;
+
   display: grid;
 
   grid-template-columns:
@@ -208,6 +231,17 @@
 
   gap: 12px;
 }
+.report-issue-left {
+    min-height: 100%;
+}
+
+.report-issue-left .report-section-card {
+    flex: 1;
+}
+
+.report-issue-left .report-section-body {
+    padding-bottom: 28px;
+}
 
 /* =========================
    SECTION CARDS
@@ -223,8 +257,7 @@
   border-radius: 9px;
 
   box-shadow:
-    0 2px 8px
-      rgba(13, 32, 62, 0.025);
+    0 2px 8px rgba(13, 32, 62, 0.025);
 }
 
 .report-section-title {
@@ -252,9 +285,7 @@
 
 .report-section-body {
   padding:
-    14px
-    16px
-    16px;
+    14px 16px 16px;
 }
 
 /* =========================
@@ -293,8 +324,7 @@
 .report-witness-row input {
   width: 100%;
 
-  border: 1px solid
-    var(--report-input-border);
+  border: 1px solid var(--report-input-border);
 
   border-radius: 6px;
 
@@ -322,8 +352,7 @@
   height: 39px;
 
   padding:
-    0
-    11px;
+    0 11px;
 }
 
 .report-field textarea {
@@ -331,9 +360,7 @@
   min-height: 116px;
 
   padding:
-    11px
-    11px
-    25px;
+    11px 11px 25px;
 
   line-height: 1.45;
 
@@ -353,8 +380,7 @@
   border-color: #0a68f0;
 
   box-shadow:
-    0 0 0 2px
-      rgba(10, 104, 240, 0.08);
+    0 0 0 2px rgba(10, 104, 240, 0.08);
 }
 
 /* =========================
@@ -431,8 +457,7 @@
 
   flex-shrink: 0;
 
-  border: 1px solid
-    var(--uon-blue);
+  border: 1px solid var(--uon-blue);
 
   border-radius: 6px;
 
@@ -463,10 +488,7 @@
   min-height: 31px;
 
   padding:
-    4px
-    8px
-    4px
-    10px;
+    4px 8px 4px 10px;
 
   display: inline-flex;
   align-items: center;
@@ -515,9 +537,7 @@
 
 .report-upload-body {
   padding:
-    14px
-    14px
-    16px;
+    14px 14px 16px;
 }
 
 .report-hidden-file {
@@ -528,8 +548,7 @@
   min-height: 238px;
 
   padding:
-    24px
-    20px;
+    24px 20px;
 
   display: flex;
   flex-direction: column;
@@ -538,9 +557,7 @@
   justify-content: center;
 
   border:
-    1.5px
-    dashed
-    #9aaac0;
+    1.5px dashed #9aaac0;
 
   border-radius: 7px;
 
@@ -570,9 +587,7 @@
 
 .report-upload-zone h3 {
   margin:
-    0
-    0
-    4px;
+    0 0 4px;
 
   color: #101b35;
 
@@ -582,9 +597,7 @@
 
 .report-upload-zone p {
   margin:
-    0
-    0
-    14px;
+    0 0 14px;
 
   color: #69758b;
 
@@ -597,8 +610,7 @@
   min-width: 147px;
 
   padding:
-    0
-    19px;
+    0 19px;
 
   border: 0;
 
@@ -614,8 +626,7 @@
   cursor: pointer;
 
   box-shadow:
-    0 3px 8px
-      rgba(8, 103, 242, 0.13);
+    0 3px 8px rgba(8, 103, 242, 0.13);
 }
 
 .report-upload-button:hover {
@@ -678,17 +689,17 @@
   align-items: center;
   justify-content: center;
 
-  border: 1px solid
-    rgba(17, 28, 54, 0.15);
+  border: 1px solid rgba(17, 28, 54, 0.15);
 
   border-radius: 50%;
 
-  background: rgba(
-    255,
-    255,
-    255,
-    0.94
-  );
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.94
+    );
 
   color: #253048;
 
@@ -716,8 +727,7 @@
   min-height: 64px;
 
   padding:
-    9px
-    10px;
+    9px 10px;
 
   display: flex;
   align-items: center;
@@ -801,8 +811,7 @@
   height: 31px;
 
   padding:
-    0
-    12px;
+    0 12px;
 
   border-radius: 5px;
 
@@ -834,15 +843,66 @@
   background: #fff6f6;
 }
 
+.report-textarea-wrap textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 14px 16px;
+    border: 1px solid #cfd8e3;
+    border-radius: 10px;
+    background-color: #ffffff;
+    font-size: 12px;
+    color: #0f172a;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.report-draft-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #dbe3ec;
+    border-radius: 10px;
+    background-color: #ffffff;
+}
+
+.report-draft-icon {
+    flex-shrink: 0;
+}
+
+.report-draft-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.report-draft-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #edf1f5;
+}
+
+.report-draft-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 /* =========================
    ERROR / SUCCESS
 ========================= */
 
 .report-error,
 .report-success {
+  width: 100%;
+
+  margin-top: 16px;
+
   padding:
-    11px
-    13px;
+    11px 13px;
 
   border-radius: 6px;
 
@@ -870,13 +930,17 @@
 ========================= */
 
 .report-actions-panel {
-  padding: 14px;
+  width: 100%;
+
+  margin-top: 16px;
+
+  padding:
+    14px;
 
   display: grid;
 
   grid-template-columns:
-    1fr
-    1fr;
+    1fr 1fr;
 
   gap: 12px;
 
@@ -900,17 +964,14 @@
 }
 
 .report-submit-button {
-  border: 1px solid
-    #0867f2;
+  border: 1px solid #0867f2;
 
   background: #0867f2;
 
   color: #ffffff;
 }
 
-.report-submit-button:hover:not(
-    :disabled
-  ) {
+.report-submit-button:hover:not(:disabled) {
   background: #005bdc;
 }
 
@@ -921,8 +982,7 @@
 }
 
 .report-save-button {
-  border: 1px solid
-    #0867f2;
+  border: 1px solid #0867f2;
 
   background: #ffffff;
 
@@ -937,9 +997,7 @@
    RESPONSIVE
 ========================= */
 
-@media (
-  max-width: 1150px
-) {
+@media (max-width: 1150px) {
   .report-issue-grid {
     grid-template-columns: 1fr;
   }
@@ -949,20 +1007,15 @@
   }
 }
 
-@media (
-  max-width: 850px
-) {
+@media (max-width: 850px) {
   .report-issue-topbar {
     padding:
-      0
-      20px;
+      0 20px;
   }
 
   .report-issue-content {
     padding:
-      23px
-      20px
-      35px;
+      23px 20px 35px;
   }
 
   .report-issue-user > span,
@@ -971,9 +1024,7 @@
   }
 }
 
-@media (
-  max-width: 650px
-) {
+@media (max-width: 650px) {
   .report-issue-heading h2 {
     font-size: 28px;
   }

@@ -20,12 +20,11 @@ import { useEffect, useRef, useState } from "react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 
-import UONLogo from "../images/UONLogo.png";
+import UONLogo from "../images/UONLogo White.png";
 
 import {
   LayoutDashboard,
-  House,
-  ClipboardList,
+  FilePlus2,
   CircleAlert,
   UserRound,
   LogOut,
@@ -48,6 +47,7 @@ export default function ReportIssue() {
   const [campus, setCampus] = useState("");
   const [location, setLocation] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
+  const [pendingDeleteDraft, setPendingDeleteDraft] = useState(null);
 
   const [witnessInput, setWitnessInput] = useState("");
   const [witnessList, setWitnessList] = useState([]);
@@ -63,9 +63,8 @@ export default function ReportIssue() {
     userData?.name ||
     "User";
 
-  const draftStorageKey = `reportIssueDrafts_${
-    userData?.firebaseUid || "guest"
-  }`;
+  const draftStorageKey = `reportIssueDrafts_${userData?.firebaseUid || "guest"
+    }`;
 
   useEffect(() => {
     try {
@@ -206,7 +205,7 @@ export default function ReportIssue() {
         if (!uploadResponse.ok) {
           throw new Error(
             uploadData.error ||
-              "Image upload failed.",
+            "Image upload failed.",
           );
         }
 
@@ -242,14 +241,25 @@ export default function ReportIssue() {
       if (!response.ok) {
         throw new Error(
           data.error ||
-            "Failed to submit issue.",
+          "Failed to submit issue.",
         );
       }
 
       if (editingDraftId) {
-        deleteDraft(
-          editingDraftId,
-        );
+        setDrafts((prev) => {
+          const updated = prev.filter(
+            (d) => d.id !== editingDraftId,
+          );
+
+          localStorage.setItem(
+            draftStorageKey,
+            JSON.stringify(updated),
+          );
+
+          return updated;
+        });
+
+        setEditingDraftId(null);
       }
 
       navigate("/myissues");
@@ -349,7 +359,7 @@ export default function ReportIssue() {
     setFormError("");
 
     setDraftMessage(
-      "Draft loaded — continue editing below.",
+      "Draft loaded — continue editing above.",
     );
 
     setTimeout(() => {
@@ -358,13 +368,23 @@ export default function ReportIssue() {
   };
 
   const deleteDraft = (id) => {
-    if (
-      !window.confirm(
-        "Delete this draft? This cannot be undone.",
-      )
-    ) {
+    const draft = drafts.find(
+      (item) => item.id === id,
+    );
+
+    if (!draft) {
       return;
     }
+
+    setPendingDeleteDraft(draft);
+  };
+
+  const confirmDeleteDraft = () => {
+    if (!pendingDeleteDraft) {
+      return;
+    }
+
+    const id = pendingDeleteDraft.id;
 
     setDrafts((prev) => {
       const updated =
@@ -385,6 +405,8 @@ export default function ReportIssue() {
     ) {
       setEditingDraftId(null);
     }
+
+    setPendingDeleteDraft(null);
   };
 
   const addWitness = () => {
@@ -480,7 +502,7 @@ export default function ReportIssue() {
 
     if (
       images.length +
-        selectedFiles.length >
+      selectedFiles.length >
       5
     ) {
       setFormError(
@@ -514,9 +536,9 @@ export default function ReportIssue() {
         images.some(
           (img) =>
             img.file.name ===
-              file.name &&
+            file.name &&
             img.file.size ===
-              file.size,
+            file.size,
         );
 
       if (duplicate) {
@@ -574,6 +596,9 @@ export default function ReportIssue() {
       fileInputRef.current?.click();
     };
 
+  // Build initials for avatar
+  const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+
   return (
     <div className="report-issue-page">
       {/* =========================
@@ -606,22 +631,9 @@ export default function ReportIssue() {
 
           <button
             type="button"
-            className="user-dashboard-nav-item"
-            onClick={() =>
-              navigate(
-                "/userdashboard",
-              )
-            }
-          >
-            <House />
-            <span>Home</span>
-          </button>
-
-          <button
-            type="button"
             className="user-dashboard-nav-item active"
           >
-            <ClipboardList />
+            <FilePlus2 />
             <span>
               Report Issues
             </span>
@@ -679,40 +691,22 @@ export default function ReportIssue() {
       <main className="report-issue-main">
         <header className="report-issue-topbar">
           <h1>
-            Report Issue
+            Report an issue
           </h1>
 
           <div className="report-issue-user">
             <span>
-              Welcome,{" "}
-              {displayName}!
+              Welcome {" "}
+              {displayName}
             </span>
 
-            <div className="report-issue-avatar-wrap">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
-                alt="User avatar"
-                className="report-issue-avatar"
-              />
+            <div className="profile-avatar">
+              <span>{initials}</span>
             </div>
-
-            <ChevronDown />
           </div>
         </header>
 
         <section className="report-issue-content">
-          <div className="report-issue-heading">
-            <h2>
-              Report Issue
-            </h2>
-
-            <p>
-              Submit details about a
-              safety or maintenance
-              issue.
-            </p>
-          </div>
-
           <form
             className="report-issue-form"
             onSubmit={
@@ -744,6 +738,9 @@ export default function ReportIssue() {
                       <input
                         id="issue-title"
                         type="text"
+                          minLength={5}
+                          maxLength={50}
+                          required
                         placeholder="Enter a short description of the issue"
                         value={
                           issueTitle
@@ -771,6 +768,9 @@ export default function ReportIssue() {
                       <div className="report-textarea-wrap">
                         <textarea
                           id="issue-description"
+                          minLength={10}
+                          maxLength={300}
+                          required
                           placeholder="Describe the issue in detail (minimum 10 characters)"
                           value={
                             issueDescription
@@ -816,6 +816,7 @@ export default function ReportIssue() {
                       <div className="report-select-wrap">
                         <select
                           id="campus"
+                          required
                           value={
                             campus
                           }
@@ -884,6 +885,9 @@ export default function ReportIssue() {
                       <input
                         id="specific-location"
                         type="text"
+                        minLength={3}
+                        maxLength={100}
+                        required
                         placeholder="Enter location (e.g. Building A, Room 101)"
                         value={
                           location
@@ -899,98 +903,6 @@ export default function ReportIssue() {
                         }
                       />
                     </div>
-                  </div>
-                </section>
-
-                {/* WITNESSES */}
-
-                <section className="report-section-card report-witness-card">
-                  <div className="report-section-title">
-                    Witnesses
-                  </div>
-
-                  <div className="report-section-body">
-                    <label className="report-witness-label">
-                      Add Witness
-                      Name
-                    </label>
-
-                    <div className="report-witness-row">
-                      <input
-                        type="text"
-                        placeholder="Add witness names (Press Enter to add)"
-                        value={
-                          witnessInput
-                        }
-                        onChange={(
-                          e,
-                        ) =>
-                          setWitnessInput(
-                            e
-                              .target
-                              .value,
-                          )
-                        }
-                        onKeyDown={(
-                          e,
-                        ) => {
-                          if (
-                            e.key ===
-                            "Enter"
-                          ) {
-                            e.preventDefault();
-                            addWitness();
-                          }
-                        }}
-                      />
-
-                      <button
-                        type="button"
-                        className="report-add-witness"
-                        onClick={
-                          addWitness
-                        }
-                      >
-                        Add
-                      </button>
-                    </div>
-
-                    {witnessList.length >
-                      0 && (
-                      <div className="report-witness-pills">
-                        {witnessList.map(
-                          (
-                            name,
-                            index,
-                          ) => (
-                            <div
-                              className="report-witness-pill"
-                              key={
-                                index
-                              }
-                            >
-                              <span>
-                                {
-                                  name
-                                }
-                              </span>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeWitness(
-                                    index,
-                                  )
-                                }
-                                aria-label={`Remove ${name}`}
-                              >
-                                <X />
-                              </button>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    )}
                   </div>
                 </section>
               </div>
@@ -1058,44 +970,135 @@ export default function ReportIssue() {
 
                     {images.length >
                       0 && (
-                      <div className="report-image-grid">
-                        {images.map(
-                          (
-                            image,
-                            index,
-                          ) => (
-                            <div
-                              className="report-image-preview"
-                              key={
-                                index
-                              }
-                            >
-                              <img
-                                src={
-                                  image.preview
+                        <div className="report-image-grid">
+                          {images.map(
+                            (
+                              image,
+                              index,
+                            ) => (
+                              <div
+                                className="report-image-preview"
+                                key={
+                                  index
                                 }
-                                alt={`Evidence ${
-                                  index +
-                                  1
-                                }`}
-                              />
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeImage(
-                                    index,
-                                  )
-                                }
-                                aria-label="Remove image"
                               >
-                                <X />
-                              </button>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    )}
+                                <img
+                                  src={
+                                    image.preview
+                                  }
+                                  alt={`Evidence ${index +
+                                    1
+                                    }`}
+                                />
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeImage(
+                                      index,
+                                    )
+                                  }
+                                  aria-label="Remove image"
+                                >
+                                  <X />
+                                </button>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
+                  </div>
+                </section>
+
+                {/* WITNESSES */}
+
+                <section className="report-section-card report-witness-card">
+                  <div className="report-section-title">
+                    Witnesses
+                  </div>
+
+                  <div className="report-section-body">
+                    <label className="report-witness-label">
+                      Add Witness
+                      Name
+                    </label>
+
+                    <div className="report-witness-row">
+                      <input
+                        type="text"
+                        placeholder="Add witness names (Press Enter to add)"
+                        value={
+                          witnessInput
+                        }
+                        onChange={(
+                          e,
+                        ) =>
+                          setWitnessInput(
+                            e
+                              .target
+                              .value,
+                          )
+                        }
+                        onKeyDown={(
+                          e,
+                        ) => {
+                          if (
+                            e.key ===
+                            "Enter"
+                          ) {
+                            e.preventDefault();
+                            addWitness();
+                          }
+                        }}
+                      />
+
+                      <button
+                        type="button"
+                        className="report-add-witness"
+                        onClick={
+                          addWitness
+                        }
+                      >
+                        Add
+                      </button>
+                    </div>
+
+                    {witnessList.length >
+                      0 && (
+                        <div className="report-witness-pills">
+                          {witnessList.map(
+                            (
+                              name,
+                              index,
+                            ) => (
+                              <div
+                                className="report-witness-pill"
+                                key={
+                                  index
+                                }
+                              >
+                                <span>
+                                  {
+                                    name
+                                  }
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeWitness(
+                                      index,
+                                    )
+                                  }
+                                  aria-label={`Remove ${name}`}
+                                >
+                                  <X />
+                                </button>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
                   </div>
                 </section>
 
@@ -1103,128 +1106,177 @@ export default function ReportIssue() {
 
                 {drafts.length >
                   0 && (
-                  <section className="report-section-card report-drafts-card">
-                    <div className="report-section-title">
-                      Saved Drafts (
-                      {
-                        drafts.length
-                      }
-                      )
-                    </div>
+                    <section className="report-section-card report-drafts-card">
+                      <div className="report-section-title">
+                        Saved Drafts (
+                        {
+                          drafts.length
+                        }
+                        )
+                      </div>
 
-                    <div className="report-draft-list">
-                      {drafts.map(
-                        (
-                          draft,
-                        ) => (
-                          <div
-                            className="report-draft-item"
-                            key={
-                              draft.id
-                            }
-                          >
-                            <div className="report-draft-icon">
-                              <FileText />
+                      <div className="report-draft-list">
+                        {drafts.map(
+                          (
+                            draft,
+                          ) => (
+                            <div
+                              className="report-draft-item"
+                              key={
+                                draft.id
+                              }
+                            >
+                              <div className="report-draft-icon">
+                                <FileText />
+                              </div>
+
+                              <div className="report-draft-info">
+                                <strong>
+                                  {draft.issueTitle?.trim() ||
+                                    "(No title)"}
+                                </strong>
+
+                                <span>
+                                  {draft.campus ||
+                                    "No campus"}{" "}
+                                  ·{" "}
+                                  {new Date(
+                                    draft.savedAt,
+                                  ).toLocaleString()}
+                                </span>
+                              </div>
+
+                              <div className="report-draft-actions">
+                                <button
+                                  type="button"
+                                  className="report-continue-button"
+                                  onClick={() =>
+                                    loadDraft(
+                                      draft,
+                                    )
+                                  }
+                                >
+                                  Continue
+                                  Editing
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="report-delete-button"
+                                  onClick={() =>
+                                    deleteDraft(
+                                      draft.id,
+                                    )
+                                  }
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </div>
-
-                            <div className="report-draft-info">
-                              <strong>
-                                {draft.issueTitle?.trim() ||
-                                  "(No title)"}
-                              </strong>
-
-                              <span>
-                                {draft.campus ||
-                                  "No campus"}{" "}
-                                ·{" "}
-                                {new Date(
-                                  draft.savedAt,
-                                ).toLocaleString()}
-                              </span>
-                            </div>
-
-                            <div className="report-draft-actions">
-                              <button
-                                type="button"
-                                className="report-continue-button"
-                                onClick={() =>
-                                  loadDraft(
-                                    draft,
-                                  )
-                                }
-                              >
-                                Continue
-                                Editing
-                              </button>
-
-                              <button
-                                type="button"
-                                className="report-delete-button"
-                                onClick={() =>
-                                  deleteDraft(
-                                    draft.id,
-                                  )
-                                }
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </section>
-                )}
-
-                {/* FEEDBACK */}
-
-                {formError && (
-                  <div className="report-error">
-                    {
-                      formError
-                    }
-                  </div>
-                )}
-
-                {draftMessage && (
-                  <div className="report-success">
-                    {
-                      draftMessage
-                    }
-                  </div>
-                )}
-
-                {/* ACTION BUTTONS */}
-
-                <div className="report-actions-panel">
-                  <button
-                    type="submit"
-                    className="report-submit-button"
-                    disabled={
-                      formLoading
-                    }
-                  >
-                    {formLoading
-                      ? "Submitting..."
-                      : "Submit Issue"}
-                  </button>
-
-                  <button
-                    type="button"
-                    className="report-save-button"
-                    onClick={
-                      saveDraft
-                    }
-                  >
-                    Save as
-                    Draft
-                  </button>
-                </div>
+                          ),
+                        )}
+                      </div>
+                    </section>
+                  )}
               </div>
+            </div>
+
+            {/* =========================
+                FEEDBACK
+            ========================== */}
+
+            {formError && (
+              <div className="report-error">
+                {
+                  formError
+                }
+              </div>
+            )}
+
+            {draftMessage && (
+              <div className="report-success">
+                {
+                  draftMessage
+                }
+              </div>
+            )}
+
+            {/* =========================
+                ACTION BUTTONS
+            ========================== */}
+
+            <div className="report-actions-panel">
+              <button
+                type="submit"
+                className="report-submit-button"
+                disabled={
+                  formLoading
+                }
+              >
+                {formLoading
+                  ? "Submitting..."
+                  : "Submit Issue"}
+              </button>
+
+              <button
+                type="button"
+                className="report-save-button"
+                onClick={
+                  saveDraft
+                }
+              >
+                Save as
+                Draft
+              </button>
             </div>
           </form>
         </section>
       </main>
+      {pendingDeleteDraft && (
+        <div
+          className="admin-confirmation-backdrop"
+          role="presentation"
+        >
+          <div
+            className="admin-confirmation-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-draft-title"
+          >
+            <p className="admin-confirmation-eyebrow">
+              Confirm draft deletion
+            </p>
+
+            <h2 id="delete-draft-title">
+              Delete this draft?
+            </h2>
+
+            <p>
+              You are about to permanently delete this
+              saved draft. This change cannot be undone.
+            </p>
+
+            <div className="admin-confirmation-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  setPendingDeleteDraft(null)
+                }
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="admin-confirmation-confirm"
+                onClick={confirmDeleteDraft}
+              >
+                Delete draft
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

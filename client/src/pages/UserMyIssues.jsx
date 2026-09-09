@@ -9,8 +9,8 @@
  * Date: 09/09/26
  */
 
-import "./UserDashboard.css";
 import "./UserMyIssues.css";
+import "./UserDashboard.css";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,11 +19,10 @@ import { getAuth } from "firebase/auth";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 
-import UONLogo from "../images/UONLogo.png";
+import UONLogo from "../images/UONLogo White.png";
 
 import {
   LayoutDashboard,
-  Home,
   FilePlus2,
   CircleAlert,
   UserRound,
@@ -173,8 +172,12 @@ export default function UserMyIssues() {
     );
   }
 
+  // Build initials for avatar
+  const initials =
+  `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+
   return (
-    <div className="user-my-issues-shell">
+    <div className="user-dashboard">
 
       {/* =========================
           SHARED DASHBOARD SIDEBAR
@@ -198,15 +201,6 @@ export default function UserMyIssues() {
           >
             <LayoutDashboard />
             <span>Dashboard</span>
-          </button>
-
-          <button
-            type="button"
-            className="user-dashboard-nav-item"
-            onClick={() => navigate("/userdashboard")}
-          >
-            <Home />
-            <span>Home</span>
           </button>
 
           <button
@@ -256,30 +250,22 @@ export default function UserMyIssues() {
           MAIN
       ========================== */}
 
-      <main className="user-my-issues-main">
+      <main className="user-dashboard-main">
 
         {/* HEADER */}
 
-        <header className="user-my-issues-header">
+        <header className="user-dashboard-header">
 
-          <h1>My Issues</h1>
+          <h1>My issues</h1>
 
-          <div className="user-my-issues-header-user">
-
+          <div className="user-dashboard-header-user">
             <span>
-              Welcome, {displayName}!
+              Welcome {displayName}
             </span>
 
-            <div className="user-my-issues-avatar-wrap">
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"
-                alt="User avatar"
-                className="user-my-issues-avatar"
-              />
+            <div className="profile-avatar">
+              <span>{initials}</span>
             </div>
-
-            <ChevronDown className="user-my-issues-user-chevron" />
-
           </div>
 
         </header>
@@ -288,15 +274,6 @@ export default function UserMyIssues() {
 
         <section className="user-my-issues-content">
 
-          <div className="user-my-issues-page-heading">
-
-            <h2>My Issues</h2>
-
-            <p>
-              View and manage all issues you have reported.
-            </p>
-
-          </div>
 
           <div className="user-my-issues-panel">
 
@@ -318,7 +295,7 @@ export default function UserMyIssues() {
 
                   <input
                     type="text"
-                    placeholder="Search by description, campus or location..."
+                    placeholder="Search description, campus or location"
                     value={search}
                     onChange={(e) =>
                       setSearch(e.target.value)

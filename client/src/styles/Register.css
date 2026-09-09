@@ -47,23 +47,37 @@
     margin-bottom: 18px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
+.register-page .register-container .form-group {
+    margin-bottom: 20px;
+}
+
+.register-page .register-container .form-group label {
     font-weight: 600;
     color: #1e3a8a;
+    font-size: 18px !important;
+    margin-bottom: 8px;
+    display: block;
 }
 
-.form-group input,
-.form-group select {
+.register-page .register-container .form-group input,
+.register-page .register-container .form-group select {
     width: 100%;
-    padding: 13px 16px;
+    padding: 14px 16px;
     border: 2px solid #94a3b8;
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: 10px;
+    font-size: 17px !important;
+    transition: all 0.3s ease;
     box-sizing: border-box;
+    background-color: #f8fafc;
+    color: #1e293b;
 }
 
+.register-page .register-container .form-group input:focus,
+.register-page .register-container .form-group select:focus {
+    outline: none;
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.15);
+}
 .form-group input:focus,
 .form-group select:focus {
     border-color: #1e40af;

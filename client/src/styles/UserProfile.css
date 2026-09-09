@@ -1,238 +1,785 @@
-/* ============================================
-   UserProfile.css
-   Matches LoginPage.css design system:
-   - Navy blue (#1e3a8a) primary colour
-   - White card with soft shadow
-   - Linear gradient background
-   - Segoe UI font family
-   ============================================ */
+/**
+ * UserProfile.css
+ *
+ * Similar to other user pages, especially the report issue page
+ * Author/s: Amanda Foxley
+ */
+
+/* =========================
+   VARIABLES
+========================= */
+
+:root {
+    --profile-navy: #002b5c;
+    --profile-blue: #0867f2;
+
+    --profile-text: #07142f;
+    --profile-secondary: #59667e;
+    --profile-muted: #7c8799;
+
+    --profile-bg: #f5f7fb;
+    --profile-white: #ffffff;
+
+    --profile-border: #e1e6ee;
+    --profile-input-border: #cfd6e2;
+}
+
+/* =========================
+   PAGE
+========================= */
 
 * {
     box-sizing: border-box;
 }
 
-.profile-page {
+.user-dashboard {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+}
+
+/* =========================
+   MAIN AREA
+========================= */
+
+.user-dashboard-main {
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 40px 20px;
 }
 
-/* ---- Top card: welcome / user info ---- */
-.profile-header-card {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(6px);
-    padding: 30px 45px;
-    width: 100%;
-    max-width: 520px;
-    margin-bottom: 24px;
+/* =========================
+   HEADER
+========================= */
+
+.user-dashboard-header {
+    height: 104px;
+    min-height: 104px;
+
+    padding: 0 32px;
+
     display: flex;
     align-items: center;
-    gap: 20px;
+    justify-content: space-between;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #e6eaf0;
 }
 
+.user-dashboard-header h1 {
+    margin: 0;
+
+    color: #07142f;
+
+    font-size: 25px;
+    font-weight: 700;
+
+    letter-spacing: -0.4px;
+}
+
+.user-dashboard-header-user {
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    color: #07132f;
+}
+
+.user-dashboard-header-user > span {
+    color: #07132f;
+
+    font-size: 15px;
+    font-weight: 600;
+}
+
+/* =========================
+   PROFILE AVATAR
+========================= */
+
 .profile-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background-color: #1e3a8a;
+    width: 50px;
+    height: 50px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #e5efff;
 }
 
 .profile-avatar span {
-    color: white;
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: 1px;
+    color: #0867f2;
+
+    font-size: 14px;
+    line-height: 1;
+
+    font-weight: 600;
 }
 
-.profile-header-info h1 {
-    color: #1e3a8a;
-    font-size: 1.5rem;
-    margin: 0 0 4px 0;
-}
+/* =========================
+   CONTENT
+========================= */
 
-.profile-header-info p {
-    color: #64748b;
-    font-size: 0.95rem;
-    margin: 0;
-}
-
-/* ---- Section cards ---- */
-.profile-section {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(6px);
-    padding: 32px 45px;
+.profile-content {
     width: 100%;
-    max-width: 520px;
-    margin-bottom: 24px;
+
+    padding: 31px 24px 40px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
+    grid-template-areas:
+        "account password"
+        "personal password";
+
+    gap: 12px;
+
+    align-items: stretch;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f8f9fc 0%,
+            #f3f6fb 100%
+        );
+
+    color: var(--profile-text);
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 }
+
+/* =========================
+   GRID AREAS
+========================= */
+
+.profile-account-section {
+    grid-area: account;
+}
+
+.profile-personal-section {
+    grid-area: personal;
+}
+
+.profile-password-section {
+    grid-area: password;
+
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-password-section .form-group {
+    width: calc(100% - 48px);
+
+    margin: 14px 24px 12px;
+}
+
+.profile-password-section .form-group + .form-group {
+    margin-top: 0;
+}
+
+.profile-password-section .form-group label {
+    margin-bottom: 5px;
+}
+
+.profile-password-section .btn-primary {
+    margin-top: auto;
+}
+
+.profile-personal-section .btn-primary {
+    margin-top: 12px;
+}
+/* =========================
+   PROFILE CARDS
+========================= */
+
+.profile-section {
+    width: 100%;
+
+    overflow: hidden;
+
+    margin: 0;
+
+    padding: 0;
+
+    background: #ffffff;
+
+    border: 1px solid #e1e5ec;
+
+    border-radius: 9px;
+
+    box-shadow:
+        0 2px 8px rgba(13, 32, 62, 0.025);
+}
+
+/* =========================
+   SECTION HEADINGS
+========================= */
 
 .profile-section h2 {
-    color: #1e3a8a;
-    font-size: 1.2rem;
+    min-height: 47px;
+
+    margin: 0;
+
+    padding: 0 16px;
+
+    display: flex;
+    align-items: center;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f3f5f8 0%,
+            #eef1f5 100%
+        );
+
+    border-bottom: 1px solid #e4e8ef;
+
+    color: #07142f;
+
+    font-size: 17px;
     font-weight: 700;
-    margin: 0 0 20px 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e2e8f0;
 }
 
-/* ---- Form groups (reused from LoginPage) ---- */
+/* =========================
+   ACCOUNT INFORMATION
+========================= */
+
+.profile-info-list {
+    padding: 14px 16px 16px;
+}
+
+.profile-info-row {
+    min-height: 39px;
+
+    padding: 0 11px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    border-bottom: 1px solid #e4e8ef;
+}
+
+.profile-info-row:last-child {
+    border-bottom: none;
+}
+
+.profile-info-label {
+    flex-shrink: 0;
+
+    color: #111c36;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.profile-info-value {
+    min-width: 0;
+
+    color: #59667e;
+
+    font-size: 12px;
+    font-weight: 400;
+
+    text-align: right;
+
+    word-break: break-word;
+}
+
+/* =========================
+   FORM FIELDS
+========================= */
+
+.profile-section .form-group {
+    width: calc(100% - 48px);
+
+    margin:
+        14px 24px 16px;
+}
+
+.profile-section .form-group + .form-group {
+    margin-top: 0;
+}
+
 .form-group {
-    margin-bottom: 20px;
+    width: 100%;
+
+    margin-bottom: 16px;
 }
 
 .form-group label {
-    font-weight: 600;
-    color: #1e3a8a;
-    font-size: 1rem;
-    margin-bottom: 6px;
     display: block;
+
+    margin-bottom: 7px;
+
+    color: #111c36;
+
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .form-group input {
     width: 100%;
-    padding: 13px 16px;
-    border: 2px solid #94a3b8;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    transition: all 0.3s ease;
-    background: #fff;
+
+    height: 39px;
+
+    padding: 0 11px;
+
+    border: 1px solid var(--profile-input-border);
+
+    border-radius: 6px;
+
+    outline: none;
+
+    background: #ffffff;
+
+    color: #17223c;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 12px;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.form-group input::placeholder {
+    color: #7e899c;
 }
 
 .form-group input:focus {
-    outline: none;
-    border-color: #1e3a8a;
-    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.15);
+    border-color: #0a68f0;
+
+    box-shadow:
+        0 0 0 2px rgba(10, 104, 240, 0.08);
 }
 
-/* ---- Primary button (matches .login-button) ---- */
-.btn-primary {
+/* =========================
+   PASSWORD FIELDS
+========================= */
+
+.profile-password-section .form-group {
+    width: calc(100% - 48px);
+    margin: 24px 24px 16px;
+}
+
+.profile-password-section .form-group + .form-group {
+    margin-top: 0;
+}
+
+.profile-password-section .form-group label {
+    margin-bottom: 7px;
+}
+
+.profile-password-section .btn-primary {
+    width: 120px;
+    min-width: 120px;
+    margin-top: auto;
+    align-self: center;
+    margin-bottom: 16px;
+}
+
+.password-wrapper {
+    position: relative;
+
     width: 100%;
-    background-color: #1e3a8a;
-    color: white;
-    padding: 13px 20px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.password-wrapper input {
+    padding-right: 42px;
+}
+
+.eye-toggle {
+    position: absolute;
+
+    top: 50%;
+    right: 8px;
+
+    width: 27px;
+    height: 27px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transform: translateY(-50%);
+
+    border: 0;
+
+    background: transparent;
+
+    color: #59667e;
+
     cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 4px;
+}
+
+.eye-toggle:hover {
+    color: #0867f2;
+}
+
+.eye-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* =========================
+   PRIMARY BUTTON
+========================= */
+
+.btn-primary {
+    height: 39px;
+
+    min-width: 140px;
+
+    margin:
+        0 24px 16px;
+
+    padding:
+        0 18px;
+
+    border: 1px solid #0867f2;
+
+    border-radius: 6px;
+
+    background: #0867f2;
+
+    color: #ffffff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .btn-primary:hover {
-    background-color: #1e40af;
-    transform: translateY(-2px);
+    background: #005bdc;
+
+    border-color: #005bdc;
 }
 
 .btn-primary:active {
-    transform: translateY(0);
+    background: #0053c7;
 }
 
-/* ---- Secondary / outline button ---- */
-.btn-secondary {
+.btn-primary:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+.profile-password-section .btn-primary {
+    width: 120px;
+    min-width: 140px;
+    margin-top: auto;
+    align-self: center;
+}
+
+/* =========================
+   FEEDBACK
+========================= */
+
+.profile-feedback-section {
+    grid-column: 1 / -1;
+
     width: 100%;
-    background-color: transparent;
-    color: #1e3a8a;
-    padding: 12px 20px;
-    border: 2px solid #1e3a8a;
-    border-radius: 10px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 4px;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: 0;
+
+    border-radius: 0;
+
+    box-shadow: none;
 }
 
-.btn-secondary:hover {
-    background-color: #eff6ff;
-    transform: translateY(-2px);
-}
-
-.btn-secondary:active {
-    transform: translateY(0);
-}
-
-/* ---- Danger button (logout) ---- */
-.btn-danger {
-    width: 100%;
-    background-color: transparent;
-    color: #b91c1c;
-    padding: 12px 20px;
-    border: 2px solid #b91c1c;
-    border-radius: 10px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 4px;
-}
-
-.btn-danger:hover {
-    background-color: #fee2e2;
-    transform: translateY(-2px);
-}
-
-.btn-danger:active {
-    transform: translateY(0);
-}
-
-/* ---- Feedback messages ---- */
 .feedback-message {
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 0.95rem;
-    margin-top: 16px;
-    text-align: center;
+    width: 100%;
+
+    margin: 0;
+
+    padding: 11px 13px;
+
+    border-radius: 6px;
+
+    font-size: 11px;
+
+    line-height: 1.4;
 }
 
 .feedback-message.success {
-    background-color: #dcfce7;
-    color: #166534;
-    border-left: 5px solid #22c55e;
+    border: 1px solid #c9e5d2;
+
+    background: #f0faf3;
+
+    color: #14713a;
 }
 
 .feedback-message.error {
-    background-color: #fee2e2;
-    color: #b91c1c;
-    border-left: 5px solid #ef4444;
+    border: 1px solid #f2c8c8;
+
+    background: #fff5f5;
+
+    color: #b42318;
 }
 
-/* ---- Actions section (logout + back) ---- */
-.profile-actions {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 16px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(6px);
-    padding: 28px 45px;
+/* =========================
+   OLD / COMPATIBILITY STYLES
+========================= */
+
+.profile-header-card {
     width: 100%;
-    max-width: 520px;
+
+    background: #ffffff;
+
+    border: 1px solid #e1e5ec;
+
+    border-radius: 9px;
+
+    box-shadow:
+        0 2px 8px rgba(13, 32, 62, 0.025);
+}
+
+.profile-header-info h1 {
+    margin: 0;
+
+    color: #07142f;
+
+    font-size: 25px;
+}
+
+.profile-header-info p {
+    margin: 4px 0 0;
+
+    color: #59667e;
+
+    font-size: 13px;
+}
+
+.profile-actions {
+    width: 100%;
+
+    padding: 14px;
+
     display: flex;
     flex-direction: column;
+
     gap: 12px;
+
+    background: #ffffff;
+
+    border: 1px solid #e1e5ec;
+
+    border-radius: 9px;
+
+    box-shadow:
+        0 2px 8px rgba(13, 32, 62, 0.025);
 }
 
-/* ---- Loading / error states ---- */
+/* =========================
+   SECONDARY BUTTON
+========================= */
+
+.btn-secondary {
+    height: 39px;
+
+    padding:
+        0 18px;
+
+    border: 1px solid #0867f2;
+
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    color: #0867f2;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease;
+}
+
+.btn-secondary:hover {
+    background: #f2f8ff;
+}
+
+/* =========================
+   DANGER BUTTON
+========================= */
+
+.btn-danger {
+    height: 39px;
+
+    padding:
+        0 18px;
+
+    border: 1px solid #df4b4b;
+
+    border-radius: 6px;
+
+    background: #ffffff;
+
+    color: #d93737;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease;
+}
+
+.btn-danger:hover {
+    background: #fff6f6;
+}
+
+/* =========================
+   LOADING / ERROR STATES
+========================= */
+
 .profile-status {
-    color: #475569;
-    font-size: 1rem;
-    margin-top: 40px;
+    margin: 40px 20px;
+
+    color: #59667e;
+
+    font-size: 13px;
+
     text-align: center;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 850px) {
+
+    .user-dashboard-header {
+        padding:
+            0 20px;
+    }
+
+    .user-dashboard-header-user > span {
+        display: none;
+    }
+
+    .profile-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .profile-avatar span {
+        font-size: 10px;
+    }
+
+    .profile-content {
+        grid-template-columns: 1fr;
+
+        grid-template-areas:
+            "account"
+            "personal"
+            "password";
+
+        align-items: start;
+
+        padding:
+            23px 20px 35px;
+    }
+
+    .profile-password-section {
+        height: auto;
+    }
+
+    .profile-feedback-section {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 650px) {
+
+    .profile-content {
+        padding:
+            20px 16px 30px;
+    }
+
+    .profile-section h2 {
+        font-size: 16px;
+    }
+
+    .profile-info-row {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        justify-content: center;
+
+        gap: 3px;
+
+        padding:
+            9px 11px;
+    }
+
+    .profile-info-value {
+        text-align: left;
+    }
+
+    .profile-section .form-group,
+    .profile-password-section .form-group {
+        width: calc(100% - 32px);
+
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .btn-primary {
+        width: calc(100% - 32px);
+
+        margin-left: 16px;
+        margin-right: 16px;
+    }
 }

@@ -34,8 +34,7 @@ import { useNavigate } from "react-router-dom";
 
 import {
   LayoutDashboard,
-  House,
-  ClipboardList,
+  FilePlus2,
   CircleAlert,
   UserRound,
   LogOut,
@@ -50,7 +49,7 @@ import {
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
 
-import UONLogo from "../images/UONLogo.png";
+import UONLogo from "../images/UONLogo White.png";
 
 import "./UserDashboard.css";
 
@@ -150,6 +149,10 @@ export default function UserDashboard() {
     );
   }
 
+  // Build initials for avatar
+  const initials =
+    `${userData.firstName?.[0] ?? ""}${userData.lastName?.[0] ?? ""}`.toUpperCase();
+
   if (!userData) {
     return <p className="user-dashboard-message">No user data found.</p>;
   }
@@ -181,18 +184,9 @@ export default function UserDashboard() {
           <button
             type="button"
             className="user-dashboard-nav-item"
-            onClick={() => navigate("/userdashboard")}
-          >
-            <House />
-            <span>Home</span>
-          </button>
-
-          <button
-            type="button"
-            className="user-dashboard-nav-item"
             onClick={() => navigate("/reportissue")}
           >
-            <ClipboardList />
+            <FilePlus2 />
             <span>Report Issues</span>
           </button>
 
@@ -235,18 +229,16 @@ export default function UserDashboard() {
         {/* Top header */}
 
         <header className="user-dashboard-header">
-          <h1>Dashboard</h1>
-
+          <h1>User dashboard</h1>
+          
           <div className="user-dashboard-header-user">
             <span>
-              Welcome, {userData.firstName || "User"}!
+              Welcome {userData.firstName || "User"}
             </span>
-
-            <div className="user-dashboard-avatar">
-              <UserRound />
-            </div>
-
-            <ChevronDown className="user-dashboard-chevron" />
+          <div className="profile-avatar">
+            <span>{initials}</span>
+          </div>
+            
           </div>
         </header>
 
@@ -301,7 +293,7 @@ export default function UserDashboard() {
                   {issuesLoading ? "..." : stats.open}
                 </strong>
 
-                <p>Requires attention</p>
+                <p>Waiting for admin</p>
               </div>
             </article>
 
@@ -323,24 +315,6 @@ export default function UserDashboard() {
               </div>
             </article>
 
-            {/* UPDATES */}
-
-            <article className="user-dashboard-status-card status-updates">
-              <div className="user-dashboard-status-icon">
-                <Wrench />
-              </div>
-
-              <div className="user-dashboard-status-content">
-                <h3>Updates Ongoing</h3>
-
-                <strong>
-                  {issuesLoading ? "..." : stats.inProgress}
-                </strong>
-
-                <p>Awaiting updates</p>
-              </div>
-            </article>
-
             {/* CLOSED */}
 
             <article className="user-dashboard-status-card status-closed">
@@ -355,7 +329,7 @@ export default function UserDashboard() {
                   {issuesLoading ? "..." : stats.closed}
                 </strong>
 
-                <p>Recently resolved</p>
+                <p>Resolved issues</p>
               </div>
             </article>
           </section>
@@ -424,9 +398,9 @@ export default function UserDashboard() {
                 <table className="user-dashboard-table">
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Date</th>
+                      <th>Date of incident</th>
                       <th>Location</th>
+                      <th>Title</th>
                       <th>Status</th>
                       <th>View</th>
                     </tr>
@@ -435,22 +409,17 @@ export default function UserDashboard() {
                   <tbody>
                     {sortedIssues.map((issue) => (
                       <tr key={issue._id}>
-                        <td>
-                          {issue._id
-                            ? `#${issue._id.slice(-4)}`
-                            : "-"}
-                        </td>
 
                         <td>
-                          {issue.dateTimeReported
+                          {issue.dateTimeIssueOccurred
                             ? new Date(
-                                issue.dateTimeReported
-                              ).toLocaleDateString("en-AU")
+                              issue.dateTimeIssueOccurred
+                            ).toLocaleDateString("en-AU")
                             : "-"}
                         </td>
 
                         <td>{issue.location || "-"}</td>
-
+                        <td>{issue.title || "-"}</td>
                         <td>{issue.status || "-"}</td>
 
                         <td>

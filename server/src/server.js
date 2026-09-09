@@ -211,41 +211,67 @@ app.get('/api/user/:firebaseUid', async (req, res) => {
 });
 
 /**
- * This route allows the app to update user's last name - Other profile page fields should stay as they are (Password can be updated seperately using usePasswordReset.js hook)
+ * This route allows the app to update user's first name and last name - Other profile page fields should stay as they are
  **/
 app.put('/api/user/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { firebaseUid } = req.params;
-    const { lastName } = req.body;
+    const { firstName, lastName } = req.body;
 
-    if (!lastName) {
-      return res.status(400).json({ error: "lastName is required" });
+    // Build update object using only the fields users are allowed to change
+    const updates = {};
+
+    // Validate first name if it was provided
+    if (firstName !== undefined) {
+      if (typeof firstName !== "string" || firstName.trim().length < 2) {
+        return res.status(400).json({
+          error: "First name must be at least 2 characters"
+        });
+      }
+
+      updates.firstName = firstName.trim();
     }
 
-    // Use findOneAndUpdate to return the updated document
+    // Validate last name if it was provided
+    if (lastName !== undefined) {
+      if (typeof lastName !== "string" || lastName.trim().length < 2) {
+        return res.status(400).json({
+          error: "Last name must be at least 2 characters"
+        });
+      }
+
+      updates.lastName = lastName.trim();
+    }
+
+    // Make sure there is at least one field to update
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        error: "No valid profile fields to update"
+      });
+    }
+
+    // Update only the user's first name and/or last name
+    // Email, role, isAdmin and firebaseUid cannot be changed by the user
     const result = await db.collection("User").findOneAndUpdate(
-      { firebaseUid }, // match by Firebase UID
-      { $set: { lastName } }, // update only lastName
-      { returnDocument: "after", upsert: false } // don't create new if not found
+      { firebaseUid },
+      { $set: updates },
+      { returnDocument: "after", upsert: false }
     );
 
     if (!result) {
-      // Optional: Instead of returning 404, return current state
-      // This avoids errors when UI calls update before fetchUser
-      const user = await db.collection("User").findOne({ firebaseUid });
-      if (user) {
-        return res.json(user); // return existing user data
-      } else {
-        return res.status(404).json({ error: "User not found" });
-      }
+      return res.status(404).json({
+        error: "User not found"
+      });
     }
 
-    res.json(result); // updated user
+    res.json(result);
 
   } catch (err) {
     console.error("Failed to update user:", err);
-    res.status(500).json({ error: "Failed to update user" });
+    res.status(500).json({
+      error: "Failed to update user"
+    });
   }
 });
 
@@ -774,22 +800,57 @@ app.put('/api/issues/:id/unassign', async (req, res) => {
 
 /**
  * This route retrieves a single issue with a matching IssueID
+ * Normal users will receive the issue without internal admin comments, while administrators will receive the issue along with any internal admin comments associated with it.
  */
 app.get('/api/issues/:id', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { id } = req.params;
+    const { firebaseUid } = req.query;
 
-    const issues = await issueWithAssigneeName(db, { _id: new ObjectId(id) }, 1); // Convert string ID to ObjectId and find matching issue
+    // Validate the issue ID
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
 
-    if (issues.length === 0)
+    const issues = await issueWithAssigneeName(
+      db,
+      { _id: new ObjectId(id) },
+      1
+    );
+
+    if (issues.length === 0) {
       return res.status(404).json({ error: "Issue not found" });
+    }
 
-    const issueComments = await getIssueComments(db, new ObjectId(id));
-    res.json({ ...issues[0], issueComments }); //Send back the issue and its comments
+    const issue = issues[0];
+
+    // Check whether the requesting user is an administrator
+    let isAdmin = false;
+
+    if (firebaseUid) {
+      const user = await findUserByIdentity(db, firebaseUid);
+      isAdmin = user?.isAdmin === true;
+    }
+
+    // Only administrators should receive internal admin comments
+    if (isAdmin) {
+      const issueComments = await getIssueComments(
+        db,
+        new ObjectId(id)
+      );
+
+      return res.json({
+        ...issue,
+        issueComments,
+      });
+    }
+
+    // Normal users receive the issue without admin comments
+    return res.json(issue);
 
   } catch (err) {
-    console.error(err);
+    console.error("Failed to fetch issue:", err);
     res.status(500).json({ error: "Failed to fetch issue" });
   }
 });

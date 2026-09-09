@@ -11,8 +11,19 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import {
+  LayoutDashboard,
+  FilePlus2,
+  CircleAlert,
+  UserRound,
+  LogOut,
+  Wrench,
+  Users,
+} from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
+import UONLogo from "../images/UONLogo White.png";
+import "../pages/UserDashboard.css";
 import "../styles/IssueDetails.css";
 
 export default function IssueDetails() {
@@ -162,50 +173,52 @@ export default function IssueDetails() {
     }
   };
 
-  // side bar if necessary
+  const displayName = userData?.firstName || userData?.name || "User";
+  const initials =
+    `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+
   const Sidebar = () => (
-    <aside className="report-sidebar">
-      <div className="sidebar-top">
-        <div className="sidebar-logo">📊</div>
-        <h2>Dashboard</h2>
+    <aside className="user-dashboard-sidebar">
+      <div className="user-dashboard-logo">
+        <img src={UONLogo} alt="The University of Newcastle Australia" />
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="user-dashboard-nav">
         {!userData?.isAdmin && (
           <>
             <button
               type="button"
-              className="sidebar-item"
+              className="user-dashboard-nav-item"
               onClick={() => navigate("/userdashboard")}
             >
-              <span className="sidebar-icon">🏠</span>
-              <span>Home</span>
+              <LayoutDashboard />
+              <span>Dashboard</span>
             </button>
 
             <button
               type="button"
-              className="sidebar-item"
+              className="user-dashboard-nav-item"
               onClick={() => navigate("/reportissue")}
             >
-              <span className="sidebar-icon">📄</span>
+              <FilePlus2 />
               <span>Report Issues</span>
             </button>
 
             <button
               type="button"
-              className="sidebar-item active"
+              className="user-dashboard-nav-item active"
               onClick={() => navigate("/myissues")}
             >
-              <span className="sidebar-icon">‼️</span>
+              <CircleAlert />
               <span>My Issues</span>
             </button>
 
             <button
               type="button"
-              className="sidebar-item"
+              className="user-dashboard-nav-item"
               onClick={() => navigate("/profile")}
             >
-              <span className="sidebar-icon">👤</span>
+              <UserRound />
               <span>Profile</span>
             </button>
           </>
@@ -215,39 +228,60 @@ export default function IssueDetails() {
           <>
             <button
               type="button"
-              className="sidebar-item"
+              className="user-dashboard-nav-item"
               onClick={() => navigate("/admin/dashboard")}
             >
-              <span className="sidebar-icon">🏠</span>
+              <LayoutDashboard />
               <span>Dashboard</span>
             </button>
 
             <button
               type="button"
-              className="sidebar-item"
+              className="user-dashboard-nav-item"
               onClick={() => navigate("/admin/manageissues")}
             >
-              <span className="sidebar-icon">🛠️</span>
+              <Wrench />
               <span>Manage Issues</span>
             </button>
 
             <button
               type="button"
-              className="sidebar-item"
+              className="user-dashboard-nav-item"
               onClick={() => navigate("/admin/usermanagement")}
             >
-              <span className="sidebar-icon">👥</span>
+              <Users />
               <span>User Management</span>
             </button>
           </>
         )}
 
-        <button type="button" className="sidebar-item" onClick={logout}>
-          <span className="sidebar-icon">↪</span>
+      </nav>
+
+      <div className="user-dashboard-logout-section">
+        <button type="button" className="user-dashboard-logout" onClick={logout}>
+          <LogOut />
           <span>Logout</span>
         </button>
-      </nav>
+      </div>
     </aside>
+  );
+
+  const PageLayout = ({ children }) => (
+    <div className="user-dashboard">
+      <Sidebar />
+      <div className="user-dashboard-main">
+        <header className="user-dashboard-header">
+          <h1>Issue details</h1>
+          <div className="user-dashboard-header-user">
+            <span>Welcome {displayName}</span>
+            <div className="profile-avatar">
+              <span>{initials}</span>
+            </div>
+          </div>
+        </header>
+        {children}
+      </div>
+    </div>
   );
 
 
@@ -263,64 +297,42 @@ export default function IssueDetails() {
   //Display info to the user about what the page is doing
   if (loading) {
     return (
-      <div className="report-layout">
-        <Sidebar />
+      <PageLayout>
         <div className="issues-details-container">
           <div className="issue-details-status">Loading issue data...</div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="report-layout">
-        <Sidebar />
+      <PageLayout>
         <div className="issues-details-container">
           <div className="issue-details-status issue-details-status-error">
             {error}
           </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (!issue) {
     return (
-      <div className="report-layout">
-        <Sidebar />
+      <PageLayout>
         <div className="issues-details-container">
           <div className="issue-details-status">No issue found.</div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="report-layout">
-      <Sidebar />
-
+    <PageLayout>
       <div className="issues-details-container">
-        <header className="issue-details-header">
-          <div className="issue-details-heading">
-            <p className="issue-details-eyebrow">Issue report</p>
-            <h1 className="issue-details-title">{issue.title}</h1>
-          </div>
-
-          <span
-            className={`user-my-issues-status-badge ${getStatusClass(issue.status)}`}
-          >
-            {issue.status}
-          </span>
-        </header>
-
         <div className="issue-details-summary">
           <div className="issue-summary-item">
-            <span className="issue-summary-label">Reported by</span>
-            <span>{issue.reportedByName || "Unknown reporter"}</span>
-          </div>
-          <div className="issue-summary-item">
-            <span className="issue-summary-label">Incident</span>
+            <span className="issue-summary-label">Incident Date</span>
             <span>
               {issue.dateTimeIssueOccurred
                 ? new Date(issue.dateTimeIssueOccurred).toLocaleString("en-AU", {
@@ -334,10 +346,6 @@ export default function IssueDetails() {
             </span>
           </div>
           <div className="issue-summary-item">
-            <span className="issue-summary-label">Assigned to</span>
-            <span>{issue.assignedToName || "Unassigned"}</span>
-          </div>
-          <div className="issue-summary-item">
             <span className="issue-summary-label">Location</span>
             <span>{issue.location || "Unknown location"}</span>
           </div>
@@ -345,15 +353,18 @@ export default function IssueDetails() {
             <span className="issue-summary-label">Campus</span>
             <span>{issue.campus || "Unknown campus"}</span>
           </div>
-          <div className="issue-summary-item">
-            <span className="issue-summary-label">Witnesses</span>
-            <span>{issue.witnessNames?.length ? `${issue.witnessNames.length} recorded` : "No witnesses"}</span>
-          </div>
+
         </div>
 
         <div className="issue-details-main-layout">
           <div className="issue-details-main-column">
             <section className="issue-details-card">
+              <div className="issue-details-card-header">Title</div>
+              <div className="issue-details-card-body">
+                <p>{issue.title || "No title provided."}</p>
+              </div>
+            </section>
+            <section className="issue-details-card issue-description-card">
               <div className="issue-details-card-header">Description</div>
               <div className="issue-details-card-body">
                 <p>{issue.issueDescription || "No description provided."}</p>
@@ -362,7 +373,10 @@ export default function IssueDetails() {
 
             {issue.additionalDetails && (
               <section className="issue-details-card">
-                <div className="issue-details-card-header">Additional details</div>
+                <div className="issue-details-card-header">
+                  Additional details
+                </div>
+
                 <div className="issue-details-card-body">
                   <p>{issue.additionalDetails}</p>
                 </div>
@@ -372,6 +386,7 @@ export default function IssueDetails() {
             {issue.imageURLs && issue.imageURLs.length > 0 && (
               <section className="issue-details-card">
                 <div className="issue-details-card-header">Evidence</div>
+
                 <div className="issue-details-card-body">
                   <div className="issue-details-image-row">
                     {issue.imageURLs.map((url, i) => (
@@ -387,38 +402,41 @@ export default function IssueDetails() {
               </section>
             )}
 
-            <section className="issue-details-card">
-              <div className="issue-details-card-header">Admin Comments</div>
+            {/* Admin comments are only visible to admin users */}
+            {userData?.isAdmin && (
+              <section className="issue-details-card">
+                <div className="issue-details-card-header">
+                  Admin Comments
+                </div>
 
-              <div className="issue-details-card-body">
+                <div className="issue-details-card-body">
 
-                {/* Existing comments */}
-                {issue.issueComments?.length ? (
-                  <div className="issue-comments-list">
-                    {issue.issueComments.map((issueComment) => (
-                      <div
-                        className="issue-comment"
-                        key={issueComment._id}
-                      >
-                        <p>{issueComment.comment}</p>
+                  {/* Existing comments */}
+                  {issue.issueComments?.length ? (
+                    <div className="issue-comments-list">
+                      {issue.issueComments.map((issueComment) => (
+                        <div
+                          className="issue-comment"
+                          key={issueComment._id}
+                        >
+                          <p>{issueComment.comment}</p>
 
-                        <small>
-                          {issueComment.commentedByName} ·{" "}
-                          {new Date(
-                            issueComment.dateTimeCommented
-                          ).toLocaleString("en-AU")}
-                        </small>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="issue-details-empty-text">
-                    No comments recorded.
-                  </p>
-                )}
+                          <small>
+                            {issueComment.commentedByName} ·{" "}
+                            {new Date(
+                              issueComment.dateTimeCommented
+                            ).toLocaleString("en-AU")}
+                          </small>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="issue-details-empty-text">
+                      No comments recorded.
+                    </p>
+                  )}
 
-                {/* Add a new comment */}
-                {userData?.isAdmin && (
+                  {/* Add a new comment */}
                   <form
                     className="issue-comment-form"
                     onSubmit={addComment}
@@ -439,7 +457,9 @@ export default function IssueDetails() {
                         addingComment || !newComment.trim()
                       }
                     >
-                      {addingComment ? "Adding..." : "Add comment"}
+                      {addingComment
+                        ? "Adding..."
+                        : "Add comment"}
                     </button>
 
                     {commentError && (
@@ -448,46 +468,63 @@ export default function IssueDetails() {
                       </p>
                     )}
                   </form>
-                )}
 
-              </div>
-            </section>
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Side column for witness information */}
           <aside className="issue-details-side-column">
             <section className="issue-details-card">
-              <div className="issue-details-card-header">Witnesses</div>
+              <div className="issue-details-card-header">
+                Witnesses
+              </div>
+
               <div className="issue-details-card-body">
-                {issue.witnessNames && issue.witnessNames.length > 0 ? (
+                {issue.witnessNames &&
+                  issue.witnessNames.length > 0 ? (
                   <div className="witness-pill-container">
                     {issue.witnessNames.map((name, i) => (
-                      <span className="witness-pill" key={i}>
+                      <span
+                        className="witness-pill"
+                        key={i}
+                      >
                         {name}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <p className="issue-details-empty-text">No witnesses recorded.</p>
+                  <p className="issue-details-empty-text">
+                    No witnesses recorded.
+                  </p>
                 )}
               </div>
             </section>
 
             {/* Side column for additional relevant information */}
-            <section className="issue-details-card">
-              <div className="issue-details-card-header">Issue snapshot</div>
+            <section className="issue-details-card issue-snapshot-card">
+              <div className="issue-details-card-header">
+                Issue snapshot
+              </div>
+
               <div className="issue-details-card-body issue-details-meta-list">
                 <div className="issue-meta-row">
-                  <span>Status</span>
+                  <span>Status:</span>
+
                   {userData?.isAdmin ? (
                     <select
                       value={issue.status || "Open"}
-                      onChange={(e) => updateIssueStatus(e.target.value)}
+                      onChange={(e) =>
+                        updateIssueStatus(e.target.value)
+                      }
                       disabled={updatingStatus}
                       title="Change the issue status"
                     >
                       <option value="Open">Open</option>
-                      <option value="In Progress">In Progress</option>
+                      <option value="In Progress">
+                        In Progress
+                      </option>
                       <option value="Closed">Closed</option>
                     </select>
                   ) : (
@@ -496,32 +533,42 @@ export default function IssueDetails() {
                 </div>
 
                 {statusError && (
-                  <p className="issue-status-error">{statusError}</p>
+                  <p className="issue-status-error">
+                    {statusError}
+                  </p>
                 )}
+
                 <div className="issue-meta-row">
-                  <span>Priority</span>
-                  <strong>{issue.priority || "Not set"}</strong>
-                </div>
-                <div className="issue-meta-row">
-                  <span>Reported date</span>
+                  <span>Priority:</span>
                   <strong>
-                    {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                    {issue.priority || "Not set"}
+                  </strong>
+                </div>
+
+                <div className="issue-meta-row">
+                  <span>Reported date:</span>
+                  <strong>
+                    {new Date(
+                      issue.dateTimeReported
+                    ).toLocaleString("en-AU", {
                       dateStyle: "short",
                       timeStyle: "short",
                     })}
                   </strong>
                 </div>
+
                 <div className="issue-meta-row">
-                  <span>Location</span>
-                  <strong>{issue.location || "Unknown"}</strong>
+                  <span>Reported by:</span>
+                  <strong>
+                    {issue.reportedByName || "Unknown"}
+                  </strong>
                 </div>
+
                 <div className="issue-meta-row">
-                  <span>Campus</span>
-                  <strong>{issue.campus || "Unknown"}</strong>
-                </div>
-                <div className="issue-meta-row">
-                  <span>Assigned</span>
-                  <strong>{issue.assignedToName || "Unassigned"}</strong>
+                  <span>Assigned to:</span>
+                  <strong>
+                    {issue.assignedToName || "Unassigned"}
+                  </strong>
                 </div>
               </div>
             </section>
@@ -595,21 +642,9 @@ export default function IssueDetails() {
             >
               Edit Issue
             </button>
-            <button
-              className="btn secondary-btn"
-              onClick={() => navigate("/myissues")}
-            >
-              Back to my issues
-            </button>
-            <button
-              className="btn secondary-btn"
-              onClick={() => navigate("/userdashboard")}
-            >
-              Back to Dashboard
-            </button>
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }
