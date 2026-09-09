@@ -27,6 +27,10 @@ import {
   validateAdminEligibility,
   VALID_ISSUE_STATUSES,
 } from "./issueStatus.js";
+import {
+  normalizeIncidentDateTime,
+  isIncidentDateTimeValid,
+} from "./incidentDateTime.js";
 
 dotenv.config(); //Load environment variables from .env
 
@@ -427,6 +431,10 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
     }
 
     const now = new Date();
+    if (dateTimeIssueOccurred && !isIncidentDateTimeValid(dateTimeIssueOccurred, now)) {
+      return res.status(400).json({ error: "Incident date and time cannot be later than the report time." });
+    }
+    const normalizedIncidentDateTime = normalizeIncidentDateTime(dateTimeIssueOccurred, now);
 
     const newIssue = {
       campus,
@@ -435,7 +443,7 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
       issueDescription,
       assignedTo: null,
       dateTimeReported: now,
-      dateTimeIssueOccurred: dateTimeIssueOccurred ? new Date(dateTimeIssueOccurred) : now,
+      dateTimeIssueOccurred: normalizedIncidentDateTime,
       reportedBy: userExists._id,
       reportedByName: `${userExists.firstName} ${userExists.lastName}`,
       status: "Open",
@@ -882,6 +890,7 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       campus,
       status,
       priority,
+      dateTimeIssueOccurred,
     } = body;
     const witnessNames = parseArrayField(body.witnessNames);
     const imageURLs = parseArrayField(body.imageURLs ?? body.imageURL);
@@ -891,12 +900,21 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       return res.status(400).json({ error: "Invalid issue ID" });
     }
 
+    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Retrieve the issue from the database if it exists
+
+    if (dateTimeIssueOccurred && !isIncidentDateTimeValid(dateTimeIssueOccurred, new Date())) {
+      return res.status(400).json({ error: "Incident date and time cannot be later than the report time." });
+    }
+
     // Build update object dynamically (only update provided fields)
     const updateFields = {};
     if (title !== undefined) updateFields.title = title;
     if (issueDescription !== undefined) updateFields.issueDescription = issueDescription;
     if (location !== undefined) updateFields.location = location;
     if (campus !== undefined) updateFields.campus = campus;
+    if (dateTimeIssueOccurred !== undefined && dateTimeIssueOccurred !== "") {
+      updateFields.dateTimeIssueOccurred = normalizeIncidentDateTime(dateTimeIssueOccurred, issue?.dateTimeIssueOccurred || new Date());
+    }
     if (priority !== undefined) {
       const validPriorities = ["Low", "Medium", "High", "Critical"];
       if (!validPriorities.includes(priority)) {
@@ -912,7 +930,6 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       updateFields.status = validation.normalizedStatus;
     }
     if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
-    const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Retrieve the issue from the database if it exists
 
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });

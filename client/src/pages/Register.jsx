@@ -91,8 +91,27 @@ export default function RegisterPage() {
             }
 
             navigate("/login", { state: { message: "Account created successfully. Please log in." } });
-        } catch (err) {
-            setError(err.message);
+                } catch (err) {
+            switch (err.code) {
+                case 'auth/email-already-in-use':
+                    setError('This email is already registered. Please log in or use a different email.');
+                    break;
+
+                case 'auth/weak-password':
+                    setError('Password is too weak. Please use at least 6 characters.');
+                    break;
+
+                case 'auth/invalid-email':
+                    setError('Please enter a valid email address.');
+                    break;
+
+                case 'auth/network-request-failed':
+                    setError('Network error. Please check your internet connection and try again.');
+                    break;
+
+                default:
+                    setError('Unable to create your account. Please try again later.');
+            }
         } finally {
             setLoading(false);
         }

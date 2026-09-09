@@ -48,6 +48,7 @@ export default function ReportIssue() {
   const [location, setLocation] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
   const [pendingDeleteDraft, setPendingDeleteDraft] = useState(null);
+  const [incidentDateTime, setIncidentDateTime] = useState("");
 
   const [witnessInput, setWitnessInput] = useState("");
   const [witnessList, setWitnessList] = useState([]);
@@ -96,10 +97,19 @@ export default function ReportIssue() {
     if (
       !issueTitle.trim() ||
       !location.trim() ||
-      !issueDescription.trim()
+      !issueDescription.trim() ||
+      !incidentDateTime
     ) {
       setFormError(
         "Please fill in all required fields.",
+      );
+      setFormLoading(false);
+      return;
+    }
+
+    if (new Date(incidentDateTime).getTime() > Date.now()) {
+      setFormError(
+        "Incident date and time cannot be in the future.",
       );
       setFormLoading(false);
       return;
@@ -229,7 +239,7 @@ export default function ReportIssue() {
               issueDescription.trim(),
             witnessNames: witnessList,
             dateTimeIssueOccurred:
-              new Date().toISOString(),
+              incidentDateTime,
             imageURLs,
           }),
         },
@@ -292,6 +302,7 @@ export default function ReportIssue() {
       campus,
       location,
       issueDescription,
+      incidentDateTime,
       witnessList,
       savedAt:
         new Date().toISOString(),
@@ -346,6 +357,10 @@ export default function ReportIssue() {
 
     setIssueDescription(
       draft.issueDescription || "",
+    );
+
+    setIncidentDateTime(
+      draft.incidentDateTime || "",
     );
 
     setWitnessList(
@@ -901,6 +916,22 @@ export default function ReportIssue() {
                               .value,
                           )
                         }
+                      />
+                    </div>
+
+                    <div className="report-field">
+                      <label htmlFor="incident-date-time">
+                        Date and time incident occurred{" "}
+                        <span>
+                          *
+                        </span>
+                      </label>
+
+                      <input
+                        id="incident-date-time"
+                        type="datetime-local"
+                        value={incidentDateTime}
+                        onChange={(e) => setIncidentDateTime(e.target.value)}
                       />
                     </div>
                   </div>

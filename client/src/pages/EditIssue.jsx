@@ -33,6 +33,7 @@ export default function EditIssue() {
         location: "",
         campus: "",
         priority: "Medium",
+        dateTimeIssueOccurred: "",
         comments: [],
         imageURLs: [],
         witnessNames: []
@@ -67,6 +68,7 @@ export default function EditIssue() {
                     location: data.location || "",
                     campus: data.campus || "",
                     priority: data.priority || "Medium",
+                    dateTimeIssueOccurred: data.dateTimeIssueOccurred ? new Date(data.dateTimeIssueOccurred).toISOString().slice(0, 16) : "",
                     comments: [],
                     imageURLs: data.imageURLs || [],
                     witnessNames: data.witnessNames || []
@@ -159,11 +161,16 @@ export default function EditIssue() {
         }
 
         try {
+            if (formData.dateTimeIssueOccurred && new Date(formData.dateTimeIssueOccurred).getTime() > Date.now()) {
+                throw new Error("Incident date and time cannot be in the future.");
+            }
+
             const body = new FormData();
             body.append("title", title);
             body.append("issueDescription", description);
             body.append("location", issueLocation);
             body.append("campus", formData.campus || "");
+            body.append("dateTimeIssueOccurred", formData.dateTimeIssueOccurred || "");
             if (userData?.isAdmin) {
                 body.append("priority", formData.priority || "Medium");
             }
