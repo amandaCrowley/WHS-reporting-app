@@ -29,6 +29,7 @@ export default function EditIssue() {
         location: "",
         campus: "",
         priority: "Medium",
+        dateTimeIssueOccurred: "",
         comments: [],
         imageURLs: [],
         witnessNames: []
@@ -58,6 +59,7 @@ export default function EditIssue() {
                     location: data.location || "",
                     campus: data.campus || "",
                     priority: data.priority || "Medium",
+                    dateTimeIssueOccurred: data.dateTimeIssueOccurred ? new Date(data.dateTimeIssueOccurred).toISOString().slice(0, 16) : "",
                     comments: [],
                     imageURLs: data.imageURLs || [],
                     witnessNames: data.witnessNames || []
@@ -89,11 +91,16 @@ export default function EditIssue() {
     */
     const updateIssue = async () => {
         try {
+            if (formData.dateTimeIssueOccurred && new Date(formData.dateTimeIssueOccurred).getTime() > Date.now()) {
+                throw new Error("Incident date and time cannot be in the future.");
+            }
+
             const body = new FormData();
             body.append("title", formData.title || "");
             body.append("issueDescription", formData.issueDescription || "");
             body.append("location", formData.location || "");
             body.append("campus", formData.campus || "");
+            body.append("dateTimeIssueOccurred", formData.dateTimeIssueOccurred || "");
             if (userData?.isAdmin) {
                 body.append("priority", formData.priority || "Medium");
             }
@@ -237,6 +244,16 @@ export default function EditIssue() {
                             <option value="Sydney">Sydney</option>
                             <option value="Port Macquarie">Port Macquarie</option>
                         </select>
+                    </div>
+                    <div className="form-section">
+                        <label htmlFor="dateTimeIssueOccurred">Date and time incident occurred</label>
+                        <input
+                            id="dateTimeIssueOccurred"
+                            name="dateTimeIssueOccurred"
+                            type="datetime-local"
+                            value={formData?.dateTimeIssueOccurred || ""}
+                            onChange={handleUpdateClick}
+                        />
                     </div>
                     {userData?.isAdmin && (
                         <div className="form-section">
