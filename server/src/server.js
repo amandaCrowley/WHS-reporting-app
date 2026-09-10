@@ -192,6 +192,27 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+app.get('/api/admin/users/:userId', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { userId } = req.params;
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    const user = await db.collection("User").findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Failed to fetch managed user:", err);
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
 
 /**
  * This route retrieves a single user using their Firebase UID
@@ -279,9 +300,7 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
   }
 });
 
-/**
- * Allows an administrator to update another user's role or administrator status.
- */
+// update user role
 app.put('/api/admin/users/:userId', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -363,6 +382,10 @@ app.put('/api/admin/users/:userId', async (req, res) => {
       updates.isAdmin = isAdmin; // Add isAdmin to updates if valid
     }
 
+    if (role !== undefined && role !== "Staff") {
+      updates.isAdmin = false;
+    }
+
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: "No user fields to update" });
     }
@@ -381,6 +404,58 @@ app.put('/api/admin/users/:userId', async (req, res) => {
   } catch (err) {
     console.error("Failed to update managed user:", err);
     res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
+app.delete('/api/admin/users/:userId', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { userId } = req.params;
+    const { adminFirebaseUid } = req.body;
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    if (!adminFirebaseUid) {
+      return res.status(400).json({ error: "adminFirebaseUid is required" });
+    }
+
+    const requestingAdmin = await db.collection("User").findOne({
+      firebaseUid: adminFirebaseUid,
+      isAdmin: true,
+    });
+
+    if (!requestingAdmin) {
+      return res.status(403).json({ error: "Administrator access required" });
+    }
+
+    const targetUser = await db.collection("User").findOne({ _id: new ObjectId(userId) });
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (targetUser.firebaseUid === adminFirebaseUid) {
+      return res.status(400).json({ error: "You cannot delete your own account" });
+    }
+
+    if (targetUser.isAdmin) {
+      const adminCount = await db.collection("User").countDocuments({ isAdmin: true });
+      if (adminCount <= 1) {
+        return res.status(400).json({ error: "The final administrator cannot be deleted" });
+      }
+    }
+
+    const result = await db.collection("User").deleteOne({ _id: new ObjectId(userId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    console.error("Failed to delete managed user:", err);
+    res.status(500).json({ error: "Failed to delete user" });
   }
 });
 

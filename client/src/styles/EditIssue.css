@@ -55,11 +55,17 @@ label {
     font-size: 14px;
 }
 
-input, select {
+input, select, textarea {
+    width: 100%;
     padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 14px;
+    box-sizing: border-box;
+}
+
+input[type="datetime-local"] {
+    width: 100%;
 }
 
 .edit-image-grid {

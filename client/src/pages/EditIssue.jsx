@@ -46,21 +46,32 @@ export default function EditIssue() {
     const fileInputRef = useRef(null);
     const logout = userLogout();
 
+    // handling strange timezone issues
+    const formatLocalDateTimeForInput = (value) => {
+        if (!value) return "";
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return localDate.toISOString().slice(0, 16);
+    };
+
     const displayName = userData?.firstName || userData?.name || "User";
     const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
-    /**
-     * Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
-     */
+    
+    // Fetch issue details
+     
     useEffect(() => {
         const fetchIssue = async () => {
             try {
-                // Call backend API to fetch issue by ID
+                // fetch issue by ID
                 const res = await fetch(`http://localhost:8000/api/issues/${issueId}`);
                 if (!res.ok) throw new Error("Failed to fetch issue");
                 const data = await res.json();
 
-                setIssue(data);   // Store fetched issue in state
+                setIssue(data);   // Store fetched issue 
                 setFormData({
                     ...data,
                     title: data.title || "",
@@ -68,7 +79,7 @@ export default function EditIssue() {
                     location: data.location || "",
                     campus: data.campus || "",
                     priority: data.priority || "Medium",
-                    dateTimeIssueOccurred: data.dateTimeIssueOccurred ? new Date(data.dateTimeIssueOccurred).toISOString().slice(0, 16) : "",
+                    dateTimeIssueOccurred: formatLocalDateTimeForInput(data.dateTimeIssueOccurred),
                     comments: [],
                     imageURLs: data.imageURLs || [],
                     witnessNames: data.witnessNames || []
@@ -82,7 +93,7 @@ export default function EditIssue() {
             }
         };
 
-        fetchIssue(); //Call method to fetch the issue by ID from the backend
+        fetchIssue(); //Call method to fetch the issue by ID 
     }, [issueId]);
 
     //update the form data state
@@ -96,9 +107,7 @@ export default function EditIssue() {
         }));
     };
 
-    /**
-    * Update issue in backend/server
-    */
+    // Update issue in backend/server
     const updateIssue = async () => {
         setUpdateError("");
 
@@ -115,6 +124,7 @@ export default function EditIssue() {
             "Port Macquarie",
         ];
 
+        // validation logic
         if (!title) {
             setUpdateError("Please enter an issue title.");
             return;
@@ -210,7 +220,7 @@ export default function EditIssue() {
                 return;
             }
 
-            navigate(`/myissues`); //Navigate back to the user's issues page after successful update
+            navigate(`/myissues`); //Navigate back to the user's issues page 
         } catch (err) {
             setUpdateError(err.message);
         }
@@ -260,9 +270,9 @@ export default function EditIssue() {
         }));
     };
 
-    //Display info to the user about what the page is doing
-    if (loading) return <p>Loading issue data...</p>;    //This will display whilst the data is being fetched from the database
-    if (error) return <p>{error}</p>; //If there is an error, display the error message
+    // display info to the user about what the page is doing
+    if (loading) return <p>Loading issue data...</p>;    // this will display whilst the data is being fetched 
+    if (error) return <p>{error}</p>; // display error msg
     if (!issue) return <p>No issue found.</p>;
 
     return (
@@ -392,6 +402,20 @@ export default function EditIssue() {
                                     </span>
                                 </label>
                                 <input id="location" name="location" value={formData?.location || ""} onChange={handleUpdateClick} minLength={3} maxLength={100} />
+
+                                <label htmlFor="dateTimeIssueOccurred">
+                                    Date and time incident occurred{" "}
+                                    <span>
+                                        *
+                                    </span>
+                                </label>
+                                <input
+                                    id="dateTimeIssueOccurred"
+                                    name="dateTimeIssueOccurred"
+                                    type="datetime-local"
+                                    value={formData?.dateTimeIssueOccurred || ""}
+                                    onChange={handleUpdateClick}
+                                />
                               </div>
 
                               {userData?.isAdmin && (
