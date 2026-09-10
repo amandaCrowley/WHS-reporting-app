@@ -67,7 +67,10 @@ export default function EditIssue() {
         const fetchIssue = async () => {
             try {
                 // fetch issue by ID
-                const res = await fetch(`http://localhost:8000/api/issues/${issueId}`);
+                const query = userData?.firebaseUid
+                    ? `?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
+                    : "";
+                const res = await fetch(`http://localhost:8000/api/issues/${issueId}${query}`);
                 if (!res.ok) throw new Error("Failed to fetch issue");
                 const data = await res.json();
 
@@ -94,7 +97,7 @@ export default function EditIssue() {
         };
 
         fetchIssue(); //Call method to fetch the issue by ID 
-    }, [issueId]);
+    }, [issueId, userData?.firebaseUid]);
 
     //update the form data state
     const handleUpdateClick = (e) => {
@@ -484,6 +487,18 @@ export default function EditIssue() {
                                 <>
                                                                             <div className="form-section edit-comments-section">
                                         <div className="edit-section-title">Progress or resolution comments</div>
+                                        {issue.issueComments?.length > 0 && (
+                                            <div className="issue-comments-list">
+                                                {issue.issueComments.map((issueComment) => (
+                                                    <div className="issue-comment" key={issueComment._id}>
+                                                        <span>{issueComment.comment}</span>
+                                                        <small>
+                                                            {issueComment.commentedByName} · {new Date(issueComment.dateTimeCommented).toLocaleString("en-AU")}
+                                                        </small>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                         {formData.comments?.map((comment, index) => (
                                             <div className="multiple-item" key={`${comment}-${index}`}>
                                                 <span>{comment}</span>
