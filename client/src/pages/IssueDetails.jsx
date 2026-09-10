@@ -26,6 +26,82 @@ import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/IssueDetails.css";
 
+function Sidebar({ userData, navigate, logout }) {
+  return (
+    <aside className="user-dashboard-sidebar">
+      <div className="user-dashboard-logo">
+        <img src={UONLogo} alt="The University of Newcastle Australia" />
+      </div>
+
+      <nav className="user-dashboard-nav">
+        {!userData?.isAdmin && (
+          <>
+            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/userdashboard")}>
+              <LayoutDashboard />
+              <span>Dashboard</span>
+            </button>
+            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/reportissue")}>
+              <FilePlus2 />
+              <span>Report Issues</span>
+            </button>
+            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/myissues")}>
+              <CircleAlert />
+              <span>My Issues</span>
+            </button>
+            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/profile")}>
+              <UserRound />
+              <span>Profile</span>
+            </button>
+          </>
+        )}
+        {userData?.isAdmin && (
+          <>
+            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/dashboard")}>
+              <LayoutDashboard />
+              <span>Dashboard</span>
+            </button>
+            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/manageissues")}>
+              <Wrench />
+              <span>Manage Issues</span>
+            </button>
+            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/usermanagement")}>
+              <Users />
+              <span>User Management</span>
+            </button>
+          </>
+        )}
+      </nav>
+
+      <div className="user-dashboard-logout-section">
+        <button type="button" className="user-dashboard-logout" onClick={logout}>
+          <LogOut />
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function PageLayout({ children, userData, navigate, logout, displayName, initials }) {
+  return (
+    <div className="user-dashboard">
+      <Sidebar userData={userData} navigate={navigate} logout={logout} />
+      <div className="user-dashboard-main">
+        <header className="user-dashboard-header">
+          <h1>Issue details</h1>
+          <div className="user-dashboard-header-user">
+            <span>Welcome {displayName}</span>
+            <div className="profile-avatar">
+              <span>{initials}</span>
+            </div>
+          </div>
+        </header>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function IssueDetails() {
   const { issueId } = useParams(); // Get the issue ID from the URL
   const navigate = useNavigate();
@@ -48,7 +124,10 @@ export default function IssueDetails() {
     const fetchIssue = async () => {
       try {
         // Call backend API to fetch issue by ID
-        const res = await fetch(`http://localhost:8000/api/issues/${issueId}`);
+        const query = userData?.firebaseUid
+          ? `?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
+          : "";
+        const res = await fetch(`http://localhost:8000/api/issues/${issueId}${query}`);
         if (!res.ok) throw new Error("Failed to fetch issue");
         const data = await res.json();
 
@@ -62,7 +141,7 @@ export default function IssueDetails() {
     };
 
     fetchIssue();
-  }, [issueId]);
+  }, [issueId, userData?.firebaseUid]);
 
   const addComment = async (event) => {
     event.preventDefault();
@@ -176,115 +255,7 @@ export default function IssueDetails() {
   const displayName = userData?.firstName || userData?.name || "User";
   const initials =
     `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
-  const Sidebar = () => (
-    <aside className="user-dashboard-sidebar">
-      <div className="user-dashboard-logo">
-        <img src={UONLogo} alt="The University of Newcastle Australia" />
-      </div>
-
-      <nav className="user-dashboard-nav">
-        {!userData?.isAdmin && (
-          <>
-            <button
-              type="button"
-              className="user-dashboard-nav-item"
-              onClick={() => navigate("/userdashboard")}
-            >
-              <LayoutDashboard />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              type="button"
-              className="user-dashboard-nav-item"
-              onClick={() => navigate("/reportissue")}
-            >
-              <FilePlus2 />
-              <span>Report Issues</span>
-            </button>
-
-            <button
-              type="button"
-              className="user-dashboard-nav-item"
-              onClick={() => navigate("/myissues")}
-            >
-              <CircleAlert />
-              <span>My Issues</span>
-            </button>
-
-            <button
-              type="button"
-              className="user-dashboard-nav-item"
-              onClick={() => navigate("/profile")}
-            >
-              <UserRound />
-              <span>Profile</span>
-            </button>
-          </>
-        )}
-
-        {userData?.isAdmin && (
-          <>
-            <button
-              type="button"
-              className="user-dashboard-nav-item"
-              onClick={() => navigate("/admin/dashboard")}
-            >
-              <LayoutDashboard />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              type="button"
-              className="user-dashboard-nav-item"
-              onClick={() => navigate("/admin/manageissues")}
-            >
-              <Wrench />
-              <span>Manage Issues</span>
-            </button>
-
-            <button
-              type="button"
-              className="user-dashboard-nav-item"
-              onClick={() => navigate("/admin/usermanagement")}
-            >
-              <Users />
-              <span>User Management</span>
-            </button>
-          </>
-        )}
-
-      </nav>
-
-      <div className="user-dashboard-logout-section">
-        <button type="button" className="user-dashboard-logout" onClick={logout}>
-          <LogOut />
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
-  );
-
-  const PageLayout = ({ children }) => (
-    <div className="user-dashboard">
-      <Sidebar />
-      <div className="user-dashboard-main">
-        <header className="user-dashboard-header">
-          <h1>Issue details</h1>
-          <div className="user-dashboard-header-user">
-            <span>Welcome {displayName}</span>
-            <div className="profile-avatar">
-              <span>{initials}</span>
-            </div>
-          </div>
-        </header>
-        {children}
-      </div>
-    </div>
-  );
-
-
-
+  const layoutProps = { userData, navigate, logout, displayName, initials };
   // Maps an issue status to the matching CSS class for styling the status badge. This is used to visually differentiate between different issue statuses.
   const getStatusClass = (status) => {
     if (status === "Open") return "user-my-issues-status-open";
@@ -296,7 +267,7 @@ export default function IssueDetails() {
   //Display info to the user about what the page is doing
   if (loading) {
     return (
-      <PageLayout>
+      <PageLayout {...layoutProps}>
         <div className="issues-details-container">
           <div className="issue-details-status">Loading issue data...</div>
         </div>
@@ -306,7 +277,7 @@ export default function IssueDetails() {
 
   if (error) {
     return (
-      <PageLayout>
+      <PageLayout {...layoutProps}>
         <div className="issues-details-container">
           <div className="issue-details-status issue-details-status-error">
             {error}
@@ -318,7 +289,7 @@ export default function IssueDetails() {
 
   if (!issue) {
     return (
-      <PageLayout>
+      <PageLayout {...layoutProps}>
         <div className="issues-details-container">
           <div className="issue-details-status">No issue found.</div>
         </div>
@@ -327,7 +298,7 @@ export default function IssueDetails() {
   }
 
   return (
-    <PageLayout>
+    <PageLayout {...layoutProps}>
       <div className="issues-details-container">
         <div className="issue-details-summary">
           <div className="issue-summary-item">
