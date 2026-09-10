@@ -1,0 +1,162 @@
+/**
+ * AdminUserDetails.css
+ * This file contains the styling for the Admin User Details page of the
+ * WHS Reporting App. It styles the layout, buttons, account information, and reported issues list.
+ * Author/s: Dinh Dinh
+ */
+
+
+* {
+	box-sizing: border-box;
+}
+
+.admin-user-details {
+	min-height: 100vh;
+	padding: 32px clamp(20px, 5vw, 72px) 48px;
+	background: #f7f8fb;
+	color: #07132f;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.admin-user-details > div:first-child {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 0 auto 28px;
+	width: 100%;
+	max-width: 1500px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid #dfe5ef;
+}
+
+.admin-user-details button {
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	padding: 10px 16px;
+	background: #ffffff;
+	color: #002b5c;
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.admin-user-details button:hover {
+	border-color: #0057e7;
+	background: #eef4ff;
+	transform: translateY(-1px);
+}
+
+.admin-user-details > section {
+	width: 100%;
+	max-width: 1500px;
+	margin: 0 auto 24px;
+	padding: 28px;
+	background: #ffffff;
+	border: 1px solid #e7eaf0;
+	border-radius: 12px;
+	box-shadow: 0 8px 24px rgba(0, 43, 92, 0.06);
+}
+
+.admin-user-details h2 {
+	margin: 0 0 20px;
+	color: #002b5c;
+	font-size: 24px;
+}
+
+.admin-user-details h3 {
+	margin: 0 0 12px;
+	color: #002b5c;
+	font-size: 18px;
+}
+
+.account-information {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0 32px;
+	margin-bottom: 24px;
+	padding: 20px;
+	border: 1px solid #e7eaf0;
+	border-radius: 8px;
+	background: #f8fafc;
+}
+
+.account-information p,
+.reported-issue p {
+	margin: 0 0 12px;
+	color: #44506a;
+	line-height: 1.5;
+}
+
+.account-information strong,
+.reported-issue strong {
+	color: #07132f;
+}
+
+.reported-issues-list {
+	display: grid;
+    text-align: left;
+	grid-template-columns: 1fr;
+	gap: 18px;
+	margin: 20px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.reported-issue {
+    display: flex;
+    flex-direction: column;
+	padding: 20px;
+	border: 1px solid #e7eaf0;
+	border-left: 4px solid #0057e7;
+	border-radius: 8px;
+	background: #fbfcfe;
+}
+
+.reported-issue p:last-of-type {
+	margin-bottom: 18px;
+}
+
+.reported-issue button {
+    align-self: center;
+	background: #0057e7;
+	border-color: #0057e7;
+	color: #ffffff;
+}
+
+.reported-issue button:hover {
+	background: #0046bd;
+	border-color: #0046bd;
+}
+
+.admin-user-details [role="alert"] {
+	margin: 12px 0;
+	color: #b42318;
+	font-weight: 600;
+}
+
+@media (max-width: 640px) {
+	.admin-user-details {
+		padding: 20px 14px 32px;
+	}
+
+	.admin-user-details > div:first-child {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.admin-user-details > div:first-child button {
+		width: 100%;
+		padding: 10px 8px;
+	}
+
+	.admin-user-details > section {
+		padding: 20px 16px;
+	}
+
+	.account-information {
+		grid-template-columns: 1fr;
+		gap: 0;
+		padding: 16px;
+	}
+}

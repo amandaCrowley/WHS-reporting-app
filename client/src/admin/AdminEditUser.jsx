@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
+import "../styles/AdminEditUser.css"; 
 
 const ROLE_OPTIONS = ["Student", "Staff", "Visitor", "Contractor"];
 
@@ -195,7 +196,7 @@ export default function AdminEditUser() {
 
         {user && (
           <>
-            <div>
+            <div className="admin-role-field">
               <label htmlFor="admin-user-first-name">First name</label>
               <input
                 id="admin-user-first-name"
@@ -218,7 +219,7 @@ export default function AdminEditUser() {
             <p><strong>Email:</strong> {user.email}</p>
             <p><strong>Firebase UID:</strong> {user.firebaseUid}</p>
 
-            <div>
+            <div className="admin-role-field">
               <label htmlFor="admin-user-role">Role</label>
               <select
                 id="admin-user-role"
@@ -231,7 +232,7 @@ export default function AdminEditUser() {
               </select>
             </div>
 
-            <div>
+            <div className="admin-access-control">
               <label>
                 <input
                   type="checkbox"
@@ -245,13 +246,13 @@ export default function AdminEditUser() {
                 Administrator access
               </label>
               {!canGrantAdminAccess && (
-                <p style={{ marginTop: "8px", color: "#59667e" }}>
+                <p className="admin-access-help">
                   Admin access is only available to Staff users.
                 </p>
               )}
             </div>
 
-            <div>
+            <div className="admin-form-actions">
               <button type="button" onClick={handleSave} disabled={saving}>
                 {saving ? "Saving..." : "Save changes"}
               </button>

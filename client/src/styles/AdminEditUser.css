@@ -1,0 +1,238 @@
+/*
+* AdminEditUser.css
+* This file contains the styling for the Admin Edit User page of the
+* application.
+* Author/s: Dinh Dinh
+* Date: 6/9/26
+ */
+
+* {
+	box-sizing: border-box;
+}
+
+.admin-edit-user {
+	min-height: 100vh;
+	padding: 32px clamp(20px, 5vw, 72px) 48px;
+	background: #f7f8fb;
+	color: #07132f;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.admin-edit-user > div:first-child,
+.admin-edit-user > div:nth-child(2),
+.admin-edit-user > section {
+	width: 100%;
+	max-width: 1000px;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+.admin-edit-user > div:first-child {
+	padding-bottom: 22px;
+	border-bottom: 1px solid #dfe5ef;
+}
+
+.admin-edit-user h1 {
+	margin: 0;
+	color: #002b5c;
+	font-size: clamp(28px, 3vw, 40px);
+}
+
+.admin-edit-user > div:nth-child(2) {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding: 20px 0 28px;
+}
+
+.admin-edit-user button,
+.admin-edit-user input,
+.admin-edit-user select {
+	min-height: 42px;
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	padding: 10px 14px;
+	font: inherit;
+}
+
+.admin-edit-user button {
+	background: #ffffff;
+	color: #002b5c;
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.admin-edit-user button:hover:not(:disabled) {
+	border-color: #0057e7;
+	background: #eef4ff;
+	transform: translateY(-1px);
+}
+
+.admin-edit-user button:disabled {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+
+.admin-edit-user > section {
+	padding: 32px;
+	border: 1px solid #e7eaf0;
+	border-radius: 12px;
+	background: #ffffff;
+	box-shadow: 0 8px 24px rgba(0, 43, 92, 0.06);
+}
+
+.admin-edit-user h2 {
+	margin: 0 0 24px;
+	color: #002b5c;
+	font-size: 24px;
+}
+
+.admin-edit-user > section > div {
+	margin-bottom: 22px;
+}
+
+.admin-edit-user > section > div:nth-of-type(1),
+.admin-edit-user > section > div:nth-of-type(2) {
+	display: inline-flex;
+	width: calc(50% - 10px);
+	flex-direction: column;
+	gap: 8px;
+	vertical-align: top;
+}
+
+.admin-edit-user > section > div:nth-of-type(1) {
+	margin-right: 16px;
+}
+
+.admin-edit-user label {
+	color: #002b5c;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.admin-edit-user input[type="text"],
+.admin-edit-user select {
+	width: 100%;
+	background: #ffffff;
+	color: #07132f;
+}
+
+.admin-edit-user > section > p {
+	margin: 0 0 22px;
+	padding: 14px 16px;
+	border: 1px solid #e7eaf0;
+	border-radius: 8px;
+	background: #f8fafc;
+	color: #44506a;
+	line-height: 1.5;
+}
+
+.admin-role-field {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.admin-access-control {
+	margin: 4px 0 24px;
+	padding: 18px 20px;
+	border: 1px solid #d8e1ee;
+	border-radius: 10px;
+	background: #f8fafc;
+}
+
+.admin-access-control label {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.admin-access-help {
+	margin: 10px 0 0;
+	color: #59667e;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.admin-edit-user input[type="checkbox"] {
+	width: 18px;
+	min-height: 18px;
+	accent-color: #0057e7;
+}
+
+.admin-form-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+	padding-top: 8px;
+	border-top: 1px solid #e7eaf0;
+}
+
+.admin-form-actions button:first-child {
+	background: #0057e7;
+	border-color: #0057e7;
+	color: #ffffff;
+}
+
+.admin-form-actions button:first-child:hover:not(:disabled) {
+	background: #0046bd;
+	border-color: #0046bd;
+}
+
+.admin-edit-user > section > div:last-child {
+	margin: 12px 0 0;
+	padding-top: 24px;
+	border-top: 1px solid #e7eaf0;
+}
+
+.admin-edit-user > section > div:last-child button {
+	background: #b42318 !important;
+	border-color: #b42318;
+	color: #ffffff !important;
+}
+
+.admin-edit-user > section > div:last-child button:hover:not(:disabled) {
+	background: #8f1d14 !important;
+	border-color: #8f1d14;
+}
+
+.admin-edit-user input:focus,
+.admin-edit-user select:focus,
+.admin-edit-user button:focus-visible {
+	outline: 3px solid rgba(0, 87, 231, 0.2);
+	outline-offset: 1px;
+}
+
+@media (max-width: 640px) {
+	.admin-edit-user {
+		padding: 20px 14px 32px;
+	}
+
+	.admin-edit-user > div:nth-child(2) {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.admin-edit-user > div:nth-child(2) button {
+		width: 100%;
+		padding: 10px 8px;
+	}
+
+	.admin-edit-user > section {
+		padding: 22px 16px;
+	}
+
+	.admin-edit-user > section > div:nth-of-type(1),
+	.admin-edit-user > section > div:nth-of-type(2) {
+		display: flex;
+		width: 100%;
+		margin-right: 0;
+	}
+
+	.admin-form-actions button {
+		flex: 1 1 160px;
+	}
+}

@@ -5,11 +5,14 @@
  * 
  * Author/s: Amanda Foxley
  * Date: 31/8/26
+ * Modified by: Dinh Dinh
+ * Date: 6/9/26
  */
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { userLogout } from "../hooks/userLogout";
+import "../styles/AdminUserDetails.css";
 
 export default function AdminUserDetails() {
   const navigate = useNavigate();
@@ -83,18 +86,10 @@ export default function AdminUserDetails() {
   return (
     <div className="admin-user-details">
       <div>
-        <button type="button" onClick={() => navigate("/admin/dashboard")}>
-          Dashboard
-        </button>
-        <button type="button" onClick={() => navigate("/admin/manageissues")}>
-          Manage Issues
-        </button>
-        <button type="button" onClick={() => navigate("/admin/usermanagement")}>
-          User Management
-        </button>
-        <button type="button" onClick={logout}>
-          Logout
-        </button>
+        <button type="button" onClick={() => navigate("/admin/dashboard")}>Dashboard</button>
+        <button type="button" onClick={() => navigate("/admin/manageissues")}>Manage Issues</button>
+        <button type="button" onClick={() => navigate("/admin/usermanagement")}>User Management</button>
+        <button type="button" onClick={logout}>Logout </button>
       </div>
 
       <section>
