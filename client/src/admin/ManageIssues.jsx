@@ -89,6 +89,7 @@ export default function ManageIssues() {
 
       temp = temp.filter(
         (issue) =>
+          issue._id?.toLowerCase().includes(lowerSearch) ||
           issue.title?.toLowerCase().includes(lowerSearch) ||
           issue.issueDescription?.toLowerCase().includes(lowerSearch) ||
           issue.location?.toLowerCase().includes(lowerSearch) ||
@@ -194,7 +195,7 @@ export default function ManageIssues() {
       <div>
         <input
           type="text"
-          placeholder="Search by title, description, campus, location or reporter..."
+          placeholder="Search by Issue ID, title, description, campus, location or reporter..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

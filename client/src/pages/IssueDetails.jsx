@@ -19,6 +19,8 @@ import {
   LogOut,
   Wrench,
   Users,
+  Copy,
+  Check,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -117,6 +119,7 @@ export default function IssueDetails() {
   const [newComment, setNewComment] = useState("");
   const [commentError, setCommentError] = useState("");
   const [addingComment, setAddingComment] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
   const [statusError, setStatusError] = useState("");
 
   // Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
@@ -256,12 +259,30 @@ export default function IssueDetails() {
   const initials =
     `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
   const layoutProps = { userData, navigate, logout, displayName, initials };
+
   // Maps an issue status to the matching CSS class for styling the status badge. This is used to visually differentiate between different issue statuses.
   const getStatusClass = (status) => {
     if (status === "Open") return "user-my-issues-status-open";
     if (status === "In Progress") return "user-my-issues-status-progress";
     if (status === "Closed") return "user-my-issues-status-resolved";
     return "";
+  };
+
+  // Copies the complete issue ID to the user's clipboard.
+  const copyIssueId = async () => {
+    if (!issue?._id) return;
+
+    try {
+      await navigator.clipboard.writeText(issue._id);
+      setCopiedId(true);
+
+      // Return the icon to its normal state after a short delay.
+      setTimeout(() => {
+        setCopiedId(false);
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to copy issue ID:", err);
+    }
   };
 
   //Display info to the user about what the page is doing
@@ -481,13 +502,27 @@ export default function IssueDetails() {
               <div className="issue-details-card-body issue-details-meta-list">
                 <div className="issue-meta-row">
                   <span>Issue ID:</span>
-                  <strong title={issue._id || "Unknown"}>
-                    {issue._id
-                      ? `${issue._id.slice(0, 6)}...${issue._id.slice(-4)}`
-                      : "Unknown"}
-                  </strong>
-                </div>
 
+                  <div className="issue-id-display">
+                    <strong title={issue._id || "Unknown"}>
+                      {issue._id
+                        ? `${issue._id.slice(0, 6)}...${issue._id.slice(-4)}`
+                        : "Unknown"}
+                    </strong>
+
+                    {issue._id && (
+                      <button
+                        type="button"
+                        className="copy-issue-id-button"
+                        onClick={copyIssueId}
+                        title={copiedId ? "Copied!" : "Copy full issue ID"}
+                        aria-label={copiedId ? "Issue ID copied" : "Copy full issue ID"}
+                      >
+                        {copiedId ? <Check size={16} /> : <Copy size={16} />}
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="issue-meta-row">
                   <span>Status:</span>
 
@@ -530,6 +565,8 @@ export default function IssueDetails() {
                   </strong>
                 </div>
 
+
+
                 <div className="issue-meta-row">
                   <span>Reported by:</span>
                   <strong>
@@ -543,6 +580,20 @@ export default function IssueDetails() {
                     {issue.assignedToName || "Unassigned"}
                   </strong>
                 </div>
+
+                {issue.dateTimeIssueClosed != null && (
+                  <div className="issue-meta-row">
+                    <span>Issue closed date:</span>
+                    <strong>
+                      {new Date(
+                        issue.dateTimeIssueClosed
+                      ).toLocaleString("en-AU", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </strong>
+                  </div>
+                )}
               </div>
             </section>
           </aside>

@@ -124,6 +124,7 @@ export default function UserMyIssues() {
 
       temp = temp.filter(
         (issue) =>
+          issue._id?.toLowerCase().includes(searchLower) ||
           issue.title?.toLowerCase().includes(searchLower) ||
           issue.issueDescription
             ?.toLowerCase()
@@ -174,7 +175,7 @@ export default function UserMyIssues() {
 
   // Build initials for avatar
   const initials =
-  `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+    `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
   return (
     <div className="user-dashboard">
@@ -295,7 +296,7 @@ export default function UserMyIssues() {
 
                   <input
                     type="text"
-                    placeholder="Search description, campus or location"
+                    placeholder="Search by issue ID, title, description, campus or location"
                     value={search}
                     onChange={(e) =>
                       setSearch(e.target.value)
@@ -414,7 +415,6 @@ export default function UserMyIssues() {
                       )}
 
                       <div className="user-my-issues-meta">
-
                         <div className="user-my-issues-meta-item">
 
                           <MapPin />
@@ -436,6 +436,7 @@ export default function UserMyIssues() {
                           </span>
 
                         </div>
+
 
                       </div>
 

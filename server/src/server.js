@@ -520,6 +520,7 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
       isArchived: false,
       dateTimeReported: now,
       dateTimeIssueOccurred: normalizedIncidentDateTime,
+      dateTimeIssueClosed: null,
       reportedBy: userExists._id,
       reportedByName: `${userExists.firstName} ${userExists.lastName}`,
       status: "Open",
@@ -720,14 +721,14 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
     const issueCollection = db.collection("Issue"); // Get the Issue collection from the database
 
     // Helper function to get issues for the dashboard with optional limit (This is used to get the 5 most recent unassigned issues)
-    const getDashboardIssues = (query, limit) => { 
+    const getDashboardIssues = (query, limit) => {
       const pipeline = [
         { $match: query },
         { $sort: { dateTimeReported: -1 } },
       ];
 
 
-      if (limit) pipeline.push({ $limit: limit }); 
+      if (limit) pipeline.push({ $limit: limit });
 
       //This pipeline joins the Issue collection with the User collection to get the assigned user's name for each issue. It uses a $lookup stage to perform a left outer join on the User collection, matching the assignedTo field in the Issue collection with the _id field in the User collection. The result is stored in an array called assignee. Then, it uses a $set stage to create a new field called assignedToName, which contains the full name of the assigned user if they exist, or "Unassigned" if there is no assigned user. Finally, it uses a $project stage to remove the assignee array from the final output.
       pipeline.push(
@@ -746,17 +747,17 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
 
               // If there is no assignee, check if assignedTo is null. If so, return "Unassigned". If assignedTo is not null, return "Assigned admin". If there is an assignee, concatenate their first and last name.
               $cond: [
-                { $eq: [{ $size: "$assignee" }, 0] }, 
+                { $eq: [{ $size: "$assignee" }, 0] },
                 { $cond: [{ $eq: ["$assignedTo", null] }, "Unassigned", "Assigned admin"] },
                 {
                   // Define a variable for the matched assignee
-                  $let: { 
+                  $let: {
                     vars: { matchedAssignee: { $arrayElemAt: ["$assignee", 0] } }, // Get the first (and only) matched assignee
                     in: {
                       $trim: {
                         input: {
                           $concat: [ // Concatenate first and last name with a space in between
-                            { $ifNull: ["$$matchedAssignee.firstName", ""] }, 
+                            { $ifNull: ["$$matchedAssignee.firstName", ""] },
                             " ",
                             { $ifNull: ["$$matchedAssignee.lastName", ""] },
                           ],
@@ -1012,15 +1013,27 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
     }
 
     if (updateFields.status === "Closed") {
+      
+      // Check that at least one progress or resolution comment exists
       const commentCount = await db.collection("IssueComments").countDocuments({
         issueId: new ObjectId(id),
         comment: { $type: "string", $regex: /\S/ },
       });
+
       if (commentCount === 0) {
         return res.status(400).json({
           error: "Add at least one progress or resolution comment before closing this issue",
         });
       }
+
+      // Only record the closing date when the issue is actually being closed
+      if (issue.status !== "Closed") {
+        updateFields.dateTimeIssueClosed = new Date();
+      }
+
+    } else if (updateFields.status !== undefined) {
+      // Clear the closing date if a closed issue is reopened
+      updateFields.dateTimeIssueClosed = null;
     }
 
     const retainedImageURLs = imageURLs ?? issue.imageURLs ?? []; // Use the provided imageURLs or fallback to existing ones
@@ -1095,7 +1108,7 @@ app.delete('/api/issues/:id/images', async (req, res) => {
 
     const issue = await db.collection("Issue").findOne({ //Retrieve the issue from the database if it exists and check if the image's imageURL is in the stored issue's imageURLs array
       _id: new ObjectId(id),
-      imageURLs: imageURL 
+      imageURLs: imageURL
     });
 
     if (!issue) {
@@ -1144,11 +1157,11 @@ app.post('/api/upload', upload.array("images", 5), async (req, res) => {
 
         // Create a data URI base64 string from the memory storage buffer
         const fileBase64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
-        
+
         // Execute a secure server-side upload using your configured Cloudinary instance
         cloudinary.uploader.upload(
           fileBase64,
-          { 
+          {
             folder: "uon_campus_hazards", // Groups student reports into an organized directory
             resource_type: "image"
           },
@@ -1166,7 +1179,7 @@ app.post('/api/upload', upload.array("images", 5), async (req, res) => {
     // 4. Return the Cloudinary CDN links straight back to the React app to be stored in the MongoDB Issue document as an array of strings
     return res.status(200).json({ imageURLs });
 
-  }catch (err) {
+  } catch (err) {
     console.error("Cloudinary upload error:");
     console.error(err);
 
