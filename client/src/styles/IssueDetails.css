@@ -572,11 +572,11 @@
 }
 
 .issue-id-display {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     gap: 6px;
-    min-width: 0;
+    flex-wrap: wrap;
 }
 
 .copy-issue-id-button {

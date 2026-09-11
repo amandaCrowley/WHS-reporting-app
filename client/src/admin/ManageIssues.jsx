@@ -61,8 +61,17 @@ export default function ManageIssues() {
     let temp = [...issues];
 
     // Filter by status
-    if (statusFilter !== "All") {
-      temp = temp.filter((issue) => issue.status === statusFilter);
+    // Active includes both Open and In Progress issues.
+    if (statusFilter === "Active") {
+      temp = temp.filter(
+        (issue) =>
+          issue.status === "Open" ||
+          issue.status === "In Progress"
+      );
+    } else if (statusFilter !== "All") {
+      temp = temp.filter(
+        (issue) => issue.status === statusFilter
+      );
     }
 
     // Filter by assignment
@@ -205,6 +214,7 @@ export default function ManageIssues() {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="All">All statuses</option>
+          <option value="Active">Active</option>
           <option value="Open">Open</option>
           <option value="In Progress">In Progress</option>
           <option value="Closed">Closed</option>

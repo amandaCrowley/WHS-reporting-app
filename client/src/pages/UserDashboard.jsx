@@ -401,10 +401,10 @@ export default function UserDashboard() {
                 <table className="user-dashboard-table">
                   <thead>
                     <tr>
-                      <th>Date of incident</th>
-                      <th>Location</th>
                       <th>Title</th>
+                      <th>Location</th>
                       <th>Status</th>
+                      <th>Date reported</th>
                       <th>View</th>
                     </tr>
                   </thead>
@@ -412,19 +412,16 @@ export default function UserDashboard() {
                   <tbody>
                     {recentIssues.map((issue) => (
                       <tr key={issue._id}>
-
+                        <td>{issue.title || "-"}</td>
+                        <td>{issue.location || "-"}</td>
+                        <td>{issue.status || "-"}</td>
                         <td>
-                          {issue.dateTimeIssueOccurred
+                          {issue.dateTimeReported
                             ? new Date(
-                              issue.dateTimeIssueOccurred
+                              issue.dateTimeReported
                             ).toLocaleDateString("en-AU")
                             : "-"}
                         </td>
-
-                        <td>{issue.location || "-"}</td>
-                        <td>{issue.title || "-"}</td>
-                        <td>{issue.status || "-"}</td>
-
                         <td>
                           <button
                             type="button"

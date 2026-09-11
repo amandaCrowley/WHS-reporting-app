@@ -511,15 +511,17 @@ export default function IssueDetails() {
                     </strong>
 
                     {issue._id && (
-                      <button
-                        type="button"
-                        className="copy-issue-id-button"
-                        onClick={copyIssueId}
-                        title={copiedId ? "Copied!" : "Copy full issue ID"}
-                        aria-label={copiedId ? "Issue ID copied" : "Copy full issue ID"}
-                      >
-                        {copiedId ? <Check size={16} /> : <Copy size={16} />}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="copy-issue-id-button"
+                          onClick={copyIssueId}
+                          title={copiedId ? "Copied!" : "Copy full issue ID"}
+                          aria-label={copiedId ? "Issue ID copied" : "Copy full issue ID"}
+                        >
+                          {copiedId ? <Check size={16} /> : <Copy size={16} />}
+                        </button>                      
+                      </>
                     )}
                   </div>
                 </div>

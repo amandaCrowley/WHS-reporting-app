@@ -354,12 +354,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="admin-dashboard-issue-list">
-                {assignedIssues
-                  .filter(
-                    (issue) =>
-                      issue.status !== "Closed"
-                  )
-                  .map((issue) => (
+                {assignedIssues.map((issue) => (
                     <article
                       className="admin-dashboard-issue-card"
                       key={issue._id}
@@ -377,29 +372,22 @@ export default function AdminDashboard() {
 
                       <div className="admin-dashboard-issue-details">
                         <div>
+                          <span>Priority</span>
+                          <strong>
+                            {issue.priority || "Not set"}
+                          </strong>
+                        </div>
+                        <div>
                           <span>Status</span>
                           <strong>
                             {issue.status || "-"}
                           </strong>
                         </div>
 
-                        <div>
-                          <span>Priority</span>
-                          <strong>
-                            {issue.priority || "Not set"}
-                          </strong>
-                        </div>
+
 
                         <div>
-                          <span>Assigned to</span>
-                          <strong>
-                            {issue.assignedToName ||
-                              "Unassigned"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>Reported</span>
+                          <span>Date Reported</span>
                           <strong>
                             {new Date(
                               issue.dateTimeReported
@@ -426,7 +414,23 @@ export default function AdminDashboard() {
                   ))}
               </div>
             )}
+            <div className="admin-dashboard-issues-footer">
+              <span>
+                Showing your {Math.min(dashboardStats.assignedToMe, 5)} most recent assigned issues
+              </span>
+
+              <button
+                type="button"
+                className="admin-dashboard-view-all-button"
+                onClick={() =>
+                  navigate(`/admin/users/${userData._id}/assigned-issues`)
+                }
+              >
+                View all assigned issues <span>→</span>
+              </button>
+            </div>
           </section>
+
 
           {/* =========================
               RECENT UNASSIGNED
@@ -471,29 +475,19 @@ export default function AdminDashboard() {
 
                     <div className="admin-dashboard-issue-details">
                       <div>
-                        <span>Status</span>
-                        <strong>
-                          {issue.status || "-"}
-                        </strong>
-                      </div>
-
-                      <div>
                         <span>Priority</span>
                         <strong>
                           {issue.priority || "Not set"}
                         </strong>
                       </div>
-
                       <div>
-                        <span>Assigned to</span>
+                        <span>Status</span>
                         <strong>
-                          {issue.assignedToName ||
-                            "Unassigned"}
+                          {issue.status || "-"}
                         </strong>
                       </div>
-
                       <div>
-                        <span>Reported</span>
+                        <span>Date Reported</span>
                         <strong>
                           {new Date(
                             issue.dateTimeReported
@@ -520,6 +514,19 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
+            <div className="admin-dashboard-issues-footer">
+              <span>
+                Showing the {Math.min(dashboardStats.unassigned, 5)} most recent unassigned issues
+              </span>
+
+              <button
+                type="button"
+                className="admin-dashboard-view-all-button"
+                onClick={() => navigate("/admin/manageissues")}
+              >
+                Manage all issues <span>→</span>
+              </button>
+            </div>
           </section>
         </main>
       </div>

@@ -115,12 +115,17 @@ export default function UserMyIssues() {
   useEffect(() => {
     let temp = [...issues];
 
-    if (statusFilter !== "All") {
+    if (statusFilter === "Active") {
+      temp = temp.filter(
+        (issue) =>
+          issue.status === "Open" ||
+          issue.status === "In Progress"
+      );
+    } else if (statusFilter !== "All") {
       temp = temp.filter(
         (issue) => issue.status === statusFilter
       );
     }
-
     if (search.trim()) {
       const searchLower = search.toLowerCase();
 
@@ -352,6 +357,7 @@ export default function UserMyIssues() {
                     }
                   >
                     <option value="All">All</option>
+                    <option value="Active">Active</option>
                     <option value="Open">Open</option>
                     <option value="In Progress">
                       In Progress
@@ -520,13 +526,9 @@ export default function UserMyIssues() {
               <div className="user-my-issues-footer">
 
                 <div className="user-my-issues-count">
-                  Showing{" "}
-                  {startIndex + 1} to{" "}
-                  {Math.min(
-                    startIndex + ISSUES_PER_PAGE,
-                    filteredIssues.length
-                  )}{" "}
-                  of {filteredIssues.length} issues
+                  <div className="user-my-issues-count">
+                    Page {currentPage} of {totalPages} · {filteredIssues.length} issues total
+                  </div>
                 </div>
 
                 <div className="user-my-issues-pagination">

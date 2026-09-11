@@ -776,7 +776,9 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
       return issueCollection.aggregate(pipeline).toArray(); //Return the result of the joined query as an array of issues with the assigned user's name included
     };
 
-    //Get the total number of issues, as well as counts for each status and assignment type, and retrieve the assigned issues and recent unassigned issues for the dashboard
+    // Get the total number of issues, as well as counts for each status and assignment type,
+    // and retrieve the active assigned issues and recent unassigned issues for the dashboard.
+
     const [total, open, inProgress, closed, unassigned, assignedToMe, assignedIssues, recentIssues] =
       await Promise.all([
         issueCollection.countDocuments(),
@@ -784,11 +786,25 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
         issueCollection.countDocuments({ status: "In Progress" }),
         issueCollection.countDocuments({ status: "Closed" }),
         issueCollection.countDocuments({ assignedTo: null }),
-        issueCollection.countDocuments({ assignedTo: user._id }),
-        getDashboardIssues({ assignedTo: user._id }),
-        getDashboardIssues({ assignedTo: null }, 5), // Get the 5 most recent unassigned issues
-      ]);
 
+        // Count only active issues currently assigned to the logged-in admin.
+        issueCollection.countDocuments({
+          assignedTo: user._id,
+          status: { $in: ["Open", "In Progress"] },
+        }),
+
+        // Retrieve only the 5 most recent active issues assigned to the logged-in admin.
+        getDashboardIssues(
+          {
+            assignedTo: user._id,
+            status: { $in: ["Open", "In Progress"] },
+          },
+          5
+        ),
+
+        // Get the 5 most recent unassigned issues.
+        getDashboardIssues({ assignedTo: null }, 5),
+      ]);
     //Return the dashboard data as a JSON response
     res.json({
       stats: { total, open, inProgress, closed, unassigned, assignedToMe },
@@ -1013,7 +1029,7 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
     }
 
     if (updateFields.status === "Closed") {
-      
+
       // Check that at least one progress or resolution comment exists
       const commentCount = await db.collection("IssueComments").countDocuments({
         issueId: new ObjectId(id),
