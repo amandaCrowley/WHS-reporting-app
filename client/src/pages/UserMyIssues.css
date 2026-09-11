@@ -807,3 +807,8 @@ body {
     padding-right: 16px;
   }
 }
+
+.user-my-issues-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

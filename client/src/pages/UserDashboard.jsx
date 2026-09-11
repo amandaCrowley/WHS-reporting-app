@@ -137,6 +137,8 @@ export default function UserDashboard() {
     });
   }, [issues]);
 
+  const recentIssues = sortedIssues.slice(0, 5);
+
   if (loading) {
     return <p className="user-dashboard-message">Loading user data...</p>;
   }
@@ -230,15 +232,15 @@ export default function UserDashboard() {
 
         <header className="user-dashboard-header">
           <h1>User dashboard</h1>
-          
+
           <div className="user-dashboard-header-user">
             <span>
               Welcome {userData.firstName || "User"}
             </span>
-          <div className="profile-avatar">
-            <span>{initials}</span>
-          </div>
-            
+            <div className="profile-avatar">
+              <span>{initials}</span>
+            </div>
+
           </div>
         </header>
 
@@ -395,6 +397,7 @@ export default function UserDashboard() {
               /* Existing issue information remains available */
 
               <div className="user-dashboard-table-container">
+
                 <table className="user-dashboard-table">
                   <thead>
                     <tr>
@@ -407,7 +410,7 @@ export default function UserDashboard() {
                   </thead>
 
                   <tbody>
-                    {sortedIssues.map((issue) => (
+                    {recentIssues.map((issue) => (
                       <tr key={issue._id}>
 
                         <td>
@@ -439,6 +442,23 @@ export default function UserDashboard() {
                     ))}
                   </tbody>
                 </table>
+
+                {sortedIssues.length > 5 && (
+                  <div className="user-dashboard-issues-footer">
+                    <span>
+                      Showing your 5 most recent issues
+                    </span>
+
+                    <button
+                      type="button"
+                      className="user-dashboard-view-all-button"
+                      onClick={() => navigate("/myissues")}
+                    >
+                      View all issues
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </section>

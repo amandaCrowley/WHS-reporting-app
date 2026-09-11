@@ -51,7 +51,9 @@ export default function UserMyIssues() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortOrder, setSortOrder] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
 
+  const ISSUES_PER_PAGE = 5;
   const sortIssuesByDate = (issueList) => {
     return [...issueList].sort((a, b) => {
       const timeA = new Date(
@@ -135,6 +137,7 @@ export default function UserMyIssues() {
     }
 
     setFilteredIssues(sortIssuesByDate(temp));
+    setCurrentPage(1);
   }, [search, statusFilter, issues, sortOrder]);
 
   const getStatusClass = (status) => {
@@ -153,6 +156,17 @@ export default function UserMyIssues() {
     return "";
   };
 
+  const totalPages = Math.ceil(
+    filteredIssues.length / ISSUES_PER_PAGE
+  );
+
+  const startIndex = (currentPage - 1) * ISSUES_PER_PAGE;
+
+  const currentIssues = filteredIssues.slice(
+    startIndex,
+    startIndex + ISSUES_PER_PAGE
+  );
+
   const formatReportedDate = (dateValue) => {
     if (!dateValue) {
       return "N/A";
@@ -164,6 +178,21 @@ export default function UserMyIssues() {
       year: "numeric",
     });
   };
+
+  const goToPreviousPage = () => {
+    setCurrentPage((page) => Math.max(page - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage((page) =>
+      Math.min(page + 1, totalPages)
+    );
+  };
+
+  const pageNumbers = Array.from(
+    { length: totalPages },
+    (_, index) => index + 1
+  );
 
   if (loading) {
     return (
@@ -372,7 +401,7 @@ export default function UserMyIssues() {
 
             <div className="user-my-issues-list">
 
-              {filteredIssues.length === 0 ? (
+              {currentIssues.length === 0 ? (
 
                 <div className="user-my-issues-empty">
 
@@ -390,7 +419,7 @@ export default function UserMyIssues() {
 
               ) : (
 
-                filteredIssues.map((issue) => (
+                currentIssues.map((issue) => (
 
                   <div
                     key={issue._id}
@@ -487,51 +516,60 @@ export default function UserMyIssues() {
             </div>
 
             {/* FOOTER */}
+            {filteredIssues.length > ISSUES_PER_PAGE && (
+              <div className="user-my-issues-footer">
 
-            <div className="user-my-issues-footer">
+                <div className="user-my-issues-count">
+                  Showing{" "}
+                  {startIndex + 1} to{" "}
+                  {Math.min(
+                    startIndex + ISSUES_PER_PAGE,
+                    filteredIssues.length
+                  )}{" "}
+                  of {filteredIssues.length} issues
+                </div>
 
-              <div className="user-my-issues-count">
+                <div className="user-my-issues-pagination">
 
-                Showing{" "}
-                {filteredIssues.length > 0 ? 1 : 0} to{" "}
-                {filteredIssues.length} of{" "}
-                {filteredIssues.length} issues
+                  {/* Previous page button */}
+                  <button
+                    type="button"
+                    className="user-my-issues-page-btn"
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft />
+                  </button>
+
+                  {/* Page number buttons */}
+                  {pageNumbers.map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      className={`user-my-issues-page-btn ${currentPage === pageNumber ? "active" : ""
+                        }`}
+                      onClick={() => setCurrentPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+
+                  {/* Next page button */}
+                  <button
+                    type="button"
+                    className="user-my-issues-page-btn"
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    aria-label="Next page"
+                  >
+                    <ChevronRight />
+                  </button>
+
+                </div>
 
               </div>
-
-              <div className="user-my-issues-pagination">
-
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn"
-                >
-                  <ChevronLeft />
-                </button>
-
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn active"
-                >
-                  1
-                </button>
-
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn"
-                >
-                  2
-                </button>
-
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn"
-                >
-                  <ChevronRight />
-                </button>
-
-              </div>
-
-            </div>
+            )}
 
           </div>
 

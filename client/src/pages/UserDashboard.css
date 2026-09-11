@@ -729,6 +729,27 @@ body {
 
 }
 
+.user-dashboard-issues-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 22px 16px;
+  text-align: center;
+}
+
+.user-dashboard-issues-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.user-dashboard-issues-header p {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
 /* =========================
   
      EMPTY STATE
@@ -1040,78 +1061,39 @@ body {
   ========================= */
 
 .user-dashboard-table-container {
-
-  width: 100%;
-
-  overflow-x: auto;
-
+    width: 100%;
+    overflow-x: auto;
 }
 
 .user-dashboard-table {
-
-  width: 100%;
-
-  border-collapse: collapse;
-
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .user-dashboard-table th,
-
 .user-dashboard-table td {
-
-  padding: 17px 18px;
-
-  border-bottom: 1px solid #edf0f4;
-
-  text-align: left;
-
-  font-size: 15px;
-
+    padding: 15px 18px;
+    text-align: left;
+    font-size: 14px;
 }
 
+/* Table header */
 .user-dashboard-table th {
-
-  background: #f6f8fb;
-
-  color: #28354b;
-
-  font-weight: 700;
-
+    background: #f6f8fb;
+    color: #28354b;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    border-top: 1px solid #edf0f4;
+    border-bottom: 1px solid #dfe4eb;
 }
 
+/* Table cells */
 .user-dashboard-table td {
-
-  color: #37445a;
-
+    color: #37445a;
+    border-bottom: 1px solid #edf0f4;
 }
 
-.user-dashboard-table tbody tr:hover {
-
-  background: #fafbfc;
-
-}
-
-.user-dashboard-view-button {
-
-  min-width: 76px;
-
-  height: 34px;
-
-  border: 1px solid #1762db;
-
-  border-radius: 6px;
-
-  background: #fff;
-
-  color: #0758d7;
-
-  font-size: 14px;
-
-  font-weight: 600;
-
-  cursor: pointer;
-
-}
 
 /* =========================
   
@@ -1269,4 +1251,89 @@ body {
     grid-template-columns: 1fr;
 
   }
+}
+
+/* =========================
+     RECENT ISSUES FOOTER
+   ========================= */
+
+.user-dashboard-issues-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-top: 1px solid #edf0f4;
+  background: #fff;
+}
+
+.user-dashboard-issues-footer>span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.user-dashboard-view-all-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid #d5e0ed;
+  border-radius: 7px;
+  background: #fff;
+  color: #0758d7;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.user-dashboard-view-all-button span {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.user-dashboard-view-all-button:hover {
+  background: #f1f6fd;
+  border-color: #b9cde5;
+}
+
+.user-dashboard-view-all-button:hover span {
+  transform: translateX(2px);
+}
+
+.user-dashboard-view-button {
+    min-width: 76px;
+    height: 34px;
+    padding: 0 11px;
+    border: 1px solid #1762db;
+    border-radius: 6px;
+    background: #fff;
+    color: #0758d7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.user-dashboard-view-button:hover {
+    background: #f1f6fd;
+}
+
+.user-dashboard-view-button span {
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.15s ease;
+}
+
+.user-dashboard-view-button:hover span {
+    transform: translateX(2px);
 }
