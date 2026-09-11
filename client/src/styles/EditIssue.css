@@ -248,11 +248,30 @@ button {
     justify-content: center;
 }
 
+.edit-char-count {
+  position: absolute;
+
+  right: 9px;
+  bottom: 8px;
+
+  color: #677389;
+
+  font-size: 10px;
+}
+
+.edit-textarea-wrap {
+  position: relative;
+}
+
 /* Match the shared user page and Report Issue layout. */
 .edit-issue-shell {
     background: #f5f7fb;
     color: #07142f;
     font-family: Arial, Helvetica, sans-serif;
+}
+
+.edit-form label span {
+  color: #e33a3a;
 }
 
 .edit-issue-content {

@@ -517,6 +517,7 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
       location,
       issueDescription,
       assignedTo: null,
+      isArchived: false,
       dateTimeReported: now,
       dateTimeIssueOccurred: normalizedIncidentDateTime,
       reportedBy: userExists._id,

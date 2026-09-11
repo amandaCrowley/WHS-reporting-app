@@ -480,6 +480,15 @@ export default function IssueDetails() {
 
               <div className="issue-details-card-body issue-details-meta-list">
                 <div className="issue-meta-row">
+                  <span>Issue ID:</span>
+                  <strong title={issue._id || "Unknown"}>
+                    {issue._id
+                      ? `${issue._id.slice(0, 6)}...${issue._id.slice(-4)}`
+                      : "Unknown"}
+                  </strong>
+                </div>
+
+                <div className="issue-meta-row">
                   <span>Status:</span>
 
                   {userData?.isAdmin ? (
@@ -501,12 +510,6 @@ export default function IssueDetails() {
                     <strong>{issue.status}</strong>
                   )}
                 </div>
-
-                {statusError && (
-                  <p className="issue-status-error">
-                    {statusError}
-                  </p>
-                )}
 
                 <div className="issue-meta-row">
                   <span>Priority:</span>

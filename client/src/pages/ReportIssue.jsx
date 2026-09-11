@@ -753,9 +753,9 @@ export default function ReportIssue() {
                       <input
                         id="issue-title"
                         type="text"
-                          minLength={5}
-                          maxLength={50}
-                          required
+                        minLength={5}
+                        maxLength={50}
+                        required
                         placeholder="Enter a short description of the issue"
                         value={
                           issueTitle
@@ -803,13 +803,29 @@ export default function ReportIssue() {
 
                         <span className="report-char-count">
                           {
-                            issueDescription.length
+                            issueDescription.length || " "
                           }
                           /300
                         </span>
                       </div>
                     </div>
+                    <div className="report-field">
+                      <label htmlFor="incident-date-time">
+                        Date and time incident occurred{" "}
+                        <span>
+                          *
+                        </span>
+                      </label>
+
+                      <input
+                        id="incident-date-time"
+                        type="datetime-local"
+                        value={incidentDateTime}
+                        onChange={(e) => setIncidentDateTime(e.target.value)}
+                      />
+                    </div>
                   </div>
+                  
                 </section>
 
                 {/* LOCATION */}
@@ -919,21 +935,7 @@ export default function ReportIssue() {
                       />
                     </div>
 
-                    <div className="report-field">
-                      <label htmlFor="incident-date-time">
-                        Date and time incident occurred{" "}
-                        <span>
-                          *
-                        </span>
-                      </label>
-
-                      <input
-                        id="incident-date-time"
-                        type="datetime-local"
-                        value={incidentDateTime}
-                        onChange={(e) => setIncidentDateTime(e.target.value)}
-                      />
-                    </div>
+                    
                   </div>
                 </section>
               </div>

@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
-import "../styles/AdminEditUser.css"; 
+import "../styles/AdminEditUser.css";
 
 const ROLE_OPTIONS = ["Student", "Staff", "Visitor", "Contractor"];
 
@@ -196,7 +196,10 @@ export default function AdminEditUser() {
 
         {user && (
           <>
+            <p><strong>User ID:</strong> {user._id}</p>
+            <p><strong>Email:</strong> {user.email}</p>
             <div className="admin-role-field">
+
               <label htmlFor="admin-user-first-name">First name</label>
               <input
                 id="admin-user-first-name"
@@ -216,8 +219,7 @@ export default function AdminEditUser() {
               />
             </div>
 
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Firebase UID:</strong> {user.firebaseUid}</p>
+
 
             <div className="admin-role-field">
               <label htmlFor="admin-user-role">Role</label>
