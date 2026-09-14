@@ -1110,6 +1110,7 @@ app.put('/api/issues/:id/assign', async (req, res) => {
     await createNotification(db, {
       recipientId: result.reportedBy,
       issueId: result._id,
+      issueTitle: result.title,
       type: "IssueAssigned",
       title: result.title,
       notificationText: "An administrator has been assigned to your issue.",
@@ -1119,6 +1120,7 @@ app.put('/api/issues/:id/assign', async (req, res) => {
     await createNotification(db, {
       recipientId: result.assignedTo,
       issueId: result._id,
+      issueTitle: result.title,
       type: "IssueAssigned",
       title: result.title,
       notificationText: "You have been assigned this issue.",
