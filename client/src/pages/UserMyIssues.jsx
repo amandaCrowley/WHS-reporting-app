@@ -9,8 +9,7 @@
  * Date: 09/09/26
  */
 
-import "./UserMyIssues.css";
-import "./UserDashboard.css";
+import "../styles/UserMyIssues.css";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +17,7 @@ import { getAuth } from "firebase/auth";
 
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
-
+import NotificationBell from "../components/NotificationBell";
 import UONLogo from "../images/UONLogo White.png";
 
 import {
@@ -28,12 +27,12 @@ import {
   UserRound,
   LogOut,
   Search,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   MapPin,
   Building2,
   ClipboardList,
+  MessageCircle,
 } from "lucide-react";
 
 export default function UserMyIssues() {
@@ -298,9 +297,7 @@ export default function UserMyIssues() {
               Welcome {displayName}
             </span>
 
-            <div className="profile-avatar">
-              <span>{initials}</span>
-            </div>
+            <NotificationBell firebaseUid={userData.firebaseUid} />
           </div>
 
         </header>
@@ -326,7 +323,7 @@ export default function UserMyIssues() {
 
                 <div className="user-my-issues-search-box">
 
-                  <Search />
+                  <Search className="user-my-issues-search-icon" />
 
                   <input
                     type="text"
@@ -364,9 +361,6 @@ export default function UserMyIssues() {
                     </option>
                     <option value="Closed">Closed</option>
                   </select>
-
-                  <ChevronDown />
-
                 </div>
 
               </div>
@@ -395,7 +389,7 @@ export default function UserMyIssues() {
                     </option>
                   </select>
 
-                  <ChevronDown />
+
 
                 </div>
 
@@ -437,8 +431,23 @@ export default function UserMyIssues() {
                     }
                   >
 
-                    <div className="user-my-issues-card-left">
+                    <div className="user-my-issues-message-col">
+                      {issue.unreadMessageCount > 0 && (
+                        <div
+                          className="user-my-issues-message-label"
+                          title={`${issue.unreadMessageCount} new message${issue.unreadMessageCount === 1 ? "" : "s"
+                            }`}
+                        >
+                          <MessageCircle size={15} />
+                          <span>
+                            {issue.unreadMessageCount} new message
+                            {issue.unreadMessageCount > 1 && "s"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
+                    <div className="user-my-issues-card-left">
                       <h2>
                         {issue.title}
                       </h2>
@@ -450,28 +459,22 @@ export default function UserMyIssues() {
                       )}
 
                       <div className="user-my-issues-meta">
-                        <div className="user-my-issues-meta-item">
 
+                        <div className="user-my-issues-meta-item">
                           <MapPin />
 
                           <span>
-                            {issue.location ||
-                              "Unknown location"}
+                            {issue.location || "Unknown location"}
                           </span>
-
                         </div>
 
                         <div className="user-my-issues-meta-item">
-
                           <Building2 />
 
                           <span>
-                            {issue.campus ||
-                              "Unknown campus"}
+                            {issue.campus || "Unknown campus"}
                           </span>
-
                         </div>
-
 
                       </div>
 
@@ -479,7 +482,7 @@ export default function UserMyIssues() {
 
                     <div className="user-my-issues-card-right">
 
-                      <div>
+                      <div className="user-my-issues-status-block">
 
                         <p className="user-my-issues-card-right-label">
                           Status
@@ -502,9 +505,7 @@ export default function UserMyIssues() {
                         </p>
 
                         <p className="user-my-issues-date-value">
-                          {formatReportedDate(
-                            issue.dateTimeReported
-                          )}
+                          {formatReportedDate(issue.dateTimeReported)}
                         </p>
 
                       </div>
@@ -514,7 +515,6 @@ export default function UserMyIssues() {
                     <ChevronRight className="user-my-issues-card-arrow" />
 
                   </div>
-
                 ))
 
               )}
@@ -522,56 +522,56 @@ export default function UserMyIssues() {
             </div>
 
             {/* FOOTER */}
-            {filteredIssues.length > ISSUES_PER_PAGE && (
-              <div className="user-my-issues-footer">
+            {
+              filteredIssues.length > ISSUES_PER_PAGE && (
+                <div className="user-my-issues-footer">
 
-                <div className="user-my-issues-count">
                   <div className="user-my-issues-count">
                     Page {currentPage} of {totalPages} · {filteredIssues.length} issues total
                   </div>
-                </div>
 
-                <div className="user-my-issues-pagination">
+                  <div className="user-my-issues-pagination">
 
-                  {/* Previous page button */}
-                  <button
-                    type="button"
-                    className="user-my-issues-page-btn"
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                    aria-label="Previous page"
-                  >
-                    <ChevronLeft />
-                  </button>
-
-                  {/* Page number buttons */}
-                  {pageNumbers.map((pageNumber) => (
+                    {/* Previous page button */}
                     <button
-                      key={pageNumber}
                       type="button"
-                      className={`user-my-issues-page-btn ${currentPage === pageNumber ? "active" : ""
-                        }`}
-                      onClick={() => setCurrentPage(pageNumber)}
+                      className="user-my-issues-page-btn"
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
                     >
-                      {pageNumber}
+                      <ChevronLeft />
                     </button>
-                  ))}
 
-                  {/* Next page button */}
-                  <button
-                    type="button"
-                    className="user-my-issues-page-btn"
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                    aria-label="Next page"
-                  >
-                    <ChevronRight />
-                  </button>
+                    {/* Page number buttons */}
+                    {pageNumbers.map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        type="button"
+                        className={`user-my-issues-page-btn ${currentPage === pageNumber ? "active" : ""
+                          }`}
+                        onClick={() => setCurrentPage(pageNumber)}
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
+
+                    {/* Next page button */}
+                    <button
+                      type="button"
+                      className="user-my-issues-page-btn"
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                    >
+                      <ChevronRight />
+                    </button>
+
+                  </div>
 
                 </div>
-
-              </div>
-            )}
+              )
+            }
 
           </div>
 

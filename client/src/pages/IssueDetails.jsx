@@ -21,9 +21,11 @@ import {
   Users,
   Copy,
   Check,
+  X,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
+import NotificationBell from "../components/NotificationBell";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/IssueDetails.css";
@@ -93,9 +95,7 @@ function PageLayout({ children, userData, navigate, logout, displayName, initial
           <h1>Issue details</h1>
           <div className="user-dashboard-header-user">
             <span>Welcome {displayName}</span>
-            <div className="profile-avatar">
-              <span>{initials}</span>
-            </div>
+            <NotificationBell firebaseUid={userData?.firebaseUid} />
           </div>
         </header>
         {children}
@@ -119,6 +119,9 @@ export default function IssueDetails() {
   const [newComment, setNewComment] = useState("");
   const [commentError, setCommentError] = useState("");
   const [addingComment, setAddingComment] = useState(false);
+  const [newMessage, setNewMessage] = useState("");
+  const [messageError, setMessageError] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [statusError, setStatusError] = useState("");
 
@@ -134,6 +137,15 @@ export default function IssueDetails() {
         if (!res.ok) throw new Error("Failed to fetch issue");
         const data = await res.json();
 
+        if (userData?.firebaseUid) {
+          const messagesResponse = await fetch(
+            `http://localhost:8000/api/issues/${issueId}/messages?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
+          );
+          if (messagesResponse.ok) {
+            data.issueMessages = await messagesResponse.json();
+          }
+        }
+
         setIssue(data); // Store fetched issue in state
       } catch (err) {
         console.error(err);
@@ -145,6 +157,34 @@ export default function IssueDetails() {
 
     fetchIssue();
   }, [issueId, userData?.firebaseUid]);
+
+  const sendMessage = async (event) => {
+    event.preventDefault();
+    const messageText = newMessage.trim();
+    if (!messageText || !userData?.firebaseUid) return;
+
+    try {
+      setSendingMessage(true);
+      setMessageError("");
+      const response = await fetch(`http://localhost:8000/api/issues/${issueId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firebaseUid: userData.firebaseUid, messageText }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to send message");
+
+      setIssue((previousIssue) => ({
+        ...previousIssue,
+        issueMessages: [...(previousIssue.issueMessages || []), data],
+      }));
+      setNewMessage("");
+    } catch (err) {
+      setMessageError(err.message);
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   const addComment = async (event) => {
     event.preventDefault();
@@ -237,7 +277,7 @@ export default function IssueDetails() {
       const response = await fetch(`http://localhost:8000/api/issues/${issue._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
+        body: JSON.stringify({ status: nextStatus, firebaseUid: userData?.firebaseUid }),
       });
 
       if (!response.ok) {
@@ -260,14 +300,6 @@ export default function IssueDetails() {
     `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
   const layoutProps = { userData, navigate, logout, displayName, initials };
 
-  // Maps an issue status to the matching CSS class for styling the status badge. This is used to visually differentiate between different issue statuses.
-  const getStatusClass = (status) => {
-    if (status === "Open") return "user-my-issues-status-open";
-    if (status === "In Progress") return "user-my-issues-status-progress";
-    if (status === "Closed") return "user-my-issues-status-resolved";
-    return "";
-  };
-
   // Copies the complete issue ID to the user's clipboard.
   const copyIssueId = async () => {
     if (!issue?._id) return;
@@ -282,6 +314,54 @@ export default function IssueDetails() {
       }, 1500);
     } catch (err) {
       console.error("Failed to copy issue ID:", err);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to remove this message?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issue._id}/messages/${messageId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firebaseUid: userData?.firebaseUid,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to remove message");
+      }
+
+      // Update the message locally so the removed message is displayed
+      // without requiring the issue page to be refreshed.
+      setIssue((currentIssue) => ({
+        ...currentIssue,
+        issueMessages: (currentIssue.issueMessages || []).map((message) =>
+          message._id === messageId
+            ? {
+              ...message,
+              isDeleted: true,
+            }
+            : message
+        ),
+      }));
+    } catch (err) {
+      console.error("Failed to remove message:", err);
+      setMessageError(err.message || "Failed to remove message.");
     }
   };
 
@@ -393,11 +473,82 @@ export default function IssueDetails() {
               </section>
             )}
 
+            <section className="issue-details-card">
+              <div className="issue-details-card-header">
+                Messages
+              </div>
+
+              <div className="issue-details-card-body">
+
+                {issue.issueMessages?.length ? (
+                  <div className="issue-comments-list">
+                    {issue.issueMessages.map((message) => (
+                      <div className="issue-comment" key={message._id}>
+                        {message.isDeleted ? (
+                          <p className="issue-comment-deleted">
+                            This message was removed by an administrator.
+                          </p>
+                        ) : (
+                          <div className="issue-message-content">
+                            <p>{message.messageText}</p>
+
+                            {userData?.isAdmin && (
+                              <button
+                                type="button"
+                                className="issue-comment-delete-button"
+                                onClick={() => handleDeleteMessage(message._id)}
+                                title="Remove message"
+                                aria-label="Remove message"
+                              >
+                                <X size={16} />
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        <small>
+                          {message.senderName} ({message.senderRole}) ·{" "}
+                          {new Date(message.createdAt).toLocaleString("en-AU")}
+                        </small>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="issue-details-empty-text">No messages yet.</p>
+                )}
+
+                <form className="issue-comment-form" onSubmit={sendMessage}>
+                  <textarea
+                    value={newMessage}
+                    onChange={(event) => setNewMessage(event.target.value)}
+                    maxLength={1000}
+                    placeholder={
+                      userData?.isAdmin
+                        ? "Send a message to provide an update, request information, or discuss this issue with the issue reporter."
+                        : "Send a message to ask a question, provide an update, or share additional information about your issue."
+                    }
+                    aria-label="New issue message"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={sendingMessage || !newMessage.trim()}
+                  >
+                    {sendingMessage ? "Sending..." : "Send message"}
+                  </button>
+
+                  {messageError && (
+                    <p className="issue-comment-error">{messageError}</p>
+                  )}
+                </form>
+              </div>
+            </section>
+
             {/* Admin comments are only visible to admin users */}
             {userData?.isAdmin && (
               <section className="issue-details-card">
                 <div className="issue-details-card-header">
-                  Admin Comments
+                  Admin Progress Comments
                 </div>
 
                 <div className="issue-details-card-body">
@@ -520,7 +671,7 @@ export default function IssueDetails() {
                           aria-label={copiedId ? "Issue ID copied" : "Copy full issue ID"}
                         >
                           {copiedId ? <Check size={16} /> : <Copy size={16} />}
-                        </button>                      
+                        </button>
                       </>
                     )}
                   </div>

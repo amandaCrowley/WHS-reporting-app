@@ -40,15 +40,14 @@ import {
   LogOut,
   FileText,
   Clock3,
-  Wrench,
   Check,
   Plus,
-  ChevronDown,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
-
+import { useNotifications } from "../hooks/useNotifications";
+import NotificationBell from "../components/NotificationBell";
 import UONLogo from "../images/UONLogo White.png";
 
 import "./UserDashboard.css";
@@ -62,6 +61,7 @@ export default function UserDashboard() {
 
   const navigate = useNavigate();
   const logout = userLogout();
+  const { notifications, unreadCount } = useNotifications(userData?.firebaseUid);
 
   /**
    * Fetch all issues submitted by the logged-in user.
@@ -234,12 +234,11 @@ export default function UserDashboard() {
           <h1>User dashboard</h1>
 
           <div className="user-dashboard-header-user">
+
             <span>
               Welcome {userData.firstName || "User"}
             </span>
-            <div className="profile-avatar">
-              <span>{initials}</span>
-            </div>
+            <NotificationBell firebaseUid={userData.firebaseUid} />
 
           </div>
         </header>
@@ -266,13 +265,11 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            <div
-              className="user-dashboard-watermark"
-              aria-hidden="true"
-            >
-              <div className="watermark-circle watermark-circle-one" />
-              <div className="watermark-circle watermark-circle-two" />
-              <div className="watermark-circle watermark-circle-three" />
+            <div className="dashboard-notifications-heading">
+              <h2>Notifications</h2>
+              <p>
+                {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}
+              </p>
             </div>
           </section>
 

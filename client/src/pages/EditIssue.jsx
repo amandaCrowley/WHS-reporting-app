@@ -17,6 +17,7 @@ import { CircleAlert, CloudUpload, FilePlus2, LayoutDashboard, LogOut, UserRound
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import '../styles/EditIssue.css';
+import NotificationBell from "../components/NotificationBell";
 
 export default function EditIssue() {
     const { issueId } = useParams(); // Get the issue ID from the URL
@@ -223,12 +224,9 @@ export default function EditIssue() {
                 }));
             }
 
-            if (userData?.isAdmin) {
-                navigate("/admin/manageissues");
-                return;
-            }
+            //Once the issue has been updated, navigate back to the issue details page
+            navigate(`/issue/${issueId}`);
 
-            navigate(`/myissues`); //Navigate back to the user's issues page 
         } catch (err) {
             setUpdateError(err.message);
         }
@@ -341,9 +339,7 @@ export default function EditIssue() {
                     <h1>Edit issue</h1>
                     <div className="user-dashboard-header-user">
                         <span>Welcome, {displayName}</span>
-                        <div className="profile-avatar">
-                            <span>{initials}</span>
-                        </div>
+                        <NotificationBell firebaseUid={userData?.firebaseUid} />
                     </div>
                 </header>
 
@@ -494,62 +490,6 @@ export default function EditIssue() {
                                         </button>
                                     </div>
                                 </div>
-
-                                {userData?.isAdmin && (
-                                    <>
-                                        <div className="form-section edit-comments-section">
-                                            <div className="edit-section-title">Progress or resolution comments</div>
-                                            {issue.issueComments?.length > 0 && (
-                                                <div className="issue-comments-list">
-                                                    {issue.issueComments.map((issueComment) => (
-                                                        <div className="issue-comment" key={issueComment._id}>
-                                                            <span>{issueComment.comment}</span>
-                                                            <small>
-                                                                {issueComment.commentedByName} · {new Date(issueComment.dateTimeCommented).toLocaleString("en-AU")}
-                                                            </small>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            {formData.comments?.map((comment, index) => (
-                                                <div className="multiple-item" key={`${comment}-${index}`}>
-                                                    <span>{comment}</span>
-                                                    <button
-                                                        type="button"
-                                                        className="btn add-btn"
-                                                        onClick={() => removeComment(index)}
-                                                        aria-label={`Remove comment ${index + 1}`}
-                                                    >
-                                                        x
-                                                    </button>
-                                                </div>
-                                            ))}
-                                            <div className="multiple-item">
-                                                <textarea
-                                                    value={commentInput}
-                                                    onChange={(e) => setCommentInput(e.target.value)}
-                                                    maxLength={300}
-                                                    placeholder="Add comment"
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === "Enter" && !e.shiftKey) {
-                                                            e.preventDefault();
-                                                            addComment();
-                                                        }
-                                                    }}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="btn add-btn"
-                                                    onClick={addComment}
-                                                    aria-label="Add comment"
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
 
                                 <div className="form-section edit-images-section">
                                     <div className="edit-section-title">Issue images</div>

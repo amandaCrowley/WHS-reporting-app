@@ -32,7 +32,10 @@ export default function ManageIssues() {
 
   const fetchIssues = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/issues"); //get all issues from the backend
+      const query = userData?.firebaseUid
+        ? `?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
+        : "";
+      const response = await fetch(`http://localhost:8000/api/issues${query}`); //get all issues from the backend
 
       if (!response.ok) {
         throw new Error("Failed to fetch system issues");
@@ -54,7 +57,7 @@ export default function ManageIssues() {
   // Fetch issues when the component mounts
   useEffect(() => {
     fetchIssues();
-  }, []);
+  }, [userData?.firebaseUid]);
 
   // Filter and sort issues whenever the issues, search, statusFilter, assignmentFilter, priorityFilter, userData, or sortBy state changes
   useEffect(() => {
@@ -278,6 +281,9 @@ export default function ManageIssues() {
                 <div>
                   Assigned to: {issue.assignedToName || "Unassigned"}
                 </div>
+                {issue.unreadMessageCount > 0 && (
+                  <div>New messages: {issue.unreadMessageCount}</div>
+                )}
 
                 <button
                   type="button"

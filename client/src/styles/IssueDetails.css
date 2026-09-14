@@ -113,7 +113,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    padding: 36px 44px 32px;
+    padding: 36px clamp(20px, 3vw, 44px) 32px;
     background-color: #f8fafc;
     font-family: Arial, Helvetica, sans-serif;
     color: #0f172a;
@@ -313,6 +313,53 @@
     font-size: 14px !important;
 }
 
+.issue-message-notice {
+    margin-bottom: 16px !important;
+    padding: 10px 12px;
+    border-left: 3px solid #d97706;
+    background: #fffbeb;
+    color: #92400e !important;
+    font-size: 14px !important;
+}
+
+.issue-notifications-card .issue-details-card-header {
+    gap: 8px;
+}
+
+.issue-notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.issue-notification {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #1f2937;
+    text-align: left;
+}
+
+.issue-notification-unread {
+    border-color: #93c5fd;
+    background: #eff6ff;
+}
+
+.issue-notification span {
+    font-size: 14px;
+}
+
+.issue-notification small {
+    color: #64748b;
+    font-size: 12px;
+}
+
 .issue-status-error {
     flex-basis: 100%;
     margin: 0;
@@ -485,12 +532,12 @@
 
 .primary-btn {
     border: none;
-    background: #4f46e5;
+    background: #0867f2;
     color: white;
 }
 
 .primary-btn:hover {
-    background: #4338ca;
+    background: #0059d8;
 }
 
 .primary-btn:disabled {
@@ -599,4 +646,59 @@
 .copy-issue-id-button:focus-visible {
     outline: 2px solid #2563eb;
     outline-offset: 2px;
+}
+
+.issue-comment-deleted {
+  margin: 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.issue-comment-delete-button {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #6b7280;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.issue-comment-delete-button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.issue-message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.issue-message-content p {
+  flex: 1;
+  margin: 0;
+}
+
+.issue-comment-delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.issue-comment-delete-button:hover {
+  background: #fef2f2;
+  color: #b91c1c;
 }

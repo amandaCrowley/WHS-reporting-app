@@ -276,7 +276,7 @@ button {
 
 .edit-issue-content {
     width: 100%;
-    padding: 31px 24px 40px;
+    padding: 31px clamp(20px, 3vw, 44px) 40px;
     background: linear-gradient(135deg, #f8f9fc 0%, #f3f6fb 100%);
 }
 
@@ -523,12 +523,6 @@ button {
 .edit-form .update-section {
     grid-column: 1 / -1;
     margin: 4px 0 0;
-}
-
-.edit-form .update-section .primary-btn {
-    min-width: 180px;
-    background: #0867f2;
-    color: #ffffff;
 }
 
 .edit-form .edit-actions-panel .primary-btn:hover,
