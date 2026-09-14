@@ -13,14 +13,12 @@
 
 import "./UserDashboard.css";
 import "./ReportIssue.css";
-
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
-
 import UONLogo from "../images/UONLogo White.png";
+import NotificationBell from "../components/NotificationBell";
 
 import {
   LayoutDashboard,
@@ -37,7 +35,7 @@ import {
 export default function ReportIssue() {
   const navigate = useNavigate();
   const logout = userLogout();
-  const { userData } = getUserData();
+  const { userData, loading, error } = getUserData();
   const fileInputRef = useRef(null);
 
   const [formError, setFormError] = useState("");
@@ -188,6 +186,7 @@ export default function ReportIssue() {
 
     try {
       let imageURLs = [];
+      let imageHashes = [];
 
       if (images.length > 0) {
         const imageFormData =
@@ -221,6 +220,8 @@ export default function ReportIssue() {
 
         imageURLs =
           uploadData.imageURLs;
+        imageHashes =
+          uploadData.imageHashes;
       }
 
       const response = await fetch(
@@ -241,6 +242,7 @@ export default function ReportIssue() {
             dateTimeIssueOccurred:
               incidentDateTime,
             imageURLs,
+            imageHashes,
           }),
         },
       );
@@ -611,8 +613,29 @@ export default function ReportIssue() {
       fileInputRef.current?.click();
     };
 
-  // Build initials for avatar
-  const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+  if (loading) {
+    return (
+      <p className="user-dashboard-message">
+        Loading user data...
+      </p>
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="user-dashboard-message">
+        {error} Redirecting to login...
+      </p>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <p className="user-dashboard-message">
+        No user data found.
+      </p>
+    );
+  }
 
   return (
     <div className="report-issue-page">
@@ -715,9 +738,7 @@ export default function ReportIssue() {
               {displayName}
             </span>
 
-            <div className="profile-avatar">
-              <span>{initials}</span>
-            </div>
+            <NotificationBell firebaseUid={userData.firebaseUid} />
           </div>
         </header>
 
@@ -753,9 +774,9 @@ export default function ReportIssue() {
                       <input
                         id="issue-title"
                         type="text"
-                          minLength={5}
-                          maxLength={50}
-                          required
+                        minLength={5}
+                        maxLength={50}
+                        required
                         placeholder="Enter a short description of the issue"
                         value={
                           issueTitle
@@ -803,13 +824,29 @@ export default function ReportIssue() {
 
                         <span className="report-char-count">
                           {
-                            issueDescription.length
+                            issueDescription.length || " "
                           }
                           /300
                         </span>
                       </div>
                     </div>
+                    <div className="report-field">
+                      <label htmlFor="incident-date-time">
+                        Date and time incident occurred{" "}
+                        <span>
+                          *
+                        </span>
+                      </label>
+
+                      <input
+                        id="incident-date-time"
+                        type="datetime-local"
+                        value={incidentDateTime}
+                        onChange={(e) => setIncidentDateTime(e.target.value)}
+                      />
+                    </div>
                   </div>
+
                 </section>
 
                 {/* LOCATION */}
@@ -919,21 +956,7 @@ export default function ReportIssue() {
                       />
                     </div>
 
-                    <div className="report-field">
-                      <label htmlFor="incident-date-time">
-                        Date and time incident occurred{" "}
-                        <span>
-                          *
-                        </span>
-                      </label>
 
-                      <input
-                        id="incident-date-time"
-                        type="datetime-local"
-                        value={incidentDateTime}
-                        onChange={(e) => setIncidentDateTime(e.target.value)}
-                      />
-                    </div>
                   </div>
                 </section>
               </div>
@@ -956,7 +979,7 @@ export default function ReportIssue() {
                         fileInputRef
                       }
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
                       multiple
                       onChange={
                         handleImageChange

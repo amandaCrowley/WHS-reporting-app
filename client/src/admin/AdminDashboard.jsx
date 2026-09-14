@@ -31,6 +31,8 @@ import {
 
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
+import { useNotifications } from "../hooks/useNotifications";
+import NotificationBell from "../components/NotificationBell";
 
 import UONLogo from "../images/UONLogo White.png";
 
@@ -42,6 +44,7 @@ export default function AdminDashboard() {
   const logout = userLogout();
 
   const { userData, loading, error } = getUserData();
+  const { notifications, unreadCount } = useNotifications(userData?.firebaseUid);
 
   const [assignedIssues, setAssignedIssues] = useState([]);
   const [recentIssues, setRecentIssues] = useState([]);
@@ -184,14 +187,15 @@ export default function AdminDashboard() {
         <header className="user-dashboard-header">
           <h1>Admin dashboard</h1>
 
+          {/* User info */}
           <div className="user-dashboard-header-user">
             <span>
               Welcome {userData?.firstName || "Admin"}
             </span>
-
-            <div className="profile-avatar">
+            <NotificationBell firebaseUid={userData?.firebaseUid} />
+            {/* <div className="profile-avatar">
               <span>{initials || "A"}</span>
-            </div>
+            </div> */}
           </div>
         </header>
 
@@ -199,7 +203,6 @@ export default function AdminDashboard() {
           {/* =========================
               TOTAL ISSUES
           ========================== */}
-
           <section className="user-dashboard-total-card">
             <div className="user-dashboard-total-content">
               <div className="user-dashboard-total-icon">
@@ -207,7 +210,7 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <h2>Total Issues</h2>
+                <h2>Total WHS Issues</h2>
 
                 <p>
                   {issuesLoading
@@ -217,13 +220,11 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div
-              className="user-dashboard-watermark"
-              aria-hidden="true"
-            >
-              <div className="watermark-circle watermark-circle-one" />
-              <div className="watermark-circle watermark-circle-two" />
-              <div className="watermark-circle watermark-circle-three" />
+            <div className="dashboard-notifications-heading">
+              <h2>Notifications</h2>
+              <p>
+                {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}
+              </p>
             </div>
           </section>
 
@@ -354,79 +355,83 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="admin-dashboard-issue-list">
-                {assignedIssues
-                  .filter(
-                    (issue) =>
-                      issue.status !== "Closed"
-                  )
-                  .map((issue) => (
-                    <article
-                      className="admin-dashboard-issue-card"
-                      key={issue._id}
+                {assignedIssues.map((issue) => (
+                  <article
+                    className="admin-dashboard-issue-card"
+                    key={issue._id}
+                  >
+                    <div className="admin-dashboard-issue-main">
+                      <h3>
+                        {issue.title || "Untitled Issue"}
+                      </h3>
+
+                      <p className="admin-dashboard-location">
+                        {issue.location || "-"} ·{" "}
+                        {issue.campus || "-"}
+                      </p>
+                    </div>
+
+                    <div className="admin-dashboard-issue-details">
+                      <div>
+                        <span>Priority</span>
+                        <strong>
+                          {issue.priority || "Not set"}
+                        </strong>
+                      </div>
+                      <div>
+                        <span>Status</span>
+                        <strong>
+                          {issue.status || "-"}
+                        </strong>
+                      </div>
+
+
+
+                      <div>
+                        <span>Date Reported</span>
+                        <strong>
+                          {new Date(
+                            issue.dateTimeReported
+                          ).toLocaleString("en-AU", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="admin-dashboard-view-button"
+                      onClick={() =>
+                        navigate(
+                          `/issue/${issue._id}`
+                        )
+                      }
                     >
-                      <div className="admin-dashboard-issue-main">
-                        <h3>
-                          {issue.title || "Untitled Issue"}
-                        </h3>
-
-                        <p className="admin-dashboard-location">
-                          {issue.location || "-"} ·{" "}
-                          {issue.campus || "-"}
-                        </p>
-                      </div>
-
-                      <div className="admin-dashboard-issue-details">
-                        <div>
-                          <span>Status</span>
-                          <strong>
-                            {issue.status || "-"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>Priority</span>
-                          <strong>
-                            {issue.priority || "Not set"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>Assigned to</span>
-                          <strong>
-                            {issue.assignedToName ||
-                              "Unassigned"}
-                          </strong>
-                        </div>
-
-                        <div>
-                          <span>Reported</span>
-                          <strong>
-                            {new Date(
-                              issue.dateTimeReported
-                            ).toLocaleString("en-AU", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                            })}
-                          </strong>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="admin-dashboard-view-button"
-                        onClick={() =>
-                          navigate(
-                            `/issue/${issue._id}`
-                          )
-                        }
-                      >
-                        View Issue
-                      </button>
-                    </article>
-                  ))}
+                      View Issue
+                    </button>
+                  </article>
+                ))}
               </div>
             )}
+            <div className="admin-dashboard-issues-footer">
+              <span>
+                Showing your {Math.min(dashboardStats.assignedToMe, 5)} most recent assigned issues
+              </span>
+
+              <button
+                type="button"
+                className="admin-dashboard-view-all-button"
+                onClick={() =>
+                  navigate(`/admin/users/${userData._id}/assigned-issues`)
+                }
+              >
+                View all assigned issues <span>→</span>
+              </button>
+            </div>
           </section>
+
 
           {/* =========================
               RECENT UNASSIGNED
@@ -438,7 +443,7 @@ export default function AdminDashboard() {
                 <h2>Recent Unassigned Issues</h2>
 
                 <p>
-                  The most recently reported issues that are not currently assigned to an admin.
+                  The most recently reported active issues that are not currently assigned to an admin.
                 </p>
               </div>
             </div>
@@ -471,29 +476,19 @@ export default function AdminDashboard() {
 
                     <div className="admin-dashboard-issue-details">
                       <div>
-                        <span>Status</span>
-                        <strong>
-                          {issue.status || "-"}
-                        </strong>
-                      </div>
-
-                      <div>
                         <span>Priority</span>
                         <strong>
                           {issue.priority || "Not set"}
                         </strong>
                       </div>
-
                       <div>
-                        <span>Assigned to</span>
+                        <span>Status</span>
                         <strong>
-                          {issue.assignedToName ||
-                            "Unassigned"}
+                          {issue.status || "-"}
                         </strong>
                       </div>
-
                       <div>
-                        <span>Reported</span>
+                        <span>Date Reported</span>
                         <strong>
                           {new Date(
                             issue.dateTimeReported
@@ -520,6 +515,19 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
+            <div className="admin-dashboard-issues-footer">
+              <span>
+                Showing the {Math.min(dashboardStats.unassigned, 5)} most recent unassigned issues
+              </span>
+
+              <button
+                type="button"
+                className="admin-dashboard-view-all-button"
+                onClick={() => navigate("/admin/manageissues")}
+              >
+                Manage all issues <span>→</span>
+              </button>
+            </div>
           </section>
         </main>
       </div>

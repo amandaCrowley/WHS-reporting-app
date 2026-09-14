@@ -168,7 +168,7 @@
   width: 100%;
 
   padding:
-    31px 24px 40px;
+    31px clamp(20px, 3vw, 44px) 40px;
 }
 
 .report-issue-heading {

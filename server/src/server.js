@@ -31,6 +31,13 @@ import {
   normalizeIncidentDateTime,
   isIncidentDateTimeValid,
 } from "./incidentDateTime.js";
+import {
+  hashRemoteImage,
+  ImageValidationError,
+  isImageHash,
+  isAllowedImageUrl,
+  validateImageFiles,
+} from "./imageValidation.js";
 
 dotenv.config(); //Load environment variables from .env
 
@@ -209,7 +216,6 @@ app.get('/api/admin/users/:userId', async (req, res) => {
 
     res.json(user);
   } catch (err) {
-    console.error("Failed to fetch managed user:", err);
     res.status(500).json({ error: "Failed to fetch user" });
   }
 });
@@ -469,7 +475,7 @@ app.delete('/api/admin/users/:userId', async (req, res) => {
 app.post('/api/issue/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
-    const { campus, title, location, issueDescription, witnessNames, dateTimeIssueOccurred, imageURLs } = req.body;
+    const { campus, title, location, issueDescription, witnessNames, dateTimeIssueOccurred, imageURLs, imageHashes } = req.body;
     const { firebaseUid } = req.params;
 
     if (!firebaseUid) {
@@ -511,20 +517,38 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
     }
     const normalizedIncidentDateTime = normalizeIncidentDateTime(dateTimeIssueOccurred, now);
 
+    const submittedImageURLs = Array.isArray(imageURLs) ? imageURLs : [];
+    const submittedImageHashes = Array.isArray(imageHashes) ? imageHashes : [];
+    if (submittedImageURLs.length > 5 || submittedImageURLs.length !== submittedImageHashes.length) {
+      return res.status(400).json({ error: "Image data is invalid." });
+    }
+    if (submittedImageURLs.some((imageURL) => !isAllowedImageUrl(imageURL))) {
+      return res.status(400).json({ error: "Only trusted Cloudinary image URLs are allowed." });
+    }
+    if (submittedImageHashes.some((imageHash) => !isImageHash(imageHash))) {
+      return res.status(400).json({ error: "Image hashes are invalid." });
+    }
+    if (new Set(submittedImageHashes).size !== submittedImageHashes.length) {
+      return res.status(400).json({ error: "The same image cannot be attached more than once." });
+    }
+
     const newIssue = {
       campus,
       title,
       location,
       issueDescription,
       assignedTo: null,
+      isArchived: false,
       dateTimeReported: now,
       dateTimeIssueOccurred: normalizedIncidentDateTime,
+      dateTimeIssueClosed: null,
       reportedBy: userExists._id,
       reportedByName: `${userExists.firstName} ${userExists.lastName}`,
       status: "Open",
       priority: "Medium",
       witnessNames: witnessNames || [],
-      imageURLs: imageURLs || [],
+      imageURLs: submittedImageURLs,
+      imageHashes: submittedImageHashes,
     };
 
     const result = await db.collection("Issue").insertOne(newIssue);
@@ -570,7 +594,16 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
     }
 
     const issues = await cursor.toArray();
-    res.json(issues); //Return the issues
+    const issuesWithUnreadMessages = await Promise.all(issues.map(async (issue) => ({
+      ...issue,
+      unreadMessageCount: await db.collection("Notification").countDocuments({
+        issueId: issue._id,
+        recipientId: user._id,
+        isRead: false,
+        type: "NewMessage",
+      }),
+    })));
+    res.json(issuesWithUnreadMessages); //Return the issues
 
   } catch (err) {
     console.error("Failed to fetch user issues:", err);
@@ -637,6 +670,198 @@ const getIssueComments = (db, issueId) => db.collection("IssueComments")
   .sort({ dateTimeCommented: 1 })
   .toArray();
 
+const getIssueMessages = (db, issueId) => db.collection("Message")
+  .find({ issueId })
+  .sort({ createdAt: 1 })
+  .toArray();
+
+// Check if the user is a participant in the issue (either reported by or assigned to) or is an admin, all admins have access to all issues and messages
+const isIssueParticipant = (issue, user) => (
+  issue.reportedBy?.toString() === user?._id?.toString()
+  || user?.isAdmin === true
+);
+
+const createNotification = async (db, notification) => {
+  if (!notification.recipientId) return;
+
+  await db.collection("Notification").insertOne({
+    ...notification,
+    isRead: false,
+    createdAt: new Date(),
+  });
+};
+
+const createParticipantNotifications = async (db, issue, notification) => {
+  const recipientIds = [issue.reportedBy, issue.assignedTo]
+    .filter(Boolean)
+    .map((recipientId) => recipientId.toString());
+
+  for (const recipientId of [...new Set(recipientIds)]) {
+    await createNotification(db, {
+      ...notification,
+      recipientId: new ObjectId(recipientId),
+    });
+  }
+};
+
+app.get('/api/notifications/:firebaseUid', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const user = await findUserByIdentity(db, req.params.firebaseUid);
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const notifications = await db.collection("Notification")
+      .find({ recipientId: user._id })
+      .sort({ createdAt: -1 })
+      .limit(30)
+      .toArray();
+
+    res.json(notifications);
+  } catch (err) {
+    console.error("Failed to fetch notifications:", err);
+    res.status(500).json({ error: "Failed to fetch notifications" });
+  }
+});
+
+app.put('/api/notifications/:id/read', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const user = await findUserByIdentity(db, req.body?.firebaseUid);
+
+    if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ error: "Invalid notification ID" });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const result = await db.collection("Notification").updateOne(
+      { _id: new ObjectId(req.params.id), recipientId: user._id },
+      { $set: { isRead: true } },
+    );
+
+    if (!result.matchedCount) return res.status(404).json({ error: "Notification not found" });
+    res.json({ message: "Notification marked as read" });
+  } catch (err) {
+    console.error("Failed to mark notification as read:", err);
+    res.status(500).json({ error: "Failed to mark notification as read" });
+  }
+});
+
+const getMessageSenderRole = (user) => (
+  user.isAdmin ? "Admin" : ["Student", "Staff", "Visitor", "Contractor"].includes(user.role)
+    ? user.role
+    : "Student"
+);
+
+app.get('/api/issues/:id/messages', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+    const user = await findUserByIdentity(db, req.query.firebaseUid);
+
+    if (!ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid issue ID" });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const issueId = new ObjectId(id);
+    const issue = await db.collection("Issue").findOne({ _id: issueId });
+    if (!issue) return res.status(404).json({ error: "Issue not found" });
+    if (!isIssueParticipant(issue, user)) return res.status(403).json({ error: "Access denied" });
+
+    const messages = await getIssueMessages(db, issueId);
+    await db.collection("Message").updateMany(
+      { issueId, readBy: { $ne: user._id } },
+      { $addToSet: { readBy: user._id } },
+    );
+    await db.collection("Notification").updateMany(
+      { issueId, recipientId: user._id, isRead: false },
+      { $set: { isRead: true } },
+    );
+
+    res.json(messages);
+  } catch (err) {
+    console.error("Failed to fetch issue messages:", err);
+    res.status(500).json({ error: "Failed to fetch issue messages" });
+  }
+});
+
+app.post('/api/issues/:id/messages', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+    const { firebaseUid, messageText } = req.body || {};
+    const user = await findUserByIdentity(db, firebaseUid);
+
+    if (!ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid issue ID" });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const trimmedMessage = typeof messageText === "string" ? messageText.trim() : "";
+    if (!trimmedMessage || trimmedMessage.length > 1000) {
+      return res.status(400).json({ error: "Message must be between 1 and 1000 characters" });
+    }
+
+    const issueId = new ObjectId(id);
+    const issue = await db.collection("Issue").findOne({ _id: issueId });
+    if (!issue) return res.status(404).json({ error: "Issue not found" });
+    if (!isIssueParticipant(issue, user)) return res.status(403).json({ error: "Access denied" });
+
+    const senderName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email || "User";
+    const message = {
+      issueId,
+      senderId: user._id,
+      senderName,
+      senderRole: getMessageSenderRole(user),
+      messageText: trimmedMessage,
+      createdAt: new Date(),
+      readBy: [user._id],
+    };
+    const result = await db.collection("Message").insertOne(message);
+
+    if (user.isAdmin) {
+      // Notify the issue reporter when an administrator sends a message.
+      await createNotification(db, {
+        recipientId: issue.reportedBy,
+        issueId,
+        issueTitle: issue.title,
+        messageId: result.insertedId,
+        type: "NewMessage",
+        title: "New issue message",
+        notificationText: `${senderName}: ${trimmedMessage}`.slice(0, 250),
+      });
+    } else if (issue.assignedTo) {
+      // Notify the assigned administrator when the reporter sends a message.
+      await createNotification(db, {
+        recipientId: issue.assignedTo,
+        issueId,
+        issueTitle: issue.title,
+        messageId: result.insertedId,
+        type: "NewMessage",
+        title: "New issue message",
+        notificationText: `${senderName}: ${trimmedMessage}`.slice(0, 250),
+      });
+    } else {
+      // If the issue has not been assigned, notify all administrators.
+      const admins = await db.collection("User").find({
+        isAdmin: true,
+      }).toArray();
+
+      for (const admin of admins) {
+        await createNotification(db, {
+          recipientId: admin._id,
+          issueId,
+          issueTitle: issue.title,
+          messageId: result.insertedId,
+          type: "NewMessage",
+          title: "New issue message",
+          notificationText: `${senderName}: ${trimmedMessage}`.slice(0, 250),
+        });
+      }
+    }
+
+    res.status(201).json({ ...message, _id: result.insertedId });
+  } catch (err) {
+    console.error("Failed to add issue message:", err);
+    res.status(500).json({ error: "Failed to add issue message" });
+  }
+});
+
 app.post('/api/issues/:id/comments', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -689,10 +914,24 @@ app.post('/api/issues/:id/comments', async (req, res) => {
 app.get('/api/issues', async (req, res) => {
   try {
     const db = req.app.locals.db;
+    const admin = req.query.firebaseUid
+      ? await findUserByIdentity(db, req.query.firebaseUid)
+      : null;
 
     const issues = await issueWithAssigneeName(db, {});
+    const issuesWithUnreadMessages = admin?.isAdmin
+      ? await Promise.all(issues.map(async (issue) => ({
+        ...issue,
+        unreadMessageCount: await db.collection("Notification").countDocuments({
+          issueId: issue._id,
+          recipientId: admin._id,
+          isRead: false,
+          type: "NewMessage",
+        }),
+      })))
+      : issues;
 
-    res.json(issues);
+    res.json(issuesWithUnreadMessages);
   } catch (err) {
     console.error("Failed to fetch all issues:", err);
     res.status(500).json({ error: "Failed to fetch all issues" });
@@ -719,14 +958,14 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
     const issueCollection = db.collection("Issue"); // Get the Issue collection from the database
 
     // Helper function to get issues for the dashboard with optional limit (This is used to get the 5 most recent unassigned issues)
-    const getDashboardIssues = (query, limit) => { 
+    const getDashboardIssues = (query, limit) => {
       const pipeline = [
         { $match: query },
         { $sort: { dateTimeReported: -1 } },
       ];
 
 
-      if (limit) pipeline.push({ $limit: limit }); 
+      if (limit) pipeline.push({ $limit: limit });
 
       //This pipeline joins the Issue collection with the User collection to get the assigned user's name for each issue. It uses a $lookup stage to perform a left outer join on the User collection, matching the assignedTo field in the Issue collection with the _id field in the User collection. The result is stored in an array called assignee. Then, it uses a $set stage to create a new field called assignedToName, which contains the full name of the assigned user if they exist, or "Unassigned" if there is no assigned user. Finally, it uses a $project stage to remove the assignee array from the final output.
       pipeline.push(
@@ -745,17 +984,17 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
 
               // If there is no assignee, check if assignedTo is null. If so, return "Unassigned". If assignedTo is not null, return "Assigned admin". If there is an assignee, concatenate their first and last name.
               $cond: [
-                { $eq: [{ $size: "$assignee" }, 0] }, 
+                { $eq: [{ $size: "$assignee" }, 0] },
                 { $cond: [{ $eq: ["$assignedTo", null] }, "Unassigned", "Assigned admin"] },
                 {
                   // Define a variable for the matched assignee
-                  $let: { 
+                  $let: {
                     vars: { matchedAssignee: { $arrayElemAt: ["$assignee", 0] } }, // Get the first (and only) matched assignee
                     in: {
                       $trim: {
                         input: {
                           $concat: [ // Concatenate first and last name with a space in between
-                            { $ifNull: ["$$matchedAssignee.firstName", ""] }, 
+                            { $ifNull: ["$$matchedAssignee.firstName", ""] },
                             " ",
                             { $ifNull: ["$$matchedAssignee.lastName", ""] },
                           ],
@@ -774,19 +1013,46 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
       return issueCollection.aggregate(pipeline).toArray(); //Return the result of the joined query as an array of issues with the assigned user's name included
     };
 
-    //Get the total number of issues, as well as counts for each status and assignment type, and retrieve the assigned issues and recent unassigned issues for the dashboard
+    // Get the total number of issues, as well as counts for each status and assignment type,
+    // and retrieve the active assigned issues and recent unassigned issues for the dashboard.
+
     const [total, open, inProgress, closed, unassigned, assignedToMe, assignedIssues, recentIssues] =
       await Promise.all([
         issueCollection.countDocuments(),
         issueCollection.countDocuments({ status: "Open" }),
         issueCollection.countDocuments({ status: "In Progress" }),
         issueCollection.countDocuments({ status: "Closed" }),
-        issueCollection.countDocuments({ assignedTo: null }),
-        issueCollection.countDocuments({ assignedTo: user._id }),
-        getDashboardIssues({ assignedTo: user._id }),
-        getDashboardIssues({ assignedTo: null }, 5), // Get the 5 most recent unassigned issues
-      ]);
 
+        //Only count unassigned issues that are currently active (Open or In Progress)
+        issueCollection.countDocuments({
+          assignedTo: null,
+          status: { $in: ["Open", "In Progress"] },
+        }),
+
+        // Count only active issues currently assigned to the logged-in admin.
+        issueCollection.countDocuments({
+          assignedTo: user._id,
+          status: { $in: ["Open", "In Progress"] },
+        }),
+
+        // Retrieve only the 5 most recent active issues assigned to the logged-in admin.
+        getDashboardIssues(
+          {
+            assignedTo: user._id,
+            status: { $in: ["Open", "In Progress"] },
+          },
+          5
+        ),
+
+        // Get the 5 most recent unassigned issues that are currently active (Open or In Progress) for the dashboard.
+        getDashboardIssues(
+          {
+            assignedTo: null,
+            status: { $in: ["Open", "In Progress"] },
+          },
+          5
+        ),
+      ]);
     //Return the dashboard data as a JSON response
     res.json({
       stats: { total, open, inProgress, closed, unassigned, assignedToMe },
@@ -838,7 +1104,29 @@ app.put('/api/issues/:id/assign', async (req, res) => {
 
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
     const issueComments = await getIssueComments(db, result._id);
-    res.json({ ...enrichedIssues[0], issueComments });
+    const issueMessages = await getIssueMessages(db, result._id);
+
+    // Notify the issue reporter that an administrator has been assigned to their issue
+    await createNotification(db, {
+      recipientId: result.reportedBy,
+      issueId: result._id,
+      issueTitle: result.title,
+      type: "IssueAssigned",
+      title: result.title,
+      notificationText: "An administrator has been assigned to your issue.",
+    });
+
+    // Notify the admin who was assigned with a different notification message
+    await createNotification(db, {
+      recipientId: result.assignedTo,
+      issueId: result._id,
+      issueTitle: result.title,
+      type: "IssueAssigned",
+      title: result.title,
+      notificationText: "You have been assigned this issue.",
+    });
+
+    res.json({ ...enrichedIssues[0], issueComments, issueMessages });
   } catch (err) {
     console.error("Failed to assign issue:", err);
     res.status(500).json({ error: "Failed to assign issue" });
@@ -874,7 +1162,13 @@ app.put('/api/issues/:id/unassign', async (req, res) => {
 
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
     const issueComments = await getIssueComments(db, result._id);
-    res.json({ ...enrichedIssues[0], issueComments });
+    const issueMessages = await getIssueMessages(db, result._id);
+
+    res.json({
+      ...enrichedIssues[0],
+      issueComments,
+      issueMessages,
+    });
   } catch (err) {
     console.error("Failed to unassign issue:", err);
     res.status(500).json({ error: "Failed to unassign issue" });
@@ -909,12 +1203,17 @@ app.get('/api/issues/:id', async (req, res) => {
     const issue = issues[0];
 
     // Check whether the requesting user is an administrator
+    let requestingUser = null;
     let isAdmin = false;
 
     if (firebaseUid) {
-      const user = await findUserByIdentity(db, firebaseUid);
-      isAdmin = user?.isAdmin === true;
+      requestingUser = await findUserByIdentity(db, firebaseUid);
+      isAdmin = requestingUser?.isAdmin === true;
     }
+
+    const issueMessages = requestingUser && isIssueParticipant(issue, requestingUser)
+      ? await getIssueMessages(db, new ObjectId(id))
+      : [];
 
     // Only administrators should receive internal admin comments
     if (isAdmin) {
@@ -926,11 +1225,15 @@ app.get('/api/issues/:id', async (req, res) => {
       return res.json({
         ...issue,
         issueComments,
+        issueMessages,
       });
     }
 
     // Normal users receive the issue without admin comments
-    return res.json(issue);
+    return res.json({
+      ...issue,
+      issueMessages,
+    });
 
   } catch (err) {
     console.error("Failed to fetch issue:", err);
@@ -1011,15 +1314,27 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
     }
 
     if (updateFields.status === "Closed") {
+
+      // Check that at least one progress or resolution comment exists
       const commentCount = await db.collection("IssueComments").countDocuments({
         issueId: new ObjectId(id),
         comment: { $type: "string", $regex: /\S/ },
       });
+
       if (commentCount === 0) {
         return res.status(400).json({
           error: "Add at least one progress or resolution comment before closing this issue",
         });
       }
+
+      // Only record the closing date when the issue is actually being closed
+      if (issue.status !== "Closed") {
+        updateFields.dateTimeIssueClosed = new Date();
+      }
+
+    } else if (updateFields.status !== undefined) {
+      // Clear the closing date if a closed issue is reopened
+      updateFields.dateTimeIssueClosed = null;
     }
 
     const retainedImageURLs = imageURLs ?? issue.imageURLs ?? []; // Use the provided imageURLs or fallback to existing ones
@@ -1028,13 +1343,34 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       return res.status(400).json({ error: "imageURLs must be an array" });
     }
 
+    if (retainedImageURLs.some((imageURL) => !isAllowedImageUrl(imageURL))) {
+      return res.status(400).json({ error: "Only trusted Cloudinary image URLs are allowed." });
+    }
+
+    const originalImageURLs = issue.imageURLs || [];
+    if (retainedImageURLs.some((imageURL) => !originalImageURLs.includes(imageURL))) {
+      return res.status(400).json({ error: "An image URL does not belong to this issue." });
+    }
+
     if (retainedImageURLs.length + (req.files?.length || 0) > 5) { //Only allow a maximum of 5 images to be associated with an issue
       return res.status(400).json({ error: "Maximum 5 images allowed" });
     }
 
-    const uploadedImageURLs = await uploadFilesToCloudinary(req.files);     // Upload new images to Cloudinary and get their URLs
-    const updatedImageURLs = [...retainedImageURLs, ...uploadedImageURLs];  // Combine retained and newly uploaded image URLs
-    updateFields.imageURLs = updatedImageURLs;                              // Update the imageURLs field in the issue document
+    const validatedFiles = await validateImageFiles(req.files);
+    const existingImageHashes = await Promise.all(retainedImageURLs.map(async (imageURL) => {
+      const existingIndex = originalImageURLs.indexOf(imageURL);
+      const storedHash = issue.imageHashes?.[existingIndex];
+      return isImageHash(storedHash) ? storedHash : hashRemoteImage(imageURL);
+    }));
+    const newImageHashes = validatedFiles.map(({ hash }) => hash);
+    if (new Set([...existingImageHashes, ...newImageHashes]).size !== existingImageHashes.length + newImageHashes.length) {
+      return res.status(400).json({ error: "The same image cannot be attached to an issue more than once." });
+    }
+
+    const uploadedImageURLs = await uploadFilesToCloudinary(validatedFiles.map(({ file }) => file));
+    const updatedImageURLs = [...retainedImageURLs, ...uploadedImageURLs];
+    updateFields.imageURLs = updatedImageURLs;
+    updateFields.imageHashes = [...existingImageHashes, ...newImageHashes];
 
     const removedImageURLs = (issue.imageURLs || []) //Get the existing image URLs from the issue and filter out the ones that are retained, leaving only the removed ones
       .filter((existingImageURL) => !retainedImageURLs.includes(existingImageURL));
@@ -1047,6 +1383,16 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
 
     if (!result) {
       return res.status(404).json({ error: "Issue not found" });
+    }
+
+    if (status !== undefined && issue.status !== updateFields.status) {
+      await createParticipantNotifications(db, result, {
+        issueId: result._id,
+        issueTitle: result.title,
+        type: "StatusUpdated",
+        title: "Issue status updated",
+        notificationText: `Issue status changed from ${issue.status || "unknown"} to ${updateFields.status}.`,
+      });
     }
 
     // Remove images from Cloudinary that are no longer associated with the issue
@@ -1070,11 +1416,15 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
 
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
     const issueComments = await getIssueComments(db, result._id);
-    res.json({ ...enrichedIssues[0], issueComments });
+    const issueMessages = await getIssueMessages(db, result._id);
+
+    res.json({ ...enrichedIssues[0], issueComments, issueMessages });
 
   } catch (err) {
     console.error("Failed to update issue:", err);
-    res.status(500).json({ error: "Failed to update issue" });
+    res.status(err instanceof ImageValidationError ? 400 : 500).json({
+      error: err instanceof ImageValidationError ? err.message : "Failed to update issue",
+    });
   }
 });
 
@@ -1094,7 +1444,7 @@ app.delete('/api/issues/:id/images', async (req, res) => {
 
     const issue = await db.collection("Issue").findOne({ //Retrieve the issue from the database if it exists and check if the image's imageURL is in the stored issue's imageURLs array
       _id: new ObjectId(id),
-      imageURLs: imageURL 
+      imageURLs: imageURL
     });
 
     if (!issue) {
@@ -1137,17 +1487,19 @@ app.post('/api/upload', upload.array("images", 5), async (req, res) => {
       return res.status(400).json({ error: "No image files were uploaded." });
     }
 
-    // 2. Loop through all file buffers processed by Multer and prepare Cloudinary promises
-    const uploadPromises = req.files.map((file) => {
+    const validatedFiles = await validateImageFiles(req.files);
+
+    // Upload only files whose signatures and content hashes passed validation.
+    const uploadPromises = validatedFiles.map(({ file }) => {
       return new Promise((resolve, reject) => {
 
         // Create a data URI base64 string from the memory storage buffer
         const fileBase64 = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
-        
+
         // Execute a secure server-side upload using your configured Cloudinary instance
         cloudinary.uploader.upload(
           fileBase64,
-          { 
+          {
             folder: "uon_campus_hazards", // Groups student reports into an organized directory
             resource_type: "image"
           },
@@ -1161,17 +1513,272 @@ app.post('/api/upload', upload.array("images", 5), async (req, res) => {
 
     // 3. Resolve all async cloud uploads concurrently
     const imageURLs = await Promise.all(uploadPromises);
+    const imageHashes = validatedFiles.map(({ hash }) => hash);
 
     // 4. Return the Cloudinary CDN links straight back to the React app to be stored in the MongoDB Issue document as an array of strings
-    return res.status(200).json({ imageURLs });
+    return res.status(200).json({ imageURLs, imageHashes });
 
-  }catch (err) {
+  } catch (err) {
     console.error("Cloudinary upload error:");
     console.error(err);
 
-    res.status(500).json({
-      error: err.message,
+    res.status(err instanceof ImageValidationError ? 400 : 500).json({
+      error: err instanceof ImageValidationError ? err.message : "Image upload failed.",
     });
   }
 });
 
+/**
+ * Remove a message from an issue conversation.
+ *
+ * Only administrators can remove messages.
+ * Messages are soft-deleted so the record remains in the database.
+ */
+app.delete('/api/issues/:issueId/messages/:messageId', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { issueId, messageId } = req.params;
+    const { firebaseUid } = req.body || {};
+
+    // Find the user making the request.
+    const admin = await findUserByIdentity(db, firebaseUid);
+
+    if (!admin) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Only administrators can remove messages.
+    if (!admin.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Validate the supplied IDs.
+    if (!ObjectId.isValid(issueId) || !ObjectId.isValid(messageId)) {
+      return res.status(400).json({ error: "Invalid issue or message ID" });
+    }
+
+    const issueObjectId = new ObjectId(issueId);
+    const messageObjectId = new ObjectId(messageId);
+
+    // Make sure the issue exists.
+    const issue = await db.collection("Issue").findOne({
+      _id: issueObjectId,
+    });
+
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    // Find the message belonging to this issue.
+    const message = await db.collection("Message").findOne({
+      _id: messageObjectId,
+      issueId: issueObjectId,
+    });
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // Prevent an already removed message from being removed again.
+    if (message.isDeleted) {
+      return res.status(400).json({ error: "Message has already been removed" });
+    }
+
+    // Soft-delete the message.
+    await db.collection("Message").updateOne(
+      {
+        _id: messageObjectId,
+        issueId: issueObjectId,
+      },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy: admin._id,
+        },
+      }
+    );
+
+    res.json({
+      message: "Message removed successfully",
+    });
+  } catch (err) {
+    console.error("Failed to remove message:", err);
+    res.status(500).json({ error: "Failed to remove message" });
+  }
+});
+
+/**
+ * Allows an administrator to assign an issue to another administrator.
+ */
+app.put('/api/issues/:id/assign-to', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+    const { firebaseUid, assignedTo } = req.body || {};
+
+    if (!firebaseUid) {
+      return res.status(400).json({ error: "firebaseUid is required" });
+    }
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
+
+    if (!ObjectId.isValid(assignedTo)) {
+      return res.status(400).json({ error: "Invalid administrator ID" });
+    }
+
+    // Find the administrator making the request.
+    const requestingAdmin = await findUserByIdentity(db, firebaseUid);
+
+    if (!requestingAdmin) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!requestingAdmin.isAdmin) {
+      return res.status(403).json({ error: "Administrator access required" });
+    }
+
+    const issueObjectId = new ObjectId(id);
+    const assignedAdminId = new ObjectId(assignedTo);
+
+    // Make sure the issue exists.
+    const issue = await db.collection("Issue").findOne({
+      _id: issueObjectId,
+    });
+
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    // Closed issues cannot be reassigned.
+    if (issue.status === "Closed") {
+      return res.status(400).json({
+        error: "Closed issues cannot be reassigned",
+      });
+    }
+
+    // Make sure the selected user is actually an administrator.
+    const assignedAdmin = await db.collection("User").findOne({
+      _id: assignedAdminId,
+      isAdmin: true,
+    });
+
+    if (!assignedAdmin) {
+      return res.status(404).json({
+        error: "Selected administrator was not found",
+      });
+    }
+
+    // Update the issue assignment.
+    const result = await db.collection("Issue").findOneAndUpdate(
+      { _id: issueObjectId },
+      { $set: { assignedTo: assignedAdminId } },
+      { returnDocument: "after" }
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    // Get the updated issue with the administrator's display name.
+    const enrichedIssues = await issueWithAssigneeName(
+      db,
+      { _id: issueObjectId },
+      1
+    );
+
+    const issueComments = await getIssueComments(db, issueObjectId);
+    const issueMessages = await getIssueMessages(db, issueObjectId);
+
+    // Notify the issue reporter.
+    await createNotification(db, {
+      recipientId: result.reportedBy,
+      issueId: result._id,
+      issueTitle: result.title,
+      type: "IssueAssigned",
+      title: result.title,
+      notificationText: "An administrator has been assigned to your issue.",
+    });
+
+    // Notify the administrator who received the assignment.
+    await createNotification(db, {
+      recipientId: result.assignedTo,
+      issueId: result._id,
+      issueTitle: result.title,
+      type: "IssueAssigned",
+      title: result.title,
+      notificationText: "You have been assigned this issue.",
+    });
+
+    res.json({
+      ...enrichedIssues[0],
+      issueComments,
+      issueMessages,
+    });
+  } catch (err) {
+    console.error("Failed to assign issue to administrator:", err);
+    res.status(500).json({
+      error: "Failed to assign issue to administrator",
+    });
+  }
+});
+
+/**
+  * Search for administrators who can be assigned to an issue.
+  * Only users with isAdmin set to true are returned.
+  * The optional search parameter matches first name, last name, or email.
+  */
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { firebaseUid, search = "" } = req.query;
+
+    // Verify that the requesting user is an administrator.
+    const requestingAdmin = await findUserByIdentity(db, firebaseUid);
+
+    if (!requestingAdmin) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!requestingAdmin.isAdmin) {
+      return res.status(403).json({ error: "Administrator access required" });
+    }
+
+    const trimmedSearch = search.trim();
+
+    const query = {
+      isAdmin: true,
+    };
+
+    // Only apply the search filter when the user has entered something.
+    if (trimmedSearch) {
+      const searchRegex = new RegExp(trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+
+      query.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    const admins = await db.collection("User")
+      .find(query, {
+        projection: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+        },
+      })
+      .sort({ firstName: 1, lastName: 1 })
+      .limit(20)
+      .toArray();
+
+    res.json(admins);
+  } catch (err) {
+    console.error("Failed to search administrators:", err);
+    res.status(500).json({ error: "Failed to search administrators" });
+  }
+});

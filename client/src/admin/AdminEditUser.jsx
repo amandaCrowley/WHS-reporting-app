@@ -17,8 +17,11 @@ import {
 } from "lucide-react";
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
+<<<<<<< HEAD
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
+=======
+>>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
 import "../styles/AdminEditUser.css";
 
 const ROLE_OPTIONS = ["Student", "Staff", "Visitor", "Contractor"];
@@ -337,6 +340,104 @@ export default function AdminEditUser() {
           </section>
         </main>
       </div>
+<<<<<<< HEAD
+=======
+
+      <div>
+        <button type="button" onClick={() => navigate("/admin/dashboard")}>Dashboard</button>
+        <button type="button" onClick={() => navigate("/admin/manageissues")}>Manage Issues</button>
+        <button type="button" onClick={() => navigate("/admin/usermanagement")}>User Management</button>
+        <button type="button" onClick={logout}>Logout</button>
+      </div>
+
+      <section>
+        <h2>User account</h2>
+
+        {error && <p style={{ color: "#b42318", fontWeight: 700 }}>{error}</p>}
+
+        {user && (
+          <>
+            <p><strong>User ID:</strong> {user._id}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <div className="admin-role-field">
+
+              <label htmlFor="admin-user-first-name">First name</label>
+              <input
+                id="admin-user-first-name"
+                type="text"
+                value={formData.firstName}
+                onChange={(event) => setFormData((current) => ({ ...current, firstName: event.target.value }))}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="admin-user-last-name">Last name</label>
+              <input
+                id="admin-user-last-name"
+                type="text"
+                value={formData.lastName}
+                onChange={(event) => setFormData((current) => ({ ...current, lastName: event.target.value }))}
+              />
+            </div>
+
+
+
+            <div className="admin-role-field">
+              <label htmlFor="admin-user-role">Role</label>
+              <select
+                id="admin-user-role"
+                value={formData.role}
+                onChange={handleRoleChange}
+              >
+                {ROLE_OPTIONS.map((role) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="admin-access-control">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={canGrantAdminAccess && formData.isAdmin}
+                  disabled={!canGrantAdminAccess}
+                  onChange={(event) => {
+                    if (!canGrantAdminAccess) return;
+                    setFormData((current) => ({ ...current, isAdmin: event.target.checked }));
+                  }}
+                />
+                Administrator access
+              </label>
+              {!canGrantAdminAccess && (
+                <p className="admin-access-help">
+                  Admin access is only available to Staff users.
+                </p>
+              )}
+            </div>
+
+            <div className="admin-form-actions">
+              <button type="button" onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "Save changes"}
+              </button>
+              <button type="button" onClick={() => navigate(`/admin/users/${userId}`)}>
+                Cancel
+              </button>
+            </div>
+
+            <div>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting || user.firebaseUid === userData?.firebaseUid}
+                style={{ background: "#b42318", color: "#fff" }}
+              >
+                {deleting ? "Deleting..." : "Remove user from database"}
+              </button>
+            </div>
+          </>
+        )}
+      </section>
+>>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
     </div>
   );
 }
