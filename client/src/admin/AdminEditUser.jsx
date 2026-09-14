@@ -9,9 +9,17 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  LogOut,
+} from "lucide-react";
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
-import "../styles/AdminEditUser.css"; 
+import UONLogo from "../images/UONLogo White.png";
+import "../pages/UserDashboard.css";
+import "../styles/AdminEditUser.css";
 
 const ROLE_OPTIONS = ["Student", "Staff", "Visitor", "Contractor"];
 
@@ -173,107 +181,162 @@ export default function AdminEditUser() {
   };
 
   if (loading) {
-    return <div><h1>Edit User</h1><p>Loading user details...</p></div>;
+    return (
+      <div className="admin-dashboard-message">
+        <h1>Edit User</h1>
+        <p>Loading user details...</p>
+      </div>
+    );
   }
 
+  const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+
   return (
-    <div className="admin-edit-user">
-      <div>
-        <h1>Edit User Details</h1>
+    <div className="user-dashboard admin-dashboard admin-edit-user-shell">
+      <aside className="user-dashboard-sidebar">
+        <div className="user-dashboard-logo">
+          <img src={UONLogo} alt="The University of Newcastle Australia" />
+        </div>
+
+        <nav className="user-dashboard-nav">
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/admin/dashboard")}
+          >
+            <LayoutDashboard />
+            <span>Dashboard</span>
+          </button>
+
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/admin/manageissues")}
+          >
+            <ClipboardList />
+            <span>Manage Issues</span>
+          </button>
+
+          <button
+            type="button"
+            className="user-dashboard-nav-item active"
+            onClick={() => navigate("/admin/usermanagement")}
+          >
+            <Users />
+            <span>User Management</span>
+          </button>
+        </nav>
+
+        <div className="user-dashboard-logout-section">
+          <button type="button" className="user-dashboard-logout" onClick={logout}>
+            <LogOut />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      <div className="user-dashboard-main">
+        <header className="user-dashboard-header">
+          <h1>Edit User Details</h1>
+
+          <div className="user-dashboard-header-user">
+            <span>Welcome {userData?.firstName || "Admin"}</span>
+
+            <div className="profile-avatar">
+              <span>{initials || "A"}</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="user-dashboard-content">
+          <section className="admin-edit-user">
+            <h2>User account</h2>
+
+            {error && <p className="admin-edit-user-error">{error}</p>}
+
+            {user && (
+              <>
+                <div className="admin-edit-user-form-grid">
+                  <div className="admin-role-field admin-edit-user-field">
+                    <label htmlFor="admin-user-first-name">First name</label>
+                    <input
+                      id="admin-user-first-name"
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(event) => setFormData((current) => ({ ...current, firstName: event.target.value }))}
+                    />
+                  </div>
+
+                  <div className="admin-edit-user-field">
+                    <label htmlFor="admin-user-last-name">Last name</label>
+                    <input
+                      id="admin-user-last-name"
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(event) => setFormData((current) => ({ ...current, lastName: event.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <p className="admin-edit-user-meta"><strong>Email:</strong> {user.email}</p>
+                <p className="admin-edit-user-meta"><strong>Firebase UID:</strong> {user.firebaseUid}</p>
+
+                <div className="admin-role-field">
+                  <label htmlFor="admin-user-role">Role</label>
+                  <select
+                    id="admin-user-role"
+                    value={formData.role}
+                    onChange={handleRoleChange}
+                  >
+                    {ROLE_OPTIONS.map((role) => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="admin-access-control">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={canGrantAdminAccess && formData.isAdmin}
+                      disabled={!canGrantAdminAccess}
+                      onChange={(event) => {
+                        if (!canGrantAdminAccess) return;
+                        setFormData((current) => ({ ...current, isAdmin: event.target.checked }));
+                      }}
+                    />
+                    Administrator access
+                  </label>
+                  {!canGrantAdminAccess && (
+                    <p className="admin-access-help">
+                      Admin access is only available to Staff users.
+                    </p>
+                  )}
+                </div>
+
+                <div className="admin-form-actions">
+                  <button type="button" onClick={handleSave} disabled={saving}>
+                    {saving ? "Saving..." : "Save changes"}
+                  </button>
+                  <button type="button" onClick={() => navigate(`/admin/users/${userId}`)}>
+                    Cancel
+                  </button>
+                </div>
+
+                <div className="admin-delete-user-action">
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting || user.firebaseUid === userData?.firebaseUid}
+                  >
+                    {deleting ? "Deleting..." : "Remove user from database"}
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+        </main>
       </div>
-
-      <div>
-        <button type="button" onClick={() => navigate("/admin/dashboard")}>Dashboard</button>
-        <button type="button" onClick={() => navigate("/admin/manageissues")}>Manage Issues</button>
-        <button type="button" onClick={() => navigate("/admin/usermanagement")}>User Management</button>
-        <button type="button" onClick={logout}>Logout</button>
-      </div>
-
-      <section>
-        <h2>User account</h2>
-
-        {error && <p style={{ color: "#b42318", fontWeight: 700 }}>{error}</p>}
-
-        {user && (
-          <>
-            <div className="admin-role-field">
-              <label htmlFor="admin-user-first-name">First name</label>
-              <input
-                id="admin-user-first-name"
-                type="text"
-                value={formData.firstName}
-                onChange={(event) => setFormData((current) => ({ ...current, firstName: event.target.value }))}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="admin-user-last-name">Last name</label>
-              <input
-                id="admin-user-last-name"
-                type="text"
-                value={formData.lastName}
-                onChange={(event) => setFormData((current) => ({ ...current, lastName: event.target.value }))}
-              />
-            </div>
-
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Firebase UID:</strong> {user.firebaseUid}</p>
-
-            <div className="admin-role-field">
-              <label htmlFor="admin-user-role">Role</label>
-              <select
-                id="admin-user-role"
-                value={formData.role}
-                onChange={handleRoleChange}
-              >
-                {ROLE_OPTIONS.map((role) => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="admin-access-control">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={canGrantAdminAccess && formData.isAdmin}
-                  disabled={!canGrantAdminAccess}
-                  onChange={(event) => {
-                    if (!canGrantAdminAccess) return;
-                    setFormData((current) => ({ ...current, isAdmin: event.target.checked }));
-                  }}
-                />
-                Administrator access
-              </label>
-              {!canGrantAdminAccess && (
-                <p className="admin-access-help">
-                  Admin access is only available to Staff users.
-                </p>
-              )}
-            </div>
-
-            <div className="admin-form-actions">
-              <button type="button" onClick={handleSave} disabled={saving}>
-                {saving ? "Saving..." : "Save changes"}
-              </button>
-              <button type="button" onClick={() => navigate(`/admin/users/${userId}`)}>
-                Cancel
-              </button>
-            </div>
-
-            <div>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting || user.firebaseUid === userData?.firebaseUid}
-                style={{ background: "#b42318", color: "#fff" }}
-              >
-                {deleting ? "Deleting..." : "Remove user from database"}
-              </button>
-            </div>
-          </>
-        )}
-      </section>
     </div>
   );
 }

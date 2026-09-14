@@ -19,6 +19,7 @@ import {
   LogOut,
   Wrench,
   Users,
+  ClipboardList,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -36,19 +37,35 @@ function Sidebar({ userData, navigate, logout }) {
       <nav className="user-dashboard-nav">
         {!userData?.isAdmin && (
           <>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/userdashboard")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/userdashboard")}
+            >
               <LayoutDashboard />
               <span>Dashboard</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/reportissue")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/reportissue")}
+            >
               <FilePlus2 />
               <span>Report Issues</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/myissues")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/myissues")}
+            >
               <CircleAlert />
               <span>My Issues</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/profile")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/profile")}
+            >
               <UserRound />
               <span>Profile</span>
             </button>
@@ -56,15 +73,27 @@ function Sidebar({ userData, navigate, logout }) {
         )}
         {userData?.isAdmin && (
           <>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/dashboard")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/admin/dashboard")}
+            >
               <LayoutDashboard />
               <span>Dashboard</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/manageissues")}>
-              <Wrench />
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/admin/manageissues")}
+            >
+              <ClipboardList />
               <span>Manage Issues</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/usermanagement")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/admin/usermanagement")}
+            >
               <Users />
               <span>User Management</span>
             </button>
@@ -73,7 +102,11 @@ function Sidebar({ userData, navigate, logout }) {
       </nav>
 
       <div className="user-dashboard-logout-section">
-        <button type="button" className="user-dashboard-logout" onClick={logout}>
+        <button
+          type="button"
+          className="user-dashboard-logout"
+          onClick={logout}
+        >
           <LogOut />
           <span>Logout</span>
         </button>
