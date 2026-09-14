@@ -19,15 +19,7 @@ import {
   LogOut,
   Wrench,
   Users,
-<<<<<<< HEAD
   ClipboardList,
-=======
-  Copy,
-  Check,
-  X,
-  Search,
-  ChevronDown,
->>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -57,10 +49,6 @@ function Sidebar({ userData, navigate, logout }) {
               <LayoutDashboard />
               <span>Dashboard</span>
             </button>
-<<<<<<< HEAD
-=======
-
->>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
             <button
               type="button"
               className="user-dashboard-nav-item"
@@ -69,10 +57,6 @@ function Sidebar({ userData, navigate, logout }) {
               <FilePlus2 />
               <span>Report Issues</span>
             </button>
-<<<<<<< HEAD
-=======
-
->>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
             <button
               type="button"
               className="user-dashboard-nav-item"
@@ -81,10 +65,6 @@ function Sidebar({ userData, navigate, logout }) {
               <CircleAlert />
               <span>My Issues</span>
             </button>
-<<<<<<< HEAD
-=======
-
->>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
             <button
               type="button"
               className="user-dashboard-nav-item"
@@ -106,25 +86,14 @@ function Sidebar({ userData, navigate, logout }) {
               <LayoutDashboard />
               <span>Dashboard</span>
             </button>
-<<<<<<< HEAD
-=======
-
->>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
             <button
               type="button"
               className="user-dashboard-nav-item"
               onClick={() => navigate("/admin/manageissues")}
             >
-<<<<<<< HEAD
               <ClipboardList />
               <span>Manage Issues</span>
             </button>
-=======
-              <Wrench />
-              <span>Manage Issues</span>
-            </button>
-
->>>>>>> 96ccb041d9190eee42f41b47926761bb08d0ff77
             <button
               type="button"
               className="user-dashboard-nav-item"
