@@ -9,7 +9,7 @@
  * Date: 2/4/26
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -22,6 +22,8 @@ import {
   Copy,
   Check,
   X,
+  Search,
+  ChevronDown,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -34,41 +36,78 @@ function Sidebar({ userData, navigate, logout }) {
   return (
     <aside className="user-dashboard-sidebar">
       <div className="user-dashboard-logo">
-        <img src={UONLogo} alt="The University of Newcastle Australia" />
+        <img
+          src={UONLogo}
+          alt="The University of Newcastle Australia"
+        />
       </div>
 
       <nav className="user-dashboard-nav">
         {!userData?.isAdmin && (
           <>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/userdashboard")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/userdashboard")}
+            >
               <LayoutDashboard />
               <span>Dashboard</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/reportissue")}>
+
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/reportissue")}
+            >
               <FilePlus2 />
               <span>Report Issues</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/myissues")}>
+
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/myissues")}
+            >
               <CircleAlert />
               <span>My Issues</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/profile")}>
+
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/profile")}
+            >
               <UserRound />
               <span>Profile</span>
             </button>
           </>
         )}
+
         {userData?.isAdmin && (
           <>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/dashboard")}>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/admin/dashboard")}
+            >
               <LayoutDashboard />
               <span>Dashboard</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/manageissues")}>
+
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/admin/manageissues")}
+            >
               <Wrench />
               <span>Manage Issues</span>
             </button>
-            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/usermanagement")}>
+
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/admin/usermanagement")}
+            >
               <Users />
               <span>User Management</span>
             </button>
@@ -77,7 +116,11 @@ function Sidebar({ userData, navigate, logout }) {
       </nav>
 
       <div className="user-dashboard-logout-section">
-        <button type="button" className="user-dashboard-logout" onClick={logout}>
+        <button
+          type="button"
+          className="user-dashboard-logout"
+          onClick={logout}
+        >
           <LogOut />
           <span>Logout</span>
         </button>
@@ -86,18 +129,31 @@ function Sidebar({ userData, navigate, logout }) {
   );
 }
 
-function PageLayout({ children, userData, navigate, logout, displayName, initials }) {
+function PageLayout({
+  children,
+  userData,
+  navigate,
+  logout,
+  displayName,
+}) {
   return (
     <div className="user-dashboard">
-      <Sidebar userData={userData} navigate={navigate} logout={logout} />
+      <Sidebar
+        userData={userData}
+        navigate={navigate}
+        logout={logout}
+      />
+
       <div className="user-dashboard-main">
         <header className="user-dashboard-header">
           <h1>Issue details</h1>
+
           <div className="user-dashboard-header-user">
             <span>Welcome {displayName}</span>
             <NotificationBell firebaseUid={userData?.firebaseUid} />
           </div>
         </header>
+
         {children}
       </div>
     </div>
@@ -124,6 +180,29 @@ export default function IssueDetails() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [statusError, setStatusError] = useState("");
+  const assignmentDropdownRef = useRef(null);
+
+  // State variables for admin assignment dropdown
+  const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
+  const [adminSearch, setAdminSearch] = useState("");
+  const [admins, setAdmins] = useState([]);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+
+  // Update the issue while preserving messages and admin comments if they
+  // are not included in a backend response.
+  const updateIssueState = (updatedIssue) => {
+    setIssue((previousIssue) => ({
+      ...updatedIssue,
+      issueMessages:
+        updatedIssue.issueMessages ??
+        previousIssue?.issueMessages ??
+        [],
+      issueComments:
+        updatedIssue.issueComments ??
+        previousIssue?.issueComments ??
+        [],
+    }));
+  };
 
   // Fetch the issue details from the server/backend when this page/component loads or if the issueId changes
   useEffect(() => {
@@ -133,14 +212,24 @@ export default function IssueDetails() {
         const query = userData?.firebaseUid
           ? `?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
           : "";
-        const res = await fetch(`http://localhost:8000/api/issues/${issueId}${query}`);
-        if (!res.ok) throw new Error("Failed to fetch issue");
+
+        const res = await fetch(
+          `http://localhost:8000/api/issues/${issueId}${query}`
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch issue");
+        }
+
         const data = await res.json();
 
         if (userData?.firebaseUid) {
           const messagesResponse = await fetch(
-            `http://localhost:8000/api/issues/${issueId}/messages?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
+            `http://localhost:8000/api/issues/${issueId}/messages?firebaseUid=${encodeURIComponent(
+              userData.firebaseUid
+            )}`
           );
+
           if (messagesResponse.ok) {
             data.issueMessages = await messagesResponse.json();
           }
@@ -160,24 +249,43 @@ export default function IssueDetails() {
 
   const sendMessage = async (event) => {
     event.preventDefault();
+
     const messageText = newMessage.trim();
-    if (!messageText || !userData?.firebaseUid) return;
+
+    if (!messageText || !userData?.firebaseUid) {
+      return;
+    }
 
     try {
       setSendingMessage(true);
       setMessageError("");
-      const response = await fetch(`http://localhost:8000/api/issues/${issueId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firebaseUid: userData.firebaseUid, messageText }),
-      });
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issueId}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firebaseUid: userData.firebaseUid,
+            messageText,
+          }),
+        }
+      );
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to send message");
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
 
       setIssue((previousIssue) => ({
         ...previousIssue,
-        issueMessages: [...(previousIssue.issueMessages || []), data],
+        issueMessages: [
+          ...(previousIssue.issueMessages || []),
+          data,
+        ],
       }));
+
       setNewMessage("");
     } catch (err) {
       setMessageError(err.message);
@@ -186,23 +294,64 @@ export default function IssueDetails() {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        assignmentDropdownRef.current &&
+        !assignmentDropdownRef.current.contains(event.target)
+      ) {
+        setAdminDropdownOpen(false);
+      }
+    };
+
+    if (adminDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [adminDropdownOpen]);
+  
   const addComment = async (event) => {
     event.preventDefault();
+
     const comment = newComment.trim();
-    if (!comment || !userData?.firebaseUid) return;
+
+    if (!comment || !userData?.firebaseUid) {
+      return;
+    }
 
     try {
       setAddingComment(true);
       setCommentError("");
-      const response = await fetch(`http://localhost:8000/api/issues/${issueId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firebaseUid: userData.firebaseUid, comment }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to add comment");
 
-      setIssue(prev => ({ ...prev, issueComments: [...(prev.issueComments || []), data] }));
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issueId}/comments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firebaseUid: userData.firebaseUid,
+            comment,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to add comment");
+      }
+
+      setIssue((previousIssue) => ({
+        ...previousIssue,
+        issueComments: [
+          ...(previousIssue.issueComments || []),
+          data,
+        ],
+      }));
+
       setNewComment("");
     } catch (err) {
       setCommentError(err.message);
@@ -213,23 +362,78 @@ export default function IssueDetails() {
 
   //Helper method to assign the issue to the current user/admin. This will update the assignedTo field in the mongoDB database for that issue to the current user's id.
   const assignIssueToMe = async () => {
-    if (!userData?.firebaseUid || !issue?._id) return;
+    if (!userData?.firebaseUid || !issue?._id) {
+      return;
+    }
 
     try {
       setAssigningIssue(true);
-      const response = await fetch(`http://localhost:8000/api/issues/${issue._id}/assign`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firebaseUid: userData.firebaseUid }),
-      });
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issue._id}/assign`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firebaseUid: userData.firebaseUid,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to assign issue");
+        const errorData = await response
+          .json()
+          .catch(() => ({}));
+
+        throw new Error(
+          errorData.error || "Failed to assign issue"
+        );
       }
 
       const updatedIssue = await response.json();
-      setIssue(updatedIssue);
+      updateIssueState(updatedIssue);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not assign issue");
+    } finally {
+      setAssigningIssue(false);
+    }
+  };
+
+  // Assign the issue to the administrator selected from the assignment dropdown.
+  const assignIssueToAdmin = async (adminId) => {
+    if (!userData?.firebaseUid || !issue?._id || !adminId) {
+      return;
+    }
+
+    try {
+      setAssigningIssue(true);
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issue._id}/assign-to`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firebaseUid: userData.firebaseUid,
+            assignedTo: adminId,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Failed to assign issue"
+        );
+      }
+
+      updateIssueState(data);
+      setAdminDropdownOpen(false);
+      setAdminSearch("");
     } catch (err) {
       console.error(err);
       alert(err.message || "Could not assign issue");
@@ -240,21 +444,32 @@ export default function IssueDetails() {
 
   // Helper method to unassign the issue from the current user/admin. This will update the assignedTo field in the mongoDB database for that issue to null.
   const unassignIssue = async () => {
-    if (!issue?._id) return;
+    if (!issue?._id) {
+      return;
+    }
 
     try {
       setAssigningIssue(true);
-      const response = await fetch(`http://localhost:8000/api/issues/${issue._id}/unassign`, {
-        method: "PUT",
-      });
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issue._id}/unassign`,
+        {
+          method: "PUT",
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to unassign issue");
+        const errorData = await response
+          .json()
+          .catch(() => ({}));
+
+        throw new Error(
+          errorData.error || "Failed to unassign issue"
+        );
       }
 
       const updatedIssue = await response.json();
-      setIssue(updatedIssue);
+      updateIssueState(updatedIssue);
     } catch (err) {
       console.error(err);
       alert(err.message || "Could not unassign issue");
@@ -263,46 +478,143 @@ export default function IssueDetails() {
     }
   };
 
+  // Fetch administrators for the assignment dropdown.
+  // The optional search term is used to find administrators by name or email.
+  const fetchAdmins = async (searchTerm = "") => {
+    if (!userData?.firebaseUid) {
+      return;
+    }
+
+    try {
+      setLoadingAdmins(true);
+
+      const response = await fetch(
+        `http://localhost:8000/api/admin/users?firebaseUid=${encodeURIComponent(
+          userData.firebaseUid
+        )}&search=${encodeURIComponent(searchTerm)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Failed to load administrators"
+        );
+      }
+
+      setAdmins(data);
+    } catch (err) {
+      console.error(
+        "Failed to load administrators:",
+        err
+      );
+      setAdmins([]);
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  // Filter the administrator list based on the text entered into the search box.
+  const filteredAdmins = admins.filter((admin) => {
+    const adminName =
+      `${admin.firstName || ""} ${admin.lastName || ""
+        }`.toLowerCase();
+
+    const adminEmail = (
+      admin.email || ""
+    ).toLowerCase();
+
+    const searchTerm = adminSearch
+      .toLowerCase()
+      .trim();
+
+    return (
+      adminName.includes(searchTerm) ||
+      adminEmail.includes(searchTerm)
+    );
+  });
+
   //Helper method to update the status of the issue. This will update the status field in the mongoDB database for that issue to the nextStatus value.
   const updateIssueStatus = async (nextStatus) => {
-    if (!issue?._id) return;
-    if (nextStatus === "Closed" && !issue.issueComments?.some((issueComment) => issueComment.comment?.trim())) {
-      setStatusError("Add at least one resolution comment stating how the issue was resolved before closing this issue.");
+    if (!issue?._id) {
+      return;
+    }
+
+    if (
+      nextStatus === "Closed" &&
+      !issue.issueComments?.some(
+        (issueComment) =>
+          issueComment.comment?.trim()
+      )
+    ) {
+      setStatusError(
+        "Add at least one resolution comment stating how the issue was resolved before closing this issue."
+      );
       return;
     }
 
     try {
       setUpdatingStatus(true);
       setStatusError("");
-      const response = await fetch(`http://localhost:8000/api/issues/${issue._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus, firebaseUid: userData?.firebaseUid }),
-      });
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issue._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: nextStatus,
+            firebaseUid: userData?.firebaseUid,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to update issue status");
+        const errorData = await response
+          .json()
+          .catch(() => ({}));
+
+        throw new Error(
+          errorData.error ||
+          "Failed to update issue status"
+        );
       }
 
       const updatedIssue = await response.json();
-      setIssue(updatedIssue);
+      updateIssueState(updatedIssue);
     } catch (err) {
       console.error(err);
-      alert(err.message || "Could not update issue status");
+      alert(
+        err.message || "Could not update issue status"
+      );
     } finally {
       setUpdatingStatus(false);
     }
   };
 
-  const displayName = userData?.firstName || userData?.name || "User";
+  const displayName =
+    userData?.firstName ||
+    userData?.name ||
+    "User";
+
   const initials =
     `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
-  const layoutProps = { userData, navigate, logout, displayName, initials };
+
+  const layoutProps = {
+    userData,
+    navigate,
+    logout,
+    displayName,
+    initials,
+  };
 
   // Copies the complete issue ID to the user's clipboard.
   const copyIssueId = async () => {
-    if (!issue?._id) return;
+    if (!issue?._id) {
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(issue._id);
@@ -313,7 +625,10 @@ export default function IssueDetails() {
         setCopiedId(false);
       }, 1500);
     } catch (err) {
-      console.error("Failed to copy issue ID:", err);
+      console.error(
+        "Failed to copy issue ID:",
+        err
+      );
     }
   };
 
@@ -343,14 +658,18 @@ export default function IssueDetails() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to remove message");
+        throw new Error(
+          data.error || "Failed to remove message"
+        );
       }
 
       // Update the message locally so the removed message is displayed
       // without requiring the issue page to be refreshed.
       setIssue((currentIssue) => ({
         ...currentIssue,
-        issueMessages: (currentIssue.issueMessages || []).map((message) =>
+        issueMessages: (
+          currentIssue.issueMessages || []
+        ).map((message) =>
           message._id === messageId
             ? {
               ...message,
@@ -360,8 +679,15 @@ export default function IssueDetails() {
         ),
       }));
     } catch (err) {
-      console.error("Failed to remove message:", err);
-      setMessageError(err.message || "Failed to remove message.");
+      console.error(
+        "Failed to remove message:",
+        err
+      );
+
+      setMessageError(
+        err.message ||
+        "Failed to remove message."
+      );
     }
   };
 
@@ -370,7 +696,9 @@ export default function IssueDetails() {
     return (
       <PageLayout {...layoutProps}>
         <div className="issues-details-container">
-          <div className="issue-details-status">Loading issue data...</div>
+          <div className="issue-details-status">
+            Loading issue data...
+          </div>
         </div>
       </PageLayout>
     );
@@ -392,7 +720,9 @@ export default function IssueDetails() {
     return (
       <PageLayout {...layoutProps}>
         <div className="issues-details-container">
-          <div className="issue-details-status">No issue found.</div>
+          <div className="issue-details-status">
+            No issue found.
+          </div>
         </div>
       </PageLayout>
     );
@@ -403,10 +733,15 @@ export default function IssueDetails() {
       <div className="issues-details-container">
         <div className="issue-details-summary">
           <div className="issue-summary-item">
-            <span className="issue-summary-label">Incident Date</span>
+            <span className="issue-summary-label">
+              Incident Date
+            </span>
+
             <span>
               {issue.dateTimeIssueOccurred
-                ? new Date(issue.dateTimeIssueOccurred).toLocaleString("en-AU", {
+                ? new Date(
+                  issue.dateTimeIssueOccurred
+                ).toLocaleString("en-AU", {
                   day: "2-digit",
                   month: "2-digit",
                   year: "numeric",
@@ -416,29 +751,55 @@ export default function IssueDetails() {
                 : "Not recorded"}
             </span>
           </div>
+
           <div className="issue-summary-item">
-            <span className="issue-summary-label">Location</span>
-            <span>{issue.location || "Unknown location"}</span>
-          </div>
-          <div className="issue-summary-item">
-            <span className="issue-summary-label">Campus</span>
-            <span>{issue.campus || "Unknown campus"}</span>
+            <span className="issue-summary-label">
+              Location
+            </span>
+
+            <span>
+              {issue.location ||
+                "Unknown location"}
+            </span>
           </div>
 
+          <div className="issue-summary-item">
+            <span className="issue-summary-label">
+              Campus
+            </span>
+
+            <span>
+              {issue.campus ||
+                "Unknown campus"}
+            </span>
+          </div>
         </div>
 
         <div className="issue-details-main-layout">
           <div className="issue-details-main-column">
             <section className="issue-details-card">
-              <div className="issue-details-card-header">Title</div>
+              <div className="issue-details-card-header">
+                Title
+              </div>
+
               <div className="issue-details-card-body">
-                <p>{issue.title || "No title provided."}</p>
+                <p>
+                  {issue.title ||
+                    "No title provided."}
+                </p>
               </div>
             </section>
+
             <section className="issue-details-card issue-description-card">
-              <div className="issue-details-card-header">Description</div>
+              <div className="issue-details-card-header">
+                Description
+              </div>
+
               <div className="issue-details-card-body">
-                <p>{issue.issueDescription || "No description provided."}</p>
+                <p>
+                  {issue.issueDescription ||
+                    "No description provided."}
+                </p>
               </div>
             </section>
 
@@ -449,29 +810,36 @@ export default function IssueDetails() {
                 </div>
 
                 <div className="issue-details-card-body">
-                  <p>{issue.additionalDetails}</p>
+                  <p>
+                    {issue.additionalDetails}
+                  </p>
                 </div>
               </section>
             )}
 
-            {issue.imageURLs && issue.imageURLs.length > 0 && (
-              <section className="issue-details-card">
-                <div className="issue-details-card-header">Evidence</div>
-
-                <div className="issue-details-card-body">
-                  <div className="issue-details-image-row">
-                    {issue.imageURLs.map((url, i) => (
-                      <img
-                        key={i}
-                        src={url}
-                        alt="Issue evidence"
-                        className="issue-details-image"
-                      />
-                    ))}
+            {issue.imageURLs &&
+              issue.imageURLs.length > 0 && (
+                <section className="issue-details-card">
+                  <div className="issue-details-card-header">
+                    Evidence
                   </div>
-                </div>
-              </section>
-            )}
+
+                  <div className="issue-details-card-body">
+                    <div className="issue-details-image-row">
+                      {issue.imageURLs.map(
+                        (url, i) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt="Issue evidence"
+                            className="issue-details-image"
+                          />
+                        )
+                      )}
+                    </div>
+                  </div>
+                </section>
+              )}
 
             <section className="issue-details-card">
               <div className="issue-details-card-header">
@@ -479,48 +847,70 @@ export default function IssueDetails() {
               </div>
 
               <div className="issue-details-card-body">
-
                 {issue.issueMessages?.length ? (
                   <div className="issue-comments-list">
-                    {issue.issueMessages.map((message) => (
-                      <div className="issue-comment" key={message._id}>
-                        {message.isDeleted ? (
-                          <p className="issue-comment-deleted">
-                            This message was removed by an administrator.
-                          </p>
-                        ) : (
-                          <div className="issue-message-content">
-                            <p>{message.messageText}</p>
+                    {issue.issueMessages.map(
+                      (message) => (
+                        <div
+                          className="issue-comment"
+                          key={message._id}
+                        >
+                          {message.isDeleted ? (
+                            <p className="issue-comment-deleted">
+                              This message was removed by an administrator.
+                            </p>
+                          ) : (
+                            <div className="issue-message-content">
+                              <p>
+                                {message.messageText}
+                              </p>
 
-                            {userData?.isAdmin && (
-                              <button
-                                type="button"
-                                className="issue-comment-delete-button"
-                                onClick={() => handleDeleteMessage(message._id)}
-                                title="Remove message"
-                                aria-label="Remove message"
-                              >
-                                <X size={16} />
-                              </button>
-                            )}
-                          </div>
-                        )}
+                              {userData?.isAdmin && (
+                                <button
+                                  type="button"
+                                  className="issue-comment-delete-button"
+                                  onClick={() =>
+                                    handleDeleteMessage(
+                                      message._id
+                                    )
+                                  }
+                                  title="Remove message"
+                                  aria-label="Remove message"
+                                >
+                                  <X size={16} />
+                                </button>
+                              )}
+                            </div>
+                          )}
 
-                        <small>
-                          {message.senderName} ({message.senderRole}) ·{" "}
-                          {new Date(message.createdAt).toLocaleString("en-AU")}
-                        </small>
-                      </div>
-                    ))}
+                          <small>
+                            {message.senderName} (
+                            {message.senderRole}) ·{" "}
+                            {new Date(
+                              message.createdAt
+                            ).toLocaleString("en-AU")}
+                          </small>
+                        </div>
+                      )
+                    )}
                   </div>
                 ) : (
-                  <p className="issue-details-empty-text">No messages yet.</p>
+                  <p className="issue-details-empty-text">
+                    No messages yet.
+                  </p>
                 )}
 
-                <form className="issue-comment-form" onSubmit={sendMessage}>
+                <form
+                  className="issue-comment-form"
+                  onSubmit={sendMessage}
+                >
                   <textarea
                     value={newMessage}
-                    onChange={(event) => setNewMessage(event.target.value)}
+                    onChange={(event) =>
+                      setNewMessage(
+                        event.target.value
+                      )
+                    }
                     maxLength={1000}
                     placeholder={
                       userData?.isAdmin
@@ -532,13 +922,20 @@ export default function IssueDetails() {
 
                   <button
                     type="submit"
-                    disabled={sendingMessage || !newMessage.trim()}
+                    disabled={
+                      sendingMessage ||
+                      !newMessage.trim()
+                    }
                   >
-                    {sendingMessage ? "Sending..." : "Send message"}
+                    {sendingMessage
+                      ? "Sending..."
+                      : "Send message"}
                   </button>
 
                   {messageError && (
-                    <p className="issue-comment-error">{messageError}</p>
+                    <p className="issue-comment-error">
+                      {messageError}
+                    </p>
                   )}
                 </form>
               </div>
@@ -552,25 +949,33 @@ export default function IssueDetails() {
                 </div>
 
                 <div className="issue-details-card-body">
-
                   {/* Existing comments */}
                   {issue.issueComments?.length ? (
                     <div className="issue-comments-list">
-                      {issue.issueComments.map((issueComment) => (
-                        <div
-                          className="issue-comment"
-                          key={issueComment._id}
-                        >
-                          <p>{issueComment.comment}</p>
+                      {issue.issueComments.map(
+                        (issueComment) => (
+                          <div
+                            className="issue-comment"
+                            key={issueComment._id}
+                          >
+                            <p>
+                              {issueComment.comment}
+                            </p>
 
-                          <small>
-                            {issueComment.commentedByName} ·{" "}
-                            {new Date(
-                              issueComment.dateTimeCommented
-                            ).toLocaleString("en-AU")}
-                          </small>
-                        </div>
-                      ))}
+                            <small>
+                              {
+                                issueComment.commentedByName
+                              }{" "}
+                              ·{" "}
+                              {new Date(
+                                issueComment.dateTimeCommented
+                              ).toLocaleString(
+                                "en-AU"
+                              )}
+                            </small>
+                          </div>
+                        )
+                      )}
                     </div>
                   ) : (
                     <p className="issue-details-empty-text">
@@ -586,7 +991,9 @@ export default function IssueDetails() {
                     <textarea
                       value={newComment}
                       onChange={(event) =>
-                        setNewComment(event.target.value)
+                        setNewComment(
+                          event.target.value
+                        )
                       }
                       maxLength={300}
                       placeholder="Add a progress or resolution comment"
@@ -596,7 +1003,8 @@ export default function IssueDetails() {
                     <button
                       type="submit"
                       disabled={
-                        addingComment || !newComment.trim()
+                        addingComment ||
+                        !newComment.trim()
                       }
                     >
                       {addingComment
@@ -610,7 +1018,6 @@ export default function IssueDetails() {
                       </p>
                     )}
                   </form>
-
                 </div>
               </section>
             )}
@@ -627,14 +1034,16 @@ export default function IssueDetails() {
                 {issue.witnessNames &&
                   issue.witnessNames.length > 0 ? (
                   <div className="witness-pill-container">
-                    {issue.witnessNames.map((name, i) => (
-                      <span
-                        className="witness-pill"
-                        key={i}
-                      >
-                        {name}
-                      </span>
-                    ))}
+                    {issue.witnessNames.map(
+                      (name, i) => (
+                        <span
+                          className="witness-pill"
+                          key={i}
+                        >
+                          {name}
+                        </span>
+                      )
+                    )}
                   </div>
                 ) : (
                   <p className="issue-details-empty-text">
@@ -655,52 +1064,85 @@ export default function IssueDetails() {
                   <span>Issue ID:</span>
 
                   <div className="issue-id-display">
-                    <strong title={issue._id || "Unknown"}>
+                    <strong
+                      title={
+                        issue._id || "Unknown"
+                      }
+                    >
                       {issue._id
-                        ? `${issue._id.slice(0, 6)}...${issue._id.slice(-4)}`
+                        ? `${issue._id.slice(
+                          0,
+                          6
+                        )}...${issue._id.slice(
+                          -4
+                        )}`
                         : "Unknown"}
                     </strong>
 
                     {issue._id && (
-                      <>
-                        <button
-                          type="button"
-                          className="copy-issue-id-button"
-                          onClick={copyIssueId}
-                          title={copiedId ? "Copied!" : "Copy full issue ID"}
-                          aria-label={copiedId ? "Issue ID copied" : "Copy full issue ID"}
-                        >
-                          {copiedId ? <Check size={16} /> : <Copy size={16} />}
-                        </button>
-                      </>
+                      <button
+                        type="button"
+                        className="copy-issue-id-button"
+                        onClick={copyIssueId}
+                        title={
+                          copiedId
+                            ? "Copied!"
+                            : "Copy full issue ID"
+                        }
+                        aria-label={
+                          copiedId
+                            ? "Issue ID copied"
+                            : "Copy full issue ID"
+                        }
+                      >
+                        {copiedId ? (
+                          <Check size={16} />
+                        ) : (
+                          <Copy size={16} />
+                        )}
+                      </button>
                     )}
                   </div>
                 </div>
+
                 <div className="issue-meta-row">
                   <span>Status:</span>
 
                   {userData?.isAdmin ? (
                     <select
-                      value={issue.status || "Open"}
-                      onChange={(e) =>
-                        updateIssueStatus(e.target.value)
+                      value={
+                        issue.status || "Open"
+                      }
+                      onChange={(event) =>
+                        updateIssueStatus(
+                          event.target.value
+                        )
                       }
                       disabled={updatingStatus}
                       title="Change the issue status"
                     >
-                      <option value="Open">Open</option>
+                      <option value="Open">
+                        Open
+                      </option>
+
                       <option value="In Progress">
                         In Progress
                       </option>
-                      <option value="Closed">Closed</option>
+
+                      <option value="Closed">
+                        Closed
+                      </option>
                     </select>
                   ) : (
-                    <strong>{issue.status}</strong>
+                    <strong>
+                      {issue.status}
+                    </strong>
                   )}
                 </div>
 
                 <div className="issue-meta-row">
                   <span>Priority:</span>
+
                   <strong>
                     {issue.priority || "Not set"}
                   </strong>
@@ -708,6 +1150,7 @@ export default function IssueDetails() {
 
                 <div className="issue-meta-row">
                   <span>Reported date:</span>
+
                   <strong>
                     {new Date(
                       issue.dateTimeReported
@@ -718,110 +1161,267 @@ export default function IssueDetails() {
                   </strong>
                 </div>
 
-
-
                 <div className="issue-meta-row">
                   <span>Reported by:</span>
+
                   <strong>
-                    {issue.reportedByName || "Unknown"}
+                    {issue.reportedByName ||
+                      "Unknown"}
                   </strong>
                 </div>
 
                 <div className="issue-meta-row">
                   <span>Assigned to:</span>
+
                   <strong>
-                    {issue.assignedToName || "Unassigned"}
+                    {issue.assignedToName ||
+                      "Unassigned"}
                   </strong>
                 </div>
 
-                {issue.dateTimeIssueClosed != null && (
-                  <div className="issue-meta-row">
-                    <span>Issue closed date:</span>
-                    <strong>
-                      {new Date(
-                        issue.dateTimeIssueClosed
-                      ).toLocaleString("en-AU", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </strong>
-                  </div>
-                )}
+                {issue.dateTimeIssueClosed !=
+                  null && (
+                    <div className="issue-meta-row">
+                      <span>
+                        Issue closed date:
+                      </span>
+
+                      <strong>
+                        {new Date(
+                          issue.dateTimeIssueClosed
+                        ).toLocaleString(
+                          "en-AU",
+                          {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          }
+                        )}
+                      </strong>
+                    </div>
+                  )}
               </div>
             </section>
+
+            {/* Admin assignment controls */}
+            {userData?.isAdmin && (
+              <section className="issue-details-card issue-assignment-card">
+                <div className="issue-details-card-header">
+                  Issue Assignment
+                </div>
+
+                <div className="issue-details-card-body">
+                  <div className="issue-assignment-actions">
+
+                    {/* Assign to Me */}
+                    <button
+                      className="admin-action-button admin-action-primary"
+                      type="button"
+                      onClick={assignIssueToMe}
+                      disabled={
+                        assigningIssue ||
+                        issue.status === "Closed"
+                      }
+                      title={
+                        issue.status === "Closed"
+                          ? "Closed issues cannot be reassigned"
+                          : "Assign this issue to yourself"
+                      }
+                    >
+                      {assigningIssue
+                        ? "Assigning..."
+                        : "Assign to Me"}
+                    </button>
+
+                    {/* Assign to Admin */}
+                    <div 
+                    className="issue-assignment-dropdown-container"
+                    ref={assignmentDropdownRef}>
+                      <button
+                        className="issue-assignment-dropdown-button"
+                        type="button"
+                        onClick={() => {
+                          if (
+                            !adminDropdownOpen &&
+                            admins.length === 0
+                          ) {
+                            fetchAdmins();
+                          }
+
+                          setAdminDropdownOpen(
+                            (previous) => !previous
+                          );
+                        }}
+                        disabled={
+                          assigningIssue ||
+                          issue.status === "Closed"
+                        }
+                        title={
+                          issue.status === "Closed"
+                            ? "Closed issues cannot be reassigned"
+                            : "Assign this issue to another administrator"
+                        }
+                      >
+                        <span>Change assignee</span>
+
+                        <ChevronDown
+                          size={16}
+                          className={
+                            adminDropdownOpen
+                              ? "assignment-chevron-open"
+                              : ""
+                          }
+                        />
+                      </button>
+
+                      {adminDropdownOpen && (
+                        <div className="issue-assignment-dropdown">
+
+                          <div className="issue-assignment-search">
+                            <Search size={16} />
+
+                            <input
+                              type="text"
+                              value={adminSearch}
+                              onChange={(event) =>
+                                setAdminSearch(
+                                  event.target.value
+                                )
+                              }
+                              placeholder="Search administrators..."
+                              autoFocus
+                              aria-label="Search administrators"
+                            />
+
+                            {adminSearch && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setAdminSearch("")
+                                }
+                              >
+                                Clear
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="issue-assignment-options">
+                            {loadingAdmins ? (
+                              <div className="issue-assignment-loading">
+                                Loading administrators...
+                              </div>
+                            ) : filteredAdmins.length > 0 ? (
+                              filteredAdmins.map((admin) => {
+                                const adminName =
+                                  `${admin.firstName || ""} ${admin.lastName || ""
+                                    }`.trim() ||
+                                  admin.email;
+
+                                const isCurrentAssignee =
+                                  issue.assignedTo?.toString() ===
+                                  admin._id?.toString();
+
+                                return (
+                                  <button
+                                    key={admin._id}
+                                    type="button"
+                                    className={`issue-assignment-option ${isCurrentAssignee
+                                      ? "issue-assignment-option-current"
+                                      : ""
+                                      }`}
+                                    onClick={() =>
+                                      assignIssueToAdmin(
+                                        admin._id
+                                      )
+                                    }
+                                    disabled={
+                                      assigningIssue ||
+                                      isCurrentAssignee
+                                    }
+                                  >
+                                    <span>
+                                      {adminName}
+                                    </span>
+
+                                    {isCurrentAssignee ? (
+                                      <Check size={16} />
+                                    ) : (
+                                      <small>
+                                        {admin.email}
+                                      </small>
+                                    )}
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div className="issue-assignment-empty">
+                                No administrators found.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Unassign */}
+                    <button
+                      className="admin-action-button admin-action-danger"
+                      type="button"
+                      onClick={unassignIssue}
+                      disabled={
+                        assigningIssue ||
+                        !issue.assignedTo ||
+                        issue.status === "Closed"
+                      }
+                      title={
+                        !issue.assignedTo
+                          ? "This issue is not currently assigned"
+                          : "Remove the current administrator assignment"
+                      }
+                    >
+                      Unassign Issue
+                    </button>
+
+                  </div>
+                </div>
+              </section>
+            )}
           </aside>
         </div>
 
-        {/* Admin actions section - This will be displayed if the current user is an admin user */}
-        {userData?.isAdmin && (
-          <div className="issue-details-actions admin-actions">
-            {statusError && <p className="issue-status-error">{statusError}</p>}
-            {!issue.assignedTo || issue.assignedTo === userData?._id ? (
-              <button
-                className="btn primary-btn"
-                type="button"
-                onClick={assignIssueToMe}
-                disabled={assigningIssue || issue.assignedTo === userData?._id || issue.status === "Closed"}
-              >
-                {assigningIssue ? "Assigning..." :
-                  issue.assignedTo === userData?._id ? "Assigned to You" : "Assign to Me"}
-              </button>
-            ) : null}
+        {/* Issue management actions */}
+        <div className="issue-details-actions">
 
-            {issue.assignedTo && (
-              <button
-                className="btn secondary-btn"
-                type="button"
-                onClick={unassignIssue}
-                disabled={assigningIssue || issue.status === "Closed"}
-                title={issue.status === "Closed" ? "Closed issues cannot be reassigned or unassigned" : undefined}
-                style={issue.status === "Closed" ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
-              >
-                {assigningIssue ? "Updating..." : "Unassign"}
-              </button>
-            )}
+          {/* Edit Issue */}
+          <button
+            className="btn primary-btn"
+            type="button"
+            onClick={() =>
+              navigate(`/editIssue/${issueId}`)
+            }
+            disabled={issue.status === "Closed"}
+            title={
+              issue.status === "Closed"
+                ? "Closed issues cannot be edited"
+                : "Edit this issue"
+            }
+          >
+            Edit Issue
+          </button>
 
-            <button
-              className="btn primary-btn"
-              type="button"
-              onClick={() => navigate(`/editIssue/${issueId}`)}
-              disabled={issue.status === "Closed"}
-              title={
-                issue.status === "Closed"
-                  ? "Closed issues cannot be edited"
-                  : "Edit this issue"
-              }
-              style={
-                issue.status === "Closed"
-                  ? { opacity: 0.5, cursor: "not-allowed" }
-                  : undefined
-              }
-            >
-              Edit Issue
-            </button>
-
+          {/* Admin navigation */}
+          {userData?.isAdmin && (
             <button
               className="btn secondary-btn"
               type="button"
-              onClick={() => navigate("/admin/manageissues")}
+              onClick={() =>
+                navigate("/admin/manageissues")
+              }
             >
               Back to Manage Issues
             </button>
-          </div>
-        )}
-
-        {/* Normal user actions section - This will be displayed if the current user is NOT an admin user */}
-        {!userData?.isAdmin && (
-          <div className="issue-details-actions">
-            <button
-              className="btn primary-btn"
-              onClick={() => navigate(`/editIssue/${issueId}`)}
-            >
-              Edit Issue
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </PageLayout>
+    </PageLayout >
   );
 }

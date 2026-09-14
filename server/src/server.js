@@ -1608,3 +1608,177 @@ app.delete('/api/issues/:issueId/messages/:messageId', async (req, res) => {
   }
 });
 
+/**
+ * Allows an administrator to assign an issue to another administrator.
+ */
+app.put('/api/issues/:id/assign-to', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { id } = req.params;
+    const { firebaseUid, assignedTo } = req.body || {};
+
+    if (!firebaseUid) {
+      return res.status(400).json({ error: "firebaseUid is required" });
+    }
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
+
+    if (!ObjectId.isValid(assignedTo)) {
+      return res.status(400).json({ error: "Invalid administrator ID" });
+    }
+
+    // Find the administrator making the request.
+    const requestingAdmin = await findUserByIdentity(db, firebaseUid);
+
+    if (!requestingAdmin) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!requestingAdmin.isAdmin) {
+      return res.status(403).json({ error: "Administrator access required" });
+    }
+
+    const issueObjectId = new ObjectId(id);
+    const assignedAdminId = new ObjectId(assignedTo);
+
+    // Make sure the issue exists.
+    const issue = await db.collection("Issue").findOne({
+      _id: issueObjectId,
+    });
+
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    // Closed issues cannot be reassigned.
+    if (issue.status === "Closed") {
+      return res.status(400).json({
+        error: "Closed issues cannot be reassigned",
+      });
+    }
+
+    // Make sure the selected user is actually an administrator.
+    const assignedAdmin = await db.collection("User").findOne({
+      _id: assignedAdminId,
+      isAdmin: true,
+    });
+
+    if (!assignedAdmin) {
+      return res.status(404).json({
+        error: "Selected administrator was not found",
+      });
+    }
+
+    // Update the issue assignment.
+    const result = await db.collection("Issue").findOneAndUpdate(
+      { _id: issueObjectId },
+      { $set: { assignedTo: assignedAdminId } },
+      { returnDocument: "after" }
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    // Get the updated issue with the administrator's display name.
+    const enrichedIssues = await issueWithAssigneeName(
+      db,
+      { _id: issueObjectId },
+      1
+    );
+
+    const issueComments = await getIssueComments(db, issueObjectId);
+    const issueMessages = await getIssueMessages(db, issueObjectId);
+
+    // Notify the issue reporter.
+    await createNotification(db, {
+      recipientId: result.reportedBy,
+      issueId: result._id,
+      issueTitle: result.title,
+      type: "IssueAssigned",
+      title: result.title,
+      notificationText: "An administrator has been assigned to your issue.",
+    });
+
+    // Notify the administrator who received the assignment.
+    await createNotification(db, {
+      recipientId: result.assignedTo,
+      issueId: result._id,
+      issueTitle: result.title,
+      type: "IssueAssigned",
+      title: result.title,
+      notificationText: "You have been assigned this issue.",
+    });
+
+    res.json({
+      ...enrichedIssues[0],
+      issueComments,
+      issueMessages,
+    });
+  } catch (err) {
+    console.error("Failed to assign issue to administrator:", err);
+    res.status(500).json({
+      error: "Failed to assign issue to administrator",
+    });
+  }
+});
+
+/**
+  * Search for administrators who can be assigned to an issue.
+  * Only users with isAdmin set to true are returned.
+  * The optional search parameter matches first name, last name, or email.
+  */
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { firebaseUid, search = "" } = req.query;
+
+    // Verify that the requesting user is an administrator.
+    const requestingAdmin = await findUserByIdentity(db, firebaseUid);
+
+    if (!requestingAdmin) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!requestingAdmin.isAdmin) {
+      return res.status(403).json({ error: "Administrator access required" });
+    }
+
+    const trimmedSearch = search.trim();
+
+    const query = {
+      isAdmin: true,
+    };
+
+    // Only apply the search filter when the user has entered something.
+    if (trimmedSearch) {
+      const searchRegex = new RegExp(trimmedSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+
+      query.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    const admins = await db.collection("User")
+      .find(query, {
+        projection: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+        },
+      })
+      .sort({ firstName: 1, lastName: 1 })
+      .limit(20)
+      .toArray();
+
+    res.json(admins);
+  } catch (err) {
+    console.error("Failed to search administrators:", err);
+    res.status(500).json({ error: "Failed to search administrators" });
+  }
+});
