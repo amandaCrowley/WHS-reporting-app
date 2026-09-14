@@ -19,7 +19,11 @@ import {
   LogOut,
   Wrench,
   Users,
-  ClipboardList,
+  Copy,
+  Check,
+  X,
+  Search,
+  ChevronDown,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -91,9 +95,10 @@ function Sidebar({ userData, navigate, logout }) {
               className="user-dashboard-nav-item"
               onClick={() => navigate("/admin/manageissues")}
             >
-              <ClipboardList />
+              <Wrench />
               <span>Manage Issues</span>
             </button>
+
             <button
               type="button"
               className="user-dashboard-nav-item"
