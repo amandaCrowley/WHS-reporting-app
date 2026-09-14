@@ -1,10 +1,27 @@
 .admin-user-details-shell {
   width: 100%;
+  min-width: 0;
+}
+
+.admin-user-details-shell .user-dashboard-main,
+.admin-user-details-shell .user-dashboard-content {
+  min-width: 0;
+}
+
+.admin-user-details-shell .user-dashboard-header {
+  height: auto;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  overflow-wrap: anywhere;
 }
 
 .admin-user-details {
   width: 100%;
   max-width: 1200px;
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -12,6 +29,8 @@
 
 .admin-user-details > section {
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   margin: 0;
   padding: 28px;
   background: #ffffff;
@@ -33,6 +52,9 @@
 }
 
 .admin-user-details button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 10px 16px;
@@ -51,6 +73,7 @@
 }
 
 .account-information {
+  min-width: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0 32px;
@@ -63,6 +86,7 @@
 
 .account-information p,
 .reported-issue p {
+  min-width: 0;
   margin: 0 0 12px;
   color: #44506a;
   line-height: 1.5;
@@ -76,7 +100,7 @@
 .reported-issues-list {
   display: grid;
   text-align: left;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   margin: 20px 0 0;
   padding: 0;
@@ -84,6 +108,7 @@
 }
 
 .reported-issue {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -113,6 +138,13 @@
   margin: 12px 0;
   color: #b42318;
   font-weight: 600;
+}
+
+@media (max-width: 1000px) {
+  .admin-user-details .account-information {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
 }
 
 @media (max-width: 640px) {
