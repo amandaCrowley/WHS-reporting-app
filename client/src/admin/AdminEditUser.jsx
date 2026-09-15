@@ -20,6 +20,7 @@ import { userLogout } from "../hooks/userLogout";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/AdminEditUser.css";
+import NotificationBell from "../components/NotificationBell";
 
 const ROLE_OPTIONS = ["Student", "Staff", "Visitor", "Contractor"];
 
@@ -242,15 +243,12 @@ export default function AdminEditUser() {
           <div className="user-dashboard-header-user">
             <span>Welcome {userData?.firstName || "Admin"}</span>
 
-            <div className="profile-avatar">
-              <span>{initials || "A"}</span>
-            </div>
+            <NotificationBell firebaseUid={userData?.firebaseUid} />
           </div>
         </header>
 
         <main className="user-dashboard-content">
           <section className="admin-edit-user">
-            <h2>User account</h2>
 
             {error && <p className="admin-edit-user-error">{error}</p>}
 
@@ -279,7 +277,7 @@ export default function AdminEditUser() {
                 </div>
 
                 <p className="admin-edit-user-meta"><strong>Email:</strong> {user.email}</p>
-                <p className="admin-edit-user-meta"><strong>Firebase UID:</strong> {user.firebaseUid}</p>
+                <p className="admin-edit-user-meta"><strong>User ID:</strong> {user._id}</p>
 
                 <div className="admin-role-field">
                   <label htmlFor="admin-user-role">Role</label>

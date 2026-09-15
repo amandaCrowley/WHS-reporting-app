@@ -22,6 +22,7 @@ import { getUserData } from "../hooks/getUserData";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/AdminUserDetails.css";
+import NotificationBell from "../components/NotificationBell";
 
 export default function AdminUserDetails() {
   const navigate = useNavigate();
@@ -92,7 +93,7 @@ export default function AdminUserDetails() {
     }
   }, [user]);
 
-  
+
   const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
   return (
@@ -146,16 +147,14 @@ export default function AdminUserDetails() {
           <div className="user-dashboard-header-user">
             <span>Welcome {userData?.firstName || "Admin"}</span>
 
-            <div className="profile-avatar">
-              <span>{initials || "A"}</span>
-            </div>
+            <NotificationBell firebaseUid={userData?.firebaseUid} />
           </div>
         </header>
 
         <main className="user-dashboard-content">
           <div className="admin-user-details">
             <section>
-              <h2>Account Information</h2>
+              <h2>User Account Information</h2>
               {loading && <p>Loading user information...</p>}
               {error && <p role="alert">{error}</p>}
 
@@ -187,7 +186,12 @@ export default function AdminUserDetails() {
             </section>
 
             <section>
-              <h2>Reported Issues</h2>
+              <h2>
+                Issues Reported by{" "}
+                {user
+                  ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+                  : "User"}
+              </h2>
               {issuesLoading && <p>Loading reported issues...</p>}
               {issuesError && <p role="alert">{issuesError}</p>}
 
@@ -219,9 +223,9 @@ export default function AdminUserDetails() {
                         <strong>Date reported:</strong>{" "}
                         {issue.dateTimeReported
                           ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                            })
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })
                           : "Not provided"}
                       </p>
                       <button

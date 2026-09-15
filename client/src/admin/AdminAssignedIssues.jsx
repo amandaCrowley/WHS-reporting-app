@@ -20,6 +20,7 @@ import { getUserData } from "../hooks/getUserData";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/AdminAssignedIssues.css";
+import NotificationBell from "../components/NotificationBell";
 
 export default function AdminAssignedIssues() {
   const navigate = useNavigate();
@@ -32,11 +33,16 @@ export default function AdminAssignedIssues() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+
   // Fetch administrator details and assigned issues when the component mounts or when the userId changes
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchAssignedIssues = async () => {
+      if (!userData?.firebaseUid || !userId) {
+        return;
+      }
+
       setLoading(true);
       setError("");
       setAdministrator(null);
@@ -44,39 +50,79 @@ export default function AdminAssignedIssues() {
 
       try {
         const fetchData = async (url, message) => {
-          const response = await fetch(url, { signal: controller.signal });
-          if (!response.ok) throw new Error(message);
+          const response = await fetch(url, {
+            signal: controller.signal,
+          });
+
+          if (!response.ok) {
+            throw new Error(message);
+          }
+
           return response.json();
         };
 
-        const [user, allIssues] = await Promise.all([
+        const [administrators, allIssues] = await Promise.all([
           fetchData(
-            `http://localhost:8000/api/admin/users/${encodeURIComponent(userId)}`,
+            `http://localhost:8000/api/admin/users?firebaseUid=${encodeURIComponent(
+              userData.firebaseUid,
+            )}`,
             "Could not load administrator details.",
           ),
-          fetchData("http://localhost:8000/api/issues", "Could not load assigned issues."),
+          fetchData(
+            "http://localhost:8000/api/issues",
+            "Could not load assigned issues.",
+          ),
         ]);
 
-        if (!Array.isArray(allIssues)) throw new Error("Could not load assigned issues.");
         if (controller.signal.aborted) return;
 
-        setAdministrator(user);
+        if (!Array.isArray(administrators)) {
+          throw new Error("Could not load administrator details.");
+        }
+
+        if (!Array.isArray(allIssues)) {
+          throw new Error("Could not load assigned issues.");
+        }
+
+        const selectedAdministrator = administrators.find(
+          (admin) => String(admin._id) === String(userId),
+        );
+
+        if (!selectedAdministrator) {
+          throw new Error("The selected administrator could not be found.");
+        }
+
+        setAdministrator(selectedAdministrator);
+
         // Match the selected administrator's MongoDB ID, including closed issues.
-        setIssues(allIssues.filter((issue) => String(issue.assignedTo) === userId)
-          .sort((a, b) => new Date(b.dateTimeReported || 0) - new Date(a.dateTimeReported || 0)));
+        setIssues(
+          allIssues
+            .filter((issue) => String(issue.assignedTo) === String(userId))
+            .sort(
+              (a, b) =>
+                new Date(b.dateTimeReported || 0) -
+                new Date(a.dateTimeReported || 0),
+            ),
+        );
       } catch (err) {
         if (!controller.signal.aborted) {
           setError(err.message || "Could not load assigned issues.");
         }
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchAssignedIssues();
+
     return () => controller.abort();
-  }, [userId]);
-// Set up the status summary for the assigned issues
+  }, [userId, userData?.firebaseUid]);
+
+
+
+  // Set up the status summary for the assigned issues
   const summary = issues.reduce((counts, issue) => {
     if (issue.status === "Open") counts.open += 1;
     if (issue.status === "In Progress") counts.inProgress += 1;
@@ -113,63 +159,76 @@ export default function AdminAssignedIssues() {
           <h1>Assigned Issues</h1>
           <div className="user-dashboard-header-user">
             <span>Welcome {userData?.firstName || "Admin"}</span>
-            <div className="profile-avatar"><span>{initials || "A"}</span></div>
+            <NotificationBell firebaseUid={userData?.firebaseUid} />
           </div>
         </header>
         <main className="user-dashboard-content">
           <div className="admin-assigned-issues">
 
-      <section>
-        <h2>Administrator Summary</h2>
-        {loading && <p role="status">Loading administrator and assigned issues...</p>}
-        {error && <p role="alert">{error}</p>}
-        {!loading && !error && administrator && (
-          <div>
-            <div className="assigned-admin-information">
-            <p><strong>Name:</strong> {[administrator.firstName, administrator.lastName].filter(Boolean).join(" ") || "Not provided"}</p>
-            <p><strong>Email:</strong> {administrator.email || "Not provided"}</p>
-            </div>
-            <dl className="assigned-issue-stats">
-              <div><dt>Total assigned issues</dt><dd>{issues.length}</dd></div>
-              <div><dt>Open issues</dt><dd>{summary.open}</dd></div>
-              <div><dt>In progress issues</dt><dd>{summary.inProgress}</dd></div>
-              <div><dt>Closed issues</dt><dd>{summary.closed}</dd></div>
-            </dl>
-          </div>
-        )}
-      </section>
+            <section>
+              <h2>{administrator
+                  ? `${administrator.firstName|| " "}'s Issue Summary`
+                  : "Issue Summary"}
+                  </h2>
+              {loading && <p role="status">Loading administrator and assigned issues...</p>}
+              {error && <p role="alert">{error}</p>}
+              {!loading && !error && administrator && (
+                <div>
+                  <div className="assigned-admin-information">
+                    <p><strong>Name:</strong> {[administrator.firstName, administrator.lastName].filter(Boolean).join(" ") || "Not provided"}</p>
+                    <p><strong>Email:</strong> {administrator.email || "Not provided"}</p>
+                  </div>
+                  <dl className="assigned-issue-stats">
+                    <div><dt>Total assigned issues</dt><dd>{issues.length}</dd></div>
+                    <div><dt>Open issues</dt><dd>{summary.open}</dd></div>
+                    <div><dt>In progress issues</dt><dd>{summary.inProgress}</dd></div>
+                    <div><dt>Closed issues</dt><dd>{summary.closed}</dd></div>
+                  </dl>
+                </div>
+              )}
+            </section>
 
-      <section>
-        <h2>Assigned Issue List</h2>
-        {!loading && !error && (issues.length === 0 ? (
-          <p>No issues are assigned to this administrator.</p>
-        ) : (
-          <ul className="assigned-issues-list">
-            {issues.map((issue) => (
-              <li key={issue._id}>
-                <h3>{issue.title || "Untitled issue"}</h3>
-                <p><strong>Status:</strong> {issue.status || "Not provided"}</p>
-                <p><strong>Priority:</strong> {issue.priority || "Not set"}</p>
-                <p>
-                  <strong>Location:</strong> {issue.location || "Not provided"}
-                  {issue.campus ? ` - ${issue.campus}` : ""}
-                </p>
-                <p><strong>Reported by:</strong> {issue.reportedByName || "Unknown"}</p>
-                <p>
-                  <strong>Date reported:</strong>{" "}
-                  {issue.dateTimeReported
-                    ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })
-                    : "Not provided"}
-                </p>
-                <Link className="assigned-issue-link" to={`/issue/${issue._id}`}>View Issue</Link>
-              </li>
-            ))}
-          </ul>
-        ))}
-      </section>
+            <section>
+              <h2>
+                All issues assigned to{" "}
+                {administrator
+                  ? `${administrator.firstName || ""} ${administrator.lastName || ""}`.trim()
+                  : "this administrator"}
+              </h2>
+              {!loading && !error && (issues.length === 0 ? (
+                <p>No issues are assigned to this administrator.</p>
+              ) : (
+                <ul className="assigned-issues-list">
+                  {issues.map((issue) => (
+              <li key={issue._id} className="assigned-issue-card">
+                      <h3>{issue.title || "Untitled issue"}</h3>
+                      <p><strong>Status:</strong> {issue.status || "Not provided"}</p>
+                      <p><strong>Priority:</strong> {issue.priority || "Not set"}</p>
+                      <p>
+                        <strong>Location:</strong> {issue.location || "Not provided"}
+                        {issue.campus ? ` - ${issue.campus}` : ""}
+                      </p>
+                      <p><strong>Reported by:</strong> {issue.reportedByName || "Unknown"}</p>
+                      <p>
+                        <strong>Date reported:</strong>{" "}
+                        {issue.dateTimeReported
+                          ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })
+                          : "Not provided"}
+                      </p>
+                                            <button
+                        type="button"
+                        onClick={() => navigate(`/issue/${issue._id}`)}
+                      >
+                        View Issue
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </section>
           </div>
         </main>
       </div>

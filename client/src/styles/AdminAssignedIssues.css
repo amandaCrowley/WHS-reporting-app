@@ -149,6 +149,40 @@
   font-weight: 600;
 }
 
+.assigned-issue-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid #e7eaf0;
+  border-left: 4px solid #0057e7;
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.assigned-issue-card button {
+  align-self: center;
+  border: 1px solid #0057e7;
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: #0057e7;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.assigned-issue-card button:hover {
+  background: #0046bd;
+  border-color: #0046bd;
+  transform: translateY(-1px);
+}
+
+.assigned-issue-card p:last-of-type {
+  margin-bottom: 18px;
+}
+
 @media (max-width: 1100px) {
   .assigned-issue-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
