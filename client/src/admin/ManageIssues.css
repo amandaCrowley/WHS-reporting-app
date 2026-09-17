@@ -1,0 +1,905 @@
+/**
+ * ManageIssues.css
+ *
+ * Page-specific styling for the Admin Manage Issues page.
+ *
+ * IMPORTANT:
+ * Shared dashboard styling including the UON sidebar, navigation,
+ * logo, logout section, page header and user avatar is inherited
+ * from UserDashboard.css.
+ *
+ * This file only styles content specific to Manage Issues.
+ *
+ * Author/s: Grish Gautam
+ * Date: 27/8/26
+ */
+
+
+/* =========================
+   PAGE CONTENT
+   ========================= */
+
+   .manage-issues-content {
+    width: 100%;
+  }
+  
+  
+  /* =========================
+     PAGE INFORMATION
+     ========================= */
+  
+  .manage-issues-intro {
+    min-height: 118px;
+    margin-bottom: 20px;
+    padding: 24px 28px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+  
+    background: #ffffff;
+    border: 1px solid #e7eaf0;
+    border-radius: 8px;
+  }
+  
+  .manage-issues-intro > div:first-child {
+    min-width: 0;
+  }
+  
+  .manage-issues-intro h2 {
+    margin: 0 0 8px;
+  
+    color: #07132f;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  
+  .manage-issues-intro p {
+    max-width: 760px;
+    margin: 0;
+  
+    color: #667085;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  
+  
+  /* =========================
+     RESULT COUNT
+     ========================= */
+  
+  .manage-issues-result-count {
+    min-width: 126px;
+    min-height: 72px;
+    padding: 12px 18px;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  
+    flex-shrink: 0;
+  
+    background: #eef4ff;
+    border-radius: 7px;
+  }
+  
+  .manage-issues-result-count strong {
+    color: #0759e5;
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  
+  .manage-issues-result-count span {
+    margin-top: 7px;
+  
+    color: #44506a;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  
+  /* =========================
+     FILTER PANEL
+     ========================= */
+  
+  .manage-filter-panel {
+    margin-top: 0;
+    overflow: visible;
+  }
+  
+  
+  /* =========================
+     PANEL HEADING
+     ========================= */
+  
+  .manage-panel-heading {
+    min-height: 92px;
+    padding: 20px 24px;
+  
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  
+    border-bottom: 1px solid #e7eaf0;
+  }
+  
+  .manage-panel-heading-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  
+    display: grid;
+    place-items: center;
+  
+    background: #e4efff;
+    color: #0759e5;
+    border-radius: 8px;
+  }
+  
+  .manage-panel-heading-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.9;
+  }
+  
+  .manage-panel-heading > div:last-child {
+    min-width: 0;
+  }
+  
+  .manage-panel-heading h2 {
+    margin: 0 0 6px;
+  
+    color: #07132f;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  
+  .manage-panel-heading p {
+    margin: 0;
+  
+    color: #667085;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  
+  .manage-filter-body {
+    padding: 24px;
+  }
+  
+  
+  /* =========================
+     SEARCH
+     ========================= */
+  
+  .manage-search-group {
+    margin-bottom: 24px;
+  }
+  
+  .manage-search-group label,
+  .manage-filter-field label {
+    display: block;
+    margin-bottom: 8px;
+  
+    color: #07132f;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  
+  .manage-search-input-wrapper {
+    position: relative;
+  
+    width: 100%;
+    height: 48px;
+  
+    display: flex;
+    align-items: center;
+  }
+  
+  .manage-search-input-wrapper svg {
+    position: absolute;
+    left: 15px;
+  
+    width: 20px;
+    height: 20px;
+  
+    color: #667085;
+    stroke-width: 1.8;
+  
+    pointer-events: none;
+  }
+  
+  .manage-search-input-wrapper input {
+    width: 100%;
+    height: 48px;
+  
+    padding: 0 16px 0 46px;
+  
+    background: #ffffff;
+    color: #07132f;
+  
+    border: 1px solid #d8dee8;
+    border-radius: 6px;
+    outline: none;
+  
+    font-family: inherit;
+    font-size: 14px;
+  
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  
+  .manage-search-input-wrapper input::placeholder {
+    color: #8993a4;
+  }
+  
+  .manage-search-input-wrapper input:focus {
+    border-color: #0057e7;
+    box-shadow: 0 0 0 3px rgba(0, 87, 231, 0.1);
+  }
+  
+  
+  /* =========================
+     FIELD CAPTIONS
+     ========================= */
+  
+  .manage-field-caption {
+    margin: 7px 0 0;
+  
+    color: #7b8495;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  
+  
+  /* =========================
+     FILTER GRID
+     ========================= */
+  
+  .manage-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+  
+  .manage-filter-field {
+    min-width: 0;
+  }
+  
+  .manage-filter-field select {
+    width: 100%;
+    height: 46px;
+  
+    padding: 0 38px 0 13px;
+  
+    background-color: #ffffff;
+    color: #07132f;
+  
+    border: 1px solid #d8dee8;
+    border-radius: 6px;
+    outline: none;
+  
+    font-family: inherit;
+    font-size: 14px;
+  
+    cursor: pointer;
+  
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  
+  .manage-filter-field select:focus {
+    border-color: #0057e7;
+    box-shadow: 0 0 0 3px rgba(0, 87, 231, 0.1);
+  }
+  
+  
+  /* =========================
+     ISSUES PANEL
+     ========================= */
+  
+  .manage-issues-panel {
+    margin-top: 20px;
+  }
+  
+  .manage-issues-panel-header {
+    min-height: 92px;
+    padding: 20px 24px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  
+    border-bottom: 1px solid #e7eaf0;
+  }
+  
+  .manage-issues-panel-header > div {
+    min-width: 0;
+  }
+  
+  .manage-issues-panel-header h2 {
+    margin: 0 0 6px;
+  
+    color: #07132f;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  
+  .manage-issues-panel-header p {
+    margin: 0;
+  
+    color: #667085;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  
+  
+  /* =========================
+     ISSUE COUNT
+     ========================= */
+  
+  .manage-issues-count {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  
+    display: grid;
+    place-items: center;
+  
+    background: #e4efff;
+    color: #0759e5;
+  
+    border-radius: 50%;
+  
+    font-size: 14px;
+    font-weight: 700;
+  }
+  
+  
+  /* =========================
+     LOADING STATE
+     ========================= */
+  
+  .manage-issues-message {
+    min-height: 170px;
+    padding: 32px;
+  
+    display: grid;
+    place-items: center;
+  
+    color: #667085;
+    font-size: 14px;
+  }
+  
+  
+  /* =========================
+     EMPTY STATE
+     ========================= */
+  
+  .manage-empty-state {
+    min-height: 230px;
+    padding: 36px 24px;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  
+    text-align: center;
+  }
+  
+  .manage-empty-state svg {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 14px;
+  
+    color: #98a2b3;
+    stroke-width: 1.5;
+  }
+  
+  .manage-empty-state h3 {
+    margin: 0 0 7px;
+  
+    color: #07132f;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  
+  .manage-empty-state p {
+    max-width: 430px;
+    margin: 0;
+  
+    color: #667085;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  
+  /* =========================
+     TABLE CONTAINER
+     ========================= */
+  
+  .manage-table-container {
+    width: 100%;
+    max-width: 100%;
+  
+    overflow-x: auto;
+  }
+  
+  .manage-issues-table {
+    width: 100%;
+    min-width: 1250px;
+  
+    table-layout: fixed;
+  }
+  
+  
+  /* =========================
+     TABLE COLUMN WIDTHS
+     ========================= */
+  
+  .manage-issues-table th:nth-child(1) {
+    width: 18%;
+  }
+  
+  .manage-issues-table th:nth-child(2) {
+    width: 13%;
+  }
+  
+  .manage-issues-table th:nth-child(3) {
+    width: 10%;
+  }
+  
+  .manage-issues-table th:nth-child(4) {
+    width: 9%;
+  }
+  
+  .manage-issues-table th:nth-child(5) {
+    width: 12%;
+  }
+  
+  .manage-issues-table th:nth-child(6) {
+    width: 12%;
+  }
+  
+  .manage-issues-table th:nth-child(7) {
+    width: 12%;
+  }
+  
+  .manage-issues-table th:nth-child(8) {
+    width: 14%;
+  }
+  
+  
+  /* =========================
+     TABLE CELLS
+     ========================= */
+  
+  .manage-issues-table th,
+  .manage-issues-table td {
+    min-width: 0;
+    vertical-align: middle;
+  }
+  
+  .manage-wrap-cell {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  
+  .manage-wrap-cell strong,
+  .manage-wrap-cell span {
+    display: block;
+    max-width: 100%;
+  }
+  
+  .manage-wrap-cell strong {
+    margin-bottom: 4px;
+  
+    color: #07132f;
+    font-weight: 600;
+  }
+  
+  .manage-wrap-cell span {
+    color: #667085;
+  }
+  
+  .manage-title-cell > span {
+    display: -webkit-box;
+  
+    max-width: 100%;
+    overflow: hidden;
+  
+    color: #667085;
+    font-size: 12px;
+    line-height: 1.4;
+  
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .manage-date-cell {
+    color: #44506a;
+    white-space: normal;
+  }
+  
+  
+  /* =========================
+     STATUS BADGES
+     ========================= */
+  
+  .manage-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  
+    max-width: 100%;
+    padding: 6px 10px;
+  
+    border-radius: 999px;
+  
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+  
+    white-space: nowrap;
+  }
+  
+  .manage-status-open {
+    background: #fff3dc;
+    color: #9a5b00;
+  }
+  
+  .manage-status-progress {
+    background: #e8f1ff;
+    color: #1558b0;
+  }
+  
+  .manage-status-closed {
+    background: #e6f6ec;
+    color: #177245;
+  }
+  
+  
+  /* =========================
+     PRIORITY BADGES
+     ========================= */
+  
+  .manage-priority-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  
+    max-width: 100%;
+    padding: 6px 10px;
+  
+    border-radius: 999px;
+  
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+  
+    white-space: nowrap;
+  }
+  
+  .manage-priority-critical {
+    background: #fee4e2;
+    color: #b42318;
+  }
+  
+  .manage-priority-high {
+    background: #fff0e6;
+    color: #c04b00;
+  }
+  
+  .manage-priority-medium {
+    background: #fff7d6;
+    color: #8b6800;
+  }
+  
+  .manage-priority-low {
+    background: #e8f1ff;
+    color: #175cd3;
+  }
+  
+  .manage-priority-none {
+    background: #f2f4f7;
+    color: #667085;
+  }
+  
+  
+  /* =========================
+     ASSIGNMENT TEXT
+     ========================= */
+  
+  .manage-assigned-me {
+    color: #067647 !important;
+    font-weight: 700;
+  }
+  
+  .manage-unassigned {
+    color: #b54708 !important;
+    font-weight: 600;
+  }
+  
+  
+  /* =========================
+     ACTION BUTTONS
+     ========================= */
+  
+  .manage-action-buttons {
+    width: 100%;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  
+  .manage-action-button {
+    width: 100%;
+    min-height: 34px;
+  
+    padding: 6px 9px;
+  
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  
+    border: 1px solid transparent;
+    border-radius: 5px;
+  
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+  
+    cursor: pointer;
+  
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+  
+  .manage-action-button svg {
+    width: 15px;
+    height: 15px;
+  
+    flex-shrink: 0;
+  
+    stroke-width: 1.9;
+  }
+  
+  
+  /* View */
+  
+  .manage-view-button {
+    background: #0057e7;
+    border-color: #0057e7;
+    color: #ffffff;
+  }
+  
+  .manage-view-button:hover {
+    background: #004ac7;
+    border-color: #004ac7;
+  }
+  
+  
+  /* Assign */
+  
+  .manage-assign-button {
+    background: #eef4ff;
+    border-color: #cddfff;
+    color: #0759e5;
+  }
+  
+  .manage-assign-button:hover:not(:disabled) {
+    background: #dfeaff;
+    border-color: #b8d2ff;
+  }
+  
+  
+  /* Clear */
+  
+  .manage-clear-button {
+    background: #ffffff;
+    border-color: #d8dee8;
+    color: #44506a;
+  }
+  
+  .manage-clear-button:hover:not(:disabled) {
+    background: #f7f8fb;
+    border-color: #c5ccd7;
+  }
+  
+  
+  /* Disabled */
+  
+  .manage-action-button:disabled {
+    background: #f2f4f7;
+    border-color: #e4e7ec;
+    color: #98a2b3;
+  
+    cursor: not-allowed;
+  }
+  
+  
+  /* =========================
+     PAGINATION
+     ========================= */
+  
+  .manage-pagination {
+    min-height: 76px;
+    padding: 16px 24px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  
+    border-top: 1px solid #e7eaf0;
+  }
+  
+  .manage-pagination-info {
+    color: #667085;
+    font-size: 13px;
+  }
+  
+  .manage-pagination-info strong {
+    color: #344054;
+    font-weight: 700;
+  }
+  
+  .manage-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  
+  .manage-pagination-controls button {
+    min-height: 38px;
+    padding: 0 13px;
+  
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  
+    background: #ffffff;
+    color: #344054;
+  
+    border: 1px solid #d8dee8;
+    border-radius: 5px;
+  
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  
+    cursor: pointer;
+  }
+  
+  .manage-pagination-controls button:hover:not(:disabled) {
+    background: #f7f8fb;
+    border-color: #bfc7d4;
+  }
+  
+  .manage-pagination-controls button:disabled {
+    background: #f7f8fa;
+    color: #a4acb9;
+  
+    cursor: not-allowed;
+  }
+  
+  .manage-pagination-controls button svg {
+    width: 16px;
+    height: 16px;
+  
+    stroke-width: 1.8;
+  }
+  
+  .manage-page-number {
+    min-width: 105px;
+  
+    color: #667085;
+    font-size: 13px;
+  
+    text-align: center;
+  }
+  
+  .manage-page-number strong {
+    color: #07132f;
+  }
+  
+  
+  /* =========================
+     RESPONSIVE CONTENT
+     ========================= */
+  
+  /*
+   * These media queries ONLY affect Manage Issues content.
+   * The shared sidebar/header responsiveness remains controlled
+   * by UserDashboard.css.
+   */
+  
+  @media (max-width: 1350px) {
+    .manage-filter-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  
+  @media (max-width: 900px) {
+    .manage-issues-intro {
+      align-items: flex-start;
+    }
+  
+    .manage-filter-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  
+  @media (max-width: 700px) {
+    .manage-issues-intro {
+      flex-direction: column;
+  
+      padding: 20px;
+    }
+  
+    .manage-issues-result-count {
+      width: 100%;
+    }
+  
+    .manage-panel-heading {
+      align-items: flex-start;
+  
+      padding: 18px;
+    }
+  
+    .manage-filter-body {
+      padding: 18px;
+    }
+  
+    .manage-filter-grid {
+      grid-template-columns: 1fr;
+    }
+  
+    .manage-issues-panel-header {
+      align-items: flex-start;
+  
+      padding: 18px;
+    }
+  
+    .manage-pagination {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .manage-pagination-info {
+      text-align: center;
+    }
+  
+    .manage-pagination-controls {
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .manage-pagination-controls {
+      width: 100%;
+  
+      gap: 8px;
+    }
+  
+    .manage-pagination-controls button {
+      flex: 1;
+    }
+  
+    .manage-page-number {
+      min-width: auto;
+    }
+  }
