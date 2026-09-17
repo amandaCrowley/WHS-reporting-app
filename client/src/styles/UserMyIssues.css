@@ -32,8 +32,6 @@ body,
   flex-shrink: 0;
 }
 
-
-
 .sidebar-top h2 {
   margin: 0;
   font-size: 23px;
@@ -115,12 +113,50 @@ body,
   min-width: 0;
   background-color: #f8fafc;
   padding: 36px 44px 32px;
-
   /* Adjusted padding for better spacing 32 40 28 to 16 44 32 */
-
   font-family: Arial, Helvetica, sans-serif;
   color: #0f172a;
   box-sizing: border-box;
+}
+
+.user-my-issues-select-wrap select {
+  width: 100%;
+  height: 47px;
+
+  padding: 0 40px 0 14px;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background: #ffffff;
+
+  border: 1px solid #d6dbe5;
+
+  border-radius: 7px;
+
+  outline: none;
+
+  color: #26324b;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.user-my-issues-select-wrap svg {
+  position: absolute !important;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: #48536b;
+  pointer-events: none;
 }
 
 /* =========================
@@ -130,41 +166,31 @@ body,
 .user-my-issues-header {
   height: 104px;
   min-height: 104px;
-
   padding: 0 32px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   background: #ffffff;
-
   border-bottom: 1px solid #e6eaf0;
 }
 
 .user-my-issues-header h1 {
   margin: 0;
-
   color: #07142f;
-
   font-size: 25px;
   font-weight: 700;
-
   letter-spacing: -0.4px;
 }
 
 .user-my-issues-header-user {
   display: flex;
   align-items: center;
-
   gap: 13px;
-
   color: #07132f;
 }
 
-.user-my-issues-header-user>span {
-  color: #07132f; 
-
+.user-my-issues-header-user > span {
+  color: #07132f;
   font-size: 15px;
   font-weight: 600;
 }
@@ -172,13 +198,10 @@ body,
 .user-my-issues-header-user .profile-avatar {
   width: 36px;
   height: 36px;
-
   border-radius: 50%;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   flex-shrink: 0;
 }
 
@@ -193,9 +216,13 @@ body,
   border: 1px solid #dbe3ef;
   border-radius: 12px;
   padding: 28px 26px 24px;
-
   /* Adjusted padding for better spacing 24 22 22 to 28 26 24 */
+  box-sizing: border-box;
+}
 
+.user-my-issues-content {
+  width: 100%;
+  padding: 28px clamp(20px, 3vw, 44px) 48px;
   box-sizing: border-box;
 }
 
@@ -203,9 +230,7 @@ body,
   display: grid;
   grid-template-columns: 2.2fr 0.8fr 0.8fr;
   gap: 18px;
-
   /* Adjusted gap for better spacing 16px to 18px */
-
   align-items: end;
   margin-bottom: 24px;
 }
@@ -239,7 +264,9 @@ body,
   color: #0f172a;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .user-my-issues-search-box input::placeholder {
@@ -279,23 +306,30 @@ body,
   display: flex;
   flex-direction: column;
   gap: 16px;
-
   /* Adjusted gap for better spacing 14px to 16px */
 }
 
+/* =========================
+   ISSUE CARD
+========================= */
+
 .user-my-issues-card {
+  position: relative;
+
   background: #ffffff;
   border: 1px solid #dbe3ef;
   border-radius: 10px;
-  padding: 22px 24px;
 
+  padding: 22px 24px;
   /* Adjusted padding for better spacing 20px 22px to 22px 24px */
 
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 250px 34px;
+  grid-template-columns: 96px minmax(0, 1fr) 250px 34px;
   gap: 20px;
   align-items: center;
+
   cursor: pointer;
+
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -322,6 +356,17 @@ body,
   line-height: 1.45;
   color: #4b5563;
   max-width: 760px;
+}
+
+.user-my-issues-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.user-my-issues-title-row h2 {
+  margin: 0;
 }
 
 .user-my-issues-description-label {
@@ -358,6 +403,10 @@ body,
   font-weight: 500;
 }
 
+/* =========================
+   CARD RIGHT SIDE
+========================= */
+
 .user-my-issues-card-right {
   display: flex;
   flex-direction: column;
@@ -370,6 +419,10 @@ body,
   color: #475569;
   margin: 0;
 }
+
+/* =========================
+   STATUS BADGE
+========================= */
 
 .user-my-issues-status-badge {
   display: inline-flex;
@@ -403,6 +456,53 @@ body,
   border-color: #b7e2c0;
 }
 
+/* =========================
+   NEW MESSAGE NOTIFICATION
+========================= */
+
+.user-my-issues-message-col {
+  width: 96px;
+  min-width: 96px;
+  max-width: 96px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.user-my-issues-message-label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  width: 72px;
+  padding: 6px 4px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.user-my-issues-message-label svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* =========================
+   DATE
+========================= */
+
 .user-my-issues-date-block {
   display: flex;
   flex-direction: column;
@@ -424,6 +524,10 @@ body,
   font-weight: 500;
 }
 
+/* =========================
+   CARD ARROW
+========================= */
+
 .user-my-issues-card-arrow {
   justify-self: end;
   align-self: center;
@@ -431,6 +535,10 @@ body,
   color: #111827;
   line-height: 1;
 }
+
+/* =========================
+   EMPTY / LOADING
+========================= */
 
 .user-my-issues-empty,
 .user-my-issues-loading {
@@ -442,6 +550,10 @@ body,
   color: #64748b;
   font-size: 15px;
 }
+
+/* =========================
+   FOOTER
+========================= */
 
 .user-my-issues-footer {
   display: flex;
@@ -485,6 +597,10 @@ body,
   color: #ffffff;
   border-color: #3157f6;
 }
+
+/* =========================
+   BOTTOM ACTIONS
+========================= */
 
 .user-my-issues-bottom-actions {
   display: flex;
@@ -530,6 +646,10 @@ body,
   box-shadow: 0 14px 28px rgba(49, 87, 246, 0.28);
 }
 
+/* =========================
+   ERROR
+========================= */
+
 .user-my-issues-error {
   margin-bottom: 16px;
   padding: 12px 14px;
@@ -540,6 +660,10 @@ body,
   font-size: 14px;
 }
 
+/* =========================
+   RESPONSIVE
+========================= */
+
 @media (max-width: 1100px) {
   .user-my-issues-controls {
     grid-template-columns: 1fr;
@@ -547,6 +671,10 @@ body,
 
   .user-my-issues-card {
     grid-template-columns: 1fr;
+  }
+
+  .user-my-issues-message-col {
+    justify-content: flex-start;
   }
 
   .user-my-issues-card-right {

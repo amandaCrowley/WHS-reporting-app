@@ -1,0 +1,117 @@
+.notification-bell-wrapper {
+  position: relative;
+}
+
+.notification-bell-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #dbe3ef;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #002b5c;
+  cursor: pointer;
+}
+
+.notification-bell-button:hover,
+.notification-bell-button:focus-visible {
+  background: #eff6ff;
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.notification-bell-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border: 2px solid #ffffff;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+}
+
+.notification-bell-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(360px, calc(100vw - 32px));
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+}
+
+.notification-bell-menu-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #edf2f7;
+  color: #0f172a;
+}
+
+.notification-bell-menu-header span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.notification-bell-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  gap: 4px;
+  margin-top: 5px;
+  padding: 10px;
+  border: 0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notification-bell-item:hover,
+.notification-bell-item.unread {
+  background: #eff6ff;
+}
+
+.notification-bell-item span {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.notification-bell-item small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.notification-bell-empty {
+  margin: 0;
+  padding: 20px 10px;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+.notification-bell-issue-title {
+  color: #07132f;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}

@@ -57,7 +57,10 @@ export default function ManageIssues() {
 
   const fetchIssues = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/issues");
+      const query = userData?.firebaseUid
+        ? `?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
+        : "";
+      const response = await fetch(`http://localhost:8000/api/issues${query}`); //get all issues from the backend
 
       if (!response.ok) {
         throw new Error("Failed to fetch system issues");
@@ -80,7 +83,7 @@ export default function ManageIssues() {
   // Fetch issues when the component mounts
   useEffect(() => {
     fetchIssues();
-  }, []);
+  }, [userData?.firebaseUid]);
 
   // Filter and sort issues whenever the issues, search, statusFilter,
   // assignmentFilter, priorityFilter, userData, or sortBy state changes
@@ -88,8 +91,17 @@ export default function ManageIssues() {
     let temp = [...issues];
 
     // Filter by status
-    if (statusFilter !== "All") {
-      temp = temp.filter((issue) => issue.status === statusFilter);
+    // Active includes both Open and In Progress issues.
+    if (statusFilter === "Active") {
+      temp = temp.filter(
+        (issue) =>
+          issue.status === "Open" ||
+          issue.status === "In Progress"
+      );
+    } else if (statusFilter !== "All") {
+      temp = temp.filter(
+        (issue) => issue.status === statusFilter
+      );
     }
 
     // Filter by assignment
@@ -127,6 +139,7 @@ export default function ManageIssues() {
 
       temp = temp.filter(
         (issue) =>
+          issue._id?.toLowerCase().includes(lowerSearch) ||
           issue.title?.toLowerCase().includes(lowerSearch) ||
           issue.issueDescription?.toLowerCase().includes(lowerSearch) ||
           issue.location?.toLowerCase().includes(lowerSearch) ||
@@ -344,24 +357,86 @@ export default function ManageIssues() {
           />
         </div>
 
-        <nav className="user-dashboard-nav">
-          <button
-            type="button"
-            className="user-dashboard-nav-item"
-            onClick={() => navigate("/admin/dashboard")}
-          >
-            <LayoutDashboard />
-            <span>Dashboard</span>
-          </button>
+      <div>
+        <input
+          type="text"
+          placeholder="Search by Issue ID, title, description, campus, location or reporter..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-          <button
-            type="button"
-            className="user-dashboard-nav-item active"
-            onClick={() => navigate("/admin/manageissues")}
-          >
-            <ClipboardList />
-            <span>Manage Issues</span>
-          </button>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="All">All statuses</option>
+          <option value="Active">Active</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Closed">Closed</option>
+        </select>
+
+        <select
+          value={assignmentFilter}
+          onChange={(e) => setAssignmentFilter(e.target.value)}
+        >
+          <option value="All">All assignments</option>
+          <option value="Unassigned">Unassigned</option>
+          <option value="Assigned to me">Assigned to me</option>
+          <option value="Assigned to others">Assigned to others</option>
+        </select>
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+        >
+          <option value="Newest">Newest first</option>
+          <option value="Oldest">Oldest first</option>
+
+        </select>
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value)}
+        >
+          <option value="All">All Priorities</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+          <option value="Critical">Critical</option>
+        </select>
+      </div>
+
+      {loading ? (
+        <p>Loading issues...</p>
+      ) : filteredIssues.length === 0 ? (
+        <p>No issues found.</p>
+      ) : (
+        <ul>
+
+          {/* List to display all issues in the system - these can be filtered/searched as needed */}
+          {visibleIssues.map((issue) => {
+            const isAssignedToMe =
+              userData && issue.assignedTo && String(issue.assignedTo) === String(userData._id);
+
+            return (
+              <li key={issue._id}>
+                <strong>{issue.title}</strong>
+                <div>{issue.location} · {issue.campus}</div>
+                <div>Status: {issue.status}</div>
+                <div>Priority: {issue.priority || "Not set"}</div>
+                <div>Reported by: {issue.reportedByName || "Unknown"}</div>
+                <div>
+                  Reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
+                </div>
+                <div>
+                  Assigned to: {issue.assignedToName || "Unassigned"}
+                </div>
+                {issue.unreadMessageCount > 0 && (
+                  <div>New messages: {issue.unreadMessageCount}</div>
+                )}
 
           <button
             type="button"

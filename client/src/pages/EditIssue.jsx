@@ -17,6 +17,7 @@ import { CircleAlert, CloudUpload, FilePlus2, LayoutDashboard, LogOut, UserRound
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import '../styles/EditIssue.css';
+import NotificationBell from "../components/NotificationBell";
 
 export default function EditIssue() {
     const { issueId } = useParams(); // Get the issue ID from the URL
@@ -60,9 +61,9 @@ export default function EditIssue() {
     const displayName = userData?.firstName || userData?.name || "User";
     const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
-    
+
     // Fetch issue details
-     
+
     useEffect(() => {
         const fetchIssue = async () => {
             try {
@@ -173,6 +174,11 @@ export default function EditIssue() {
             return;
         }
 
+        if (!formData.dateTimeIssueOccurred) {
+            setUpdateError("Please enter the date and time the incident occurred.");
+            return;
+        }
+
         try {
             if (formData.dateTimeIssueOccurred && new Date(formData.dateTimeIssueOccurred).getTime() > Date.now()) {
                 throw new Error("Incident date and time cannot be in the future.");
@@ -218,12 +224,9 @@ export default function EditIssue() {
                 }));
             }
 
-            if (userData?.isAdmin) {
-                navigate("/admin/manageissues");
-                return;
-            }
+            //Once the issue has been updated, navigate back to the issue details page
+            navigate(`/issue/${issueId}`);
 
-            navigate(`/myissues`); //Navigate back to the user's issues page 
         } catch (err) {
             setUpdateError(err.message);
         }
@@ -336,9 +339,7 @@ export default function EditIssue() {
                     <h1>Edit issue</h1>
                     <div className="user-dashboard-header-user">
                         <span>Welcome, {displayName}</span>
-                        <div className="profile-avatar">
-                            <span>{initials}</span>
-                        </div>
+                        <NotificationBell firebaseUid={userData?.firebaseUid} />
                     </div>
                 </header>
 
@@ -354,333 +355,284 @@ export default function EditIssue() {
                             updateIssue();
                         }}>
                             <div className="edit-left-column">
-                              <div className="form-section edit-details-section">
-                                <div className="edit-section-title">Issue Details</div>
-                                 <label htmlFor="issue-title">
-                                    Title{" "}
-                                    <span>
-                                        *
-                                    </span>
-                                </label>
-                                <input id="issue-title" name="title" value={formData?.title || ""} onChange={handleUpdateClick} minLength={5} maxLength={50} />
+                                <div className="form-section edit-details-section">
+                                    <div className="edit-section-title">Issue Details</div>
+                                    <label htmlFor="issue-title">
+                                        Title{" "}
+                                        <span>
+                                            *
+                                        </span>
+                                    </label>
+                                    <input id="issue-title" name="title" value={formData?.title || ""} onChange={handleUpdateClick} minLength={5} maxLength={50} />
 
-                                <label htmlFor="issue-description">
-                                    Description{" "}
-                                    <span>
-                                        *
-                                    </span>
-                                </label>
-                                <textarea
-                                    id="issue-description"
-                                    name="issueDescription"
-                                    value={formData?.issueDescription || ""}
-                                    onChange={handleUpdateClick}
-                                    minLength={10}
-                                    maxLength={300}
-                                />
-                                                            </div>
+                                    <label htmlFor="issue-description">
+                                        Description{" "}
+                                        <span>
+                                            *
+                                        </span>
+                                    </label>
 
-                                                            <div className="form-section edit-location-section">
-                                <div className="edit-section-title">Location</div>
-                                <label htmlFor="campus">
-                                    Campus{" "}
-                                    <span>
-                                        *
-                                    </span>
-                                </label>
-                                <select id="campus" name="campus" value={formData?.campus || ""} onChange={handleUpdateClick}>
-                                    <option value="Callaghan">Callaghan</option>
-                                    <option value="Ourimbah">Ourimbah</option>
-                                    <option value="Newcastle City">Newcastle City</option>
-                                    <option value="Gosford Hospital">Gosford Hospital</option>
-                                    <option value="Gosford Mann Street">Gosford Mann Street</option>
-                                    <option value="Sydney">Sydney</option>
-                                    <option value="Port Macquarie">Port Macquarie</option>
-                                </select>
+                                    <div className="edit-textarea-wrap">
+                                        <textarea
+                                            id="issue-description"
+                                            name="issueDescription"
+                                            value={formData?.issueDescription || ""}
+                                            onChange={handleUpdateClick}
+                                            minLength={10}
+                                            maxLength={300}
+                                        />
 
-                                <label htmlFor="location">
-                                    Specific location{" "}
-                                    <span>
-                                        *
-                                    </span>
-                                </label>
-                                <input id="location" name="location" value={formData?.location || ""} onChange={handleUpdateClick} minLength={3} maxLength={100} />
-
-                                <label htmlFor="dateTimeIssueOccurred">
-                                    Date and time incident occurred{" "}
-                                    <span>
-                                        *
-                                    </span>
-                                </label>
-                                <input
-                                    id="dateTimeIssueOccurred"
-                                    name="dateTimeIssueOccurred"
-                                    type="datetime-local"
-                                    value={formData?.dateTimeIssueOccurred || ""}
-                                    onChange={handleUpdateClick}
-                                />
-                              </div>
-
-                              {userData?.isAdmin && (
-                                  <div className="form-section edit-priority-section">
-                                    <div className="edit-section-title">Priority</div>
-                                    <select
-                                        id="priority"
-                                        name="priority"
-                                        value={formData?.priority || "Medium"}
-                                        onChange={handleUpdateClick}
-                                    >
-                                        <option value="Low">Low</option>
-                                        <option value="Medium">Medium</option>
-                                        <option value="High">High</option>
-                                        <option value="Critical">Critical</option>
-                                    </select>
-                                                                    </div>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="edit-right-column">
-                                                            <div className="form-section edit-witness-section">
-                                <div className="edit-section-title">Witnesses</div>
-
-                                {/* witness list */}
-                                {formData?.witnessNames?.map((name, index) => (
-                                    <li key={index} className="multiple-item" >
-                                        <span>{name}</span>
-                                        <button
-                                            type="button"
-                                            className="btn add-btn"
-                                            onClick={() => removeWitness(index)}
-                                        >
-                                            x
-                                        </button>
-                                    </li>
-                                ))}
-
-                                {/* add witness popup*/}
-                                <div className="multiple-item">
+                                        <span className="edit-char-count">
+                                            {(formData.issueDescription || "").length || " "}
+                                            /300
+                                        </span>
+                                    </div>
+                                    <label htmlFor="dateTimeIssueOccurred">
+                                        Date and time incident occurred{" "}
+                                        <span>
+                                            *
+                                        </span>
+                                    </label>
                                     <input
-                                        type="text"
-                                        placeholder="Add witness name"
-                                        value={witnessInput}
-                                        onChange={(e) => setWitnessInput(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                                e.preventDefault();
-                                                addWitness();
-                                            }
-                                        }}
+                                        id="dateTimeIssueOccurred"
+                                        name="dateTimeIssueOccurred"
+                                        type="datetime-local"
+                                        value={formData?.dateTimeIssueOccurred || ""}
+                                        onChange={handleUpdateClick}
                                     />
-
-                                    <button
-                                        type="button"
-                                        className="btn add-btn"
-                                        onClick={addWitness}
-                                        aria-label="Add witness"
-                                    >
-                                        +
-                                    </button>
                                 </div>
-                                                            </div>
 
-                                                            {userData?.isAdmin && (
-                                <>
-                                                                            <div className="form-section edit-comments-section">
-                                        <div className="edit-section-title">Progress or resolution comments</div>
-                                        {issue.issueComments?.length > 0 && (
-                                            <div className="issue-comments-list">
-                                                {issue.issueComments.map((issueComment) => (
-                                                    <div className="issue-comment" key={issueComment._id}>
-                                                        <span>{issueComment.comment}</span>
-                                                        <small>
-                                                            {issueComment.commentedByName} · {new Date(issueComment.dateTimeCommented).toLocaleString("en-AU")}
-                                                        </small>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {formData.comments?.map((comment, index) => (
-                                            <div className="multiple-item" key={`${comment}-${index}`}>
-                                                <span>{comment}</span>
-                                                <button
-                                                    type="button"
-                                                    className="btn add-btn"
-                                                    onClick={() => removeComment(index)}
-                                                    aria-label={`Remove comment ${index + 1}`}
-                                                >
-                                                    x
-                                                </button>
-                                            </div>
-                                        ))}
-                                        <div className="multiple-item">
-                                            <textarea
-                                                value={commentInput}
-                                                onChange={(e) => setCommentInput(e.target.value)}
-                                                maxLength={300}
-                                                placeholder="Add comment"
-                                                onKeyDown={(e) => {
-                                                    if (e.key === "Enter" && !e.shiftKey) {
-                                                        e.preventDefault();
-                                                        addComment();
-                                                    }
-                                                }}
-                                            />
+                                <div className="form-section edit-location-section">
+                                    <div className="edit-section-title">Location</div>
+                                    <label htmlFor="campus">
+                                        Campus{" "}
+                                        <span>
+                                            *
+                                        </span>
+                                    </label>
+                                    <select id="campus" name="campus" value={formData?.campus || ""} onChange={handleUpdateClick}>
+                                        <option value="Callaghan">Callaghan</option>
+                                        <option value="Ourimbah">Ourimbah</option>
+                                        <option value="Newcastle City">Newcastle City</option>
+                                        <option value="Gosford Hospital">Gosford Hospital</option>
+                                        <option value="Gosford Mann Street">Gosford Mann Street</option>
+                                        <option value="Sydney">Sydney</option>
+                                        <option value="Port Macquarie">Port Macquarie</option>
+                                    </select>
+
+                                    <label htmlFor="location">
+                                        Specific location{" "}
+                                        <span>
+                                            *
+                                        </span>
+                                    </label>
+                                    <input id="location" name="location" value={formData?.location || ""} onChange={handleUpdateClick} minLength={3} maxLength={100} />
+                                </div>
+
+                                {userData?.isAdmin && (
+                                    <div className="form-section edit-priority-section">
+                                        <div className="edit-section-title">Priority</div>
+                                        <select
+                                            id="priority"
+                                            name="priority"
+                                            value={formData?.priority || "Medium"}
+                                            onChange={handleUpdateClick}
+                                        >
+                                            <option value="Low">Low</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="High">High</option>
+                                            <option value="Critical">Critical</option>
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="edit-right-column">
+                                <div className="form-section edit-witness-section">
+                                    <div className="edit-section-title">Witnesses</div>
+
+                                    {/* witness list */}
+                                    {formData?.witnessNames?.map((name, index) => (
+                                        <li key={index} className="multiple-item" >
+                                            <span>{name}</span>
                                             <button
                                                 type="button"
                                                 className="btn add-btn"
-                                                onClick={addComment}
-                                                aria-label="Add comment"
+                                                onClick={() => removeWitness(index)}
                                             >
-                                                +
+                                                x
                                             </button>
+                                        </li>
+                                    ))}
+
+                                    {/* add witness popup*/}
+                                    <div className="multiple-item">
+                                        <input
+                                            type="text"
+                                            placeholder="Add witness name"
+                                            value={witnessInput}
+                                            onChange={(e) => setWitnessInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                    e.preventDefault();
+                                                    addWitness();
+                                                }
+                                            }}
+                                        />
+
+                                        <button
+                                            type="button"
+                                            className="btn add-btn"
+                                            onClick={addWitness}
+                                            aria-label="Add witness"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="form-section edit-images-section">
+                                    <div className="edit-section-title">Issue images</div>
+
+                                    {/* Existing images */}
+                                    {formData?.imageURLs?.length > 0 && (
+                                        <div className="edit-image-grid">
+                                            {formData.imageURLs.map((url, index) => (
+                                                <div
+                                                    className="edit-image-card"
+                                                    key={url}
+                                                >
+                                                    <img
+                                                        src={url}
+                                                        alt={`Evidence ${index + 1}`}
+                                                    />
+
+                                                    <button
+                                                        type="button"
+                                                        className="image-remove-btn"
+                                                        onClick={() => removeExistingImage(url)}
+                                                        aria-label={`Remove existing image ${index + 1}`}
+                                                        title="Remove image"
+                                                    >
+                                                        <span aria-hidden="true">×</span>
+                                                    </button>
+                                                </div>
+                                            ))}
                                         </div>
-                                                                            </div>
-                                </>
-                                                            )}
+                                    )}
 
+                                    {/* Newly selected images */}
+                                    {images.length > 0 && (
+                                        <div className="edit-image-grid">
+                                            {images.map((image, index) => (
+                                                <div className="edit-image-card" key={image.preview}>
+                                                    <img
+                                                        src={image.preview}
+                                                        alt={`New issue image ${index + 1}`}
+                                                        style={{
+                                                            width: "100%",
+                                                            height: "100%",
+                                                            objectFit: "cover"
+                                                        }}
+                                                    />
 
-                                                            <div className="form-section edit-images-section">
-                                <div className="edit-section-title">Issue images</div>
+                                                    <button
+                                                        type="button"
+                                                        className="image-remove-btn"
+                                                        onClick={() => {
+                                                            URL.revokeObjectURL(image.preview);
 
-                                {/* Existing images */}
-                                {formData?.imageURLs?.length > 0 && (
-                                    <div className="edit-image-grid">
-                                        {formData.imageURLs.map((url, index) => (
-                                            <div
-                                                className="edit-image-card"
-                                                key={url}
-                                            >
-                                                <img
-                                                    src={url}
-                                                    alt={`Evidence ${index + 1}`}
-                                                />
+                                                            setImages(prev =>
+                                                                prev.filter((_, i) => i !== index)
+                                                            );
+                                                        }}
+                                                        aria-label={`Remove new image ${index + 1}`}
+                                                        title="Remove image"
+                                                    >
+                                                        <span aria-hidden="true">×</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
-                                                <button
-                                                    type="button"
-                                                    className="image-remove-btn"
-                                                    onClick={() => removeExistingImage(url)}
-                                                    aria-label={`Remove existing image ${index + 1}`}
-                                                    title="Remove image"
-                                                >
-                                                    <span aria-hidden="true">×</span>
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                        multiple
+                                        className="edit-hidden-file"
+                                        onChange={(e) => {
+                                            const selectedFiles = Array.from(e.target.files || []);
+                                            const existingCount = formData?.imageURLs?.length || 0;
 
-                                {/* Newly selected images */}
-                                {images.length > 0 && (
-                                    <div className="edit-image-grid">
-                                        {images.map((image, index) => (
-                                            <div className="edit-image-card" key={image.preview}>
-                                                <img
-                                                    src={image.preview}
-                                                    alt={`New issue image ${index + 1}`}
-                                                    style={{
-                                                        width: "100%",
-                                                        height: "100%",
-                                                        objectFit: "cover"
-                                                    }}
-                                                />
+                                            if (selectedFiles.length === 0) return;
 
-                                                <button
-                                                    type="button"
-                                                    className="image-remove-btn"
-                                                    onClick={() => {
-                                                        URL.revokeObjectURL(image.preview);
+                                            const validTypes = [
+                                                "image/jpeg",
+                                                "image/png",
+                                                "image/gif",
+                                                "image/webp"
+                                            ];
 
-                                                        setImages(prev =>
-                                                            prev.filter((_, i) => i !== index)
-                                                        );
-                                                    }}
-                                                    aria-label={`Remove new image ${index + 1}`}
-                                                    title="Remove image"
-                                                >
-                                                    <span aria-hidden="true">×</span>
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/gif,image/webp"
-                                    multiple
-                                    className="edit-hidden-file"
-                                    onChange={(e) => {
-                                        const selectedFiles = Array.from(e.target.files || []);
-                                        const existingCount = formData?.imageURLs?.length || 0;
-
-                                        if (selectedFiles.length === 0) return;
-
-                                        const validTypes = [
-                                            "image/jpeg",
-                                            "image/png",
-                                            "image/gif",
-                                            "image/webp"
-                                        ];
-
-                                        if (existingCount + images.length + selectedFiles.length > 5) {
-                                            setUpdateError("Maximum 5 images allowed.");
-                                            return;
-                                        }
-
-                                        const MAX_SIZE = 5 * 1024 * 1024;
-
-                                        for (const file of selectedFiles) {
-                                            if (!validTypes.includes(file.type)) {
-                                                setUpdateError(`${file.name} is not a supported image type.`);
+                                            if (existingCount + images.length + selectedFiles.length > 5) {
+                                                setUpdateError("Maximum 5 images allowed.");
                                                 return;
                                             }
 
-                                            if (file.size > MAX_SIZE) {
-                                                setUpdateError(`${file.name} exceeds 5MB.`);
-                                                return;
+                                            const MAX_SIZE = 5 * 1024 * 1024;
+
+                                            for (const file of selectedFiles) {
+                                                if (!validTypes.includes(file.type)) {
+                                                    setUpdateError(`${file.name} is not a supported image type.`);
+                                                    return;
+                                                }
+
+                                                if (file.size > MAX_SIZE) {
+                                                    setUpdateError(`${file.name} exceeds 5MB.`);
+                                                    return;
+                                                }
                                             }
-                                        }
 
-                                        const newImages = selectedFiles.map(file => ({
-                                            file,
-                                            preview: URL.createObjectURL(file)
-                                        }));
+                                            const newImages = selectedFiles.map(file => ({
+                                                file,
+                                                preview: URL.createObjectURL(file)
+                                            }));
 
-                                        setImages(prev => [...prev, ...newImages]);
-                                        setUpdateError("");
-                                        e.target.value = "";
-                                    }}
-                                />
+                                            setImages(prev => [...prev, ...newImages]);
+                                            setUpdateError("");
+                                            e.target.value = "";
+                                        }}
+                                    />
 
-                                <div
-                                    className="edit-upload-zone"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    role="button"
-                                    tabIndex={0}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                            e.preventDefault();
-                                            fileInputRef.current?.click();
-                                        }
-                                    }}
-                                >
-                                    <CloudUpload className="edit-upload-icon" />
-                                    <h3>Click to upload</h3>
-                                    <p>Upload up to 5 images (JPG, PNG, GIF, WEBP)</p>
-                                    <button
-                                        type="button"
-                                        className="edit-upload-button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            fileInputRef.current?.click();
+                                    <div
+                                        className="edit-upload-zone"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                fileInputRef.current?.click();
+                                            }
                                         }}
                                     >
-                                        Upload Image
-                                    </button>
+                                        <CloudUpload className="edit-upload-icon" />
+                                        <h3>Click to upload</h3>
+                                        <p>Upload up to 5 images (JPG, PNG, GIF, WEBP)</p>
+                                        <button
+                                            type="button"
+                                            className="edit-upload-button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                fileInputRef.current?.click();
+                                            }}
+                                        >
+                                            Upload Image
+                                        </button>
+                                    </div>
                                 </div>
-                                                            </div>
-                                                        </div>
+                            </div>
 
                             <div className="edit-actions-panel">
                                 <button type="submit" className="btn primary-btn">

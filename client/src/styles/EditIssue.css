@@ -248,6 +248,21 @@ button {
     justify-content: center;
 }
 
+.edit-char-count {
+  position: absolute;
+
+  right: 9px;
+  bottom: 8px;
+
+  color: #677389;
+
+  font-size: 10px;
+}
+
+.edit-textarea-wrap {
+  position: relative;
+}
+
 /* Match the shared user page and Report Issue layout. */
 .edit-issue-shell {
     background: #f5f7fb;
@@ -255,9 +270,13 @@ button {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+.edit-form label span {
+  color: #e33a3a;
+}
+
 .edit-issue-content {
     width: 100%;
-    padding: 31px 24px 40px;
+    padding: 31px clamp(20px, 3vw, 44px) 40px;
     background: linear-gradient(135deg, #f8f9fc 0%, #f3f6fb 100%);
 }
 
@@ -504,12 +523,6 @@ button {
 .edit-form .update-section {
     grid-column: 1 / -1;
     margin: 4px 0 0;
-}
-
-.edit-form .update-section .primary-btn {
-    min-width: 180px;
-    background: #0867f2;
-    color: #ffffff;
 }
 
 .edit-form .edit-actions-panel .primary-btn:hover,

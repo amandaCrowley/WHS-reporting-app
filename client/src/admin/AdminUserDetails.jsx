@@ -11,13 +11,24 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  LogOut,
+} from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
+import { getUserData } from "../hooks/getUserData";
+import UONLogo from "../images/UONLogo White.png";
+import "../pages/UserDashboard.css";
 import "../styles/AdminUserDetails.css";
+import NotificationBell from "../components/NotificationBell";
 
 export default function AdminUserDetails() {
   const navigate = useNavigate();
   const { userId } = useParams();
   const logout = userLogout();
+  const { userData } = getUserData();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -82,101 +93,155 @@ export default function AdminUserDetails() {
     }
   }, [user]);
 
-  
+
+  const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+
   return (
-    <div className="admin-user-details">
-      <div>
-        <button type="button" onClick={() => navigate("/admin/dashboard")}>Dashboard</button>
-        <button type="button" onClick={() => navigate("/admin/manageissues")}>Manage Issues</button>
-        <button type="button" onClick={() => navigate("/admin/usermanagement")}>User Management</button>
-        <button type="button" onClick={logout}>Logout </button>
-      </div>
+    <div className="user-dashboard admin-dashboard admin-user-details-shell">
+      <aside className="user-dashboard-sidebar">
+        <div className="user-dashboard-logo">
+          <img src={UONLogo} alt="The University of Newcastle Australia" />
+        </div>
 
-      <section>
-        <h2>Account Information</h2>
-        {loading && <p>Loading user information...</p>}
-        {error && <p role="alert">{error}</p>}
+        <nav className="user-dashboard-nav">
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/admin/dashboard")}
+          >
+            <LayoutDashboard />
+            <span>Dashboard</span>
+          </button>
 
-        {/* Display account information here */}
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/admin/manageissues")}
+          >
+            <ClipboardList />
+            <span>Manage Issues</span>
+          </button>
 
-        {user && (
-          <div className="account-information">
-            <p>
-              <strong>Name:</strong> {user.firstName || ""}{" "}
-              {user.lastName || ""}
-            </p>
-            <p>
-              <strong>Email:</strong> {user.email || "Not provided"}
-            </p>
-            <p>
-              <strong>Role:</strong> {user.role || "Not provided"}
-            </p>
-            <p>
-              <strong>Account Type:</strong>{" "}
-              {user.isAdmin ? "Administrator" : "Standard User"}
-            </p>
+          <button
+            type="button"
+            className="user-dashboard-nav-item active"
+            onClick={() => navigate("/admin/usermanagement")}
+          >
+            <Users />
+            <span>User Management</span>
+          </button>
+        </nav>
+
+        <div className="user-dashboard-logout-section">
+          <button type="button" className="user-dashboard-logout" onClick={logout}>
+            <LogOut />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      <div className="user-dashboard-main">
+        <header className="user-dashboard-header">
+          <h1>User Details</h1>
+
+          <div className="user-dashboard-header-user">
+            <span>Welcome {userData?.firstName || "Admin"}</span>
+
+            <NotificationBell firebaseUid={userData?.firebaseUid} />
           </div>
-        )}
+        </header>
 
-        <button
-          type="button"
-          onClick={() => navigate(`/admin/users/${userId}/edit`)}
-        >
-          Edit User Details
-        </button>
-      </section>
+        <main className="user-dashboard-content">
+          <div className="admin-user-details">
+            <section>
+              <h2>User Account Information</h2>
+              {loading && <p>Loading user information...</p>}
+              {error && <p role="alert">{error}</p>}
 
-      <section>
-        <h2>Reported Issues</h2>
-        {issuesLoading && <p>Loading reported issues...</p>}
-        {issuesError && <p role="alert">{issuesError}</p>}
-        
-        {/* Display account reported issues here */}
+              {user && (
+                <div className="account-information">
+                  <p>
+                    <strong>Name:</strong> {user.firstName || ""}{" "}
+                    {user.lastName || ""}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {user.email || "Not provided"}
+                  </p>
+                  <p>
+                    <strong>Role:</strong> {user.role || "Not provided"}
+                  </p>
+                  <p>
+                    <strong>Account Type:</strong>{" "}
+                    {user.isAdmin ? "Administrator" : "Standard User"}
+                  </p>
+                </div>
+              )}
 
-        {!issuesLoading && !issuesError && reportedIssues.length === 0 && (
-          <p>This user has not reported any issues.</p>
-        )}
+              <button
+                type="button"
+                onClick={() => navigate(`/admin/users/${userId}/edit`)}
+              >
+                Edit User Details
+              </button>
+            </section>
 
-        {reportedIssues.length > 0 && (
-          <ul className="reported-issues-list">
-            {reportedIssues.map((issue) => (
-              <li key={issue._id} className="reported-issue">
-                <h3>{issue.title || "Untitled issue"}</h3>
-                <p>
-                  {issue.additionalDetails ||
-                    issue.issueDescription ||
-                    "No description provided."}
-                </p>
-                <p>
-                  <strong>Status:</strong> {issue.status || "Not provided"}
-                </p>
-                <p>
-                  <strong>Priority:</strong> {issue.priority || "Not set"}
-                </p>
-                <p>
-                  <strong>Location:</strong> {issue.location || "Not provided"}
-                  {issue.campus ? ` - ${issue.campus}` : ""}
-                </p>
-                <p>
-                  <strong>Date reported:</strong>{" "}
-                  {issue.dateTimeReported
-                    ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })
-                    : "Not provided"}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/issue/${issue._id}`)}
-                >
-                  View Issue
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+            <section>
+              <h2>
+                Issues Reported by{" "}
+                {user
+                  ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+                  : "User"}
+              </h2>
+              {issuesLoading && <p>Loading reported issues...</p>}
+              {issuesError && <p role="alert">{issuesError}</p>}
+
+              {!issuesLoading && !issuesError && reportedIssues.length === 0 && (
+                <p>This user has not reported any issues.</p>
+              )}
+
+              {reportedIssues.length > 0 && (
+                <ul className="reported-issues-list">
+                  {reportedIssues.map((issue) => (
+                    <li key={issue._id} className="reported-issue">
+                      <h3>{issue.title || "Untitled issue"}</h3>
+                      <p>
+                        {issue.additionalDetails ||
+                          issue.issueDescription ||
+                          "No description provided."}
+                      </p>
+                      <p>
+                        <strong>Status:</strong> {issue.status || "Not provided"}
+                      </p>
+                      <p>
+                        <strong>Priority:</strong> {issue.priority || "Not set"}
+                      </p>
+                      <p>
+                        <strong>Location:</strong> {issue.location || "Not provided"}
+                        {issue.campus ? ` - ${issue.campus}` : ""}
+                      </p>
+                      <p>
+                        <strong>Date reported:</strong>{" "}
+                        {issue.dateTimeReported
+                          ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })
+                          : "Not provided"}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/issue/${issue._id}`)}
+                      >
+                        View Issue
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

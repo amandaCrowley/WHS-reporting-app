@@ -26,6 +26,7 @@ import {
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/UserProfile.css";
+import NotificationBell from "../components/NotificationBell";
 
 export default function UserProfile() {
   const navigate = useNavigate();
@@ -244,9 +245,7 @@ export default function UserProfile() {
           <div className="user-dashboard-header-user">
             <span>Welcome {displayName}</span>
 
-            <div className="profile-avatar">
-              <span>{initials}</span>
-            </div>
+            <NotificationBell firebaseUid={userData.firebaseUid} />
           </div>
         </header>
 

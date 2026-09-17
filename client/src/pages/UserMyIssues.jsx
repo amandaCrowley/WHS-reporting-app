@@ -9,8 +9,7 @@
  * Date: 09/09/26
  */
 
-import "./UserMyIssues.css";
-import "./UserDashboard.css";
+import "../styles/UserMyIssues.css";
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +17,7 @@ import { getAuth } from "firebase/auth";
 
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
-
+import NotificationBell from "../components/NotificationBell";
 import UONLogo from "../images/UONLogo White.png";
 
 import {
@@ -28,12 +27,12 @@ import {
   UserRound,
   LogOut,
   Search,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   MapPin,
   Building2,
   ClipboardList,
+  MessageCircle,
 } from "lucide-react";
 
 export default function UserMyIssues() {
@@ -51,7 +50,9 @@ export default function UserMyIssues() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortOrder, setSortOrder] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
 
+  const ISSUES_PER_PAGE = 5;
   const sortIssuesByDate = (issueList) => {
     return [...issueList].sort((a, b) => {
       const timeA = new Date(
@@ -113,17 +114,23 @@ export default function UserMyIssues() {
   useEffect(() => {
     let temp = [...issues];
 
-    if (statusFilter !== "All") {
+    if (statusFilter === "Active") {
+      temp = temp.filter(
+        (issue) =>
+          issue.status === "Open" ||
+          issue.status === "In Progress"
+      );
+    } else if (statusFilter !== "All") {
       temp = temp.filter(
         (issue) => issue.status === statusFilter
       );
     }
-
     if (search.trim()) {
       const searchLower = search.toLowerCase();
 
       temp = temp.filter(
         (issue) =>
+          issue._id?.toLowerCase().includes(searchLower) ||
           issue.title?.toLowerCase().includes(searchLower) ||
           issue.issueDescription
             ?.toLowerCase()
@@ -134,6 +141,7 @@ export default function UserMyIssues() {
     }
 
     setFilteredIssues(sortIssuesByDate(temp));
+    setCurrentPage(1);
   }, [search, statusFilter, issues, sortOrder]);
 
   const getStatusClass = (status) => {
@@ -152,6 +160,17 @@ export default function UserMyIssues() {
     return "";
   };
 
+  const totalPages = Math.ceil(
+    filteredIssues.length / ISSUES_PER_PAGE
+  );
+
+  const startIndex = (currentPage - 1) * ISSUES_PER_PAGE;
+
+  const currentIssues = filteredIssues.slice(
+    startIndex,
+    startIndex + ISSUES_PER_PAGE
+  );
+
   const formatReportedDate = (dateValue) => {
     if (!dateValue) {
       return "N/A";
@@ -164,6 +183,21 @@ export default function UserMyIssues() {
     });
   };
 
+  const goToPreviousPage = () => {
+    setCurrentPage((page) => Math.max(page - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage((page) =>
+      Math.min(page + 1, totalPages)
+    );
+  };
+
+  const pageNumbers = Array.from(
+    { length: totalPages },
+    (_, index) => index + 1
+  );
+
   if (loading) {
     return (
       <div className="user-my-issues-loading-screen">
@@ -174,7 +208,7 @@ export default function UserMyIssues() {
 
   // Build initials for avatar
   const initials =
-  `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+    `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
   return (
     <div className="user-dashboard">
@@ -263,9 +297,7 @@ export default function UserMyIssues() {
               Welcome {displayName}
             </span>
 
-            <div className="profile-avatar">
-              <span>{initials}</span>
-            </div>
+            <NotificationBell firebaseUid={userData.firebaseUid} />
           </div>
 
         </header>
@@ -291,11 +323,11 @@ export default function UserMyIssues() {
 
                 <div className="user-my-issues-search-box">
 
-                  <Search />
+                  <Search className="user-my-issues-search-icon" />
 
                   <input
                     type="text"
-                    placeholder="Search description, campus or location"
+                    placeholder="Search by issue ID, title, description, campus or location"
                     value={search}
                     onChange={(e) =>
                       setSearch(e.target.value)
@@ -322,15 +354,13 @@ export default function UserMyIssues() {
                     }
                   >
                     <option value="All">All</option>
+                    <option value="Active">Active</option>
                     <option value="Open">Open</option>
                     <option value="In Progress">
                       In Progress
                     </option>
                     <option value="Closed">Closed</option>
                   </select>
-
-                  <ChevronDown />
-
                 </div>
 
               </div>
@@ -359,7 +389,7 @@ export default function UserMyIssues() {
                     </option>
                   </select>
 
-                  <ChevronDown />
+
 
                 </div>
 
@@ -371,7 +401,7 @@ export default function UserMyIssues() {
 
             <div className="user-my-issues-list">
 
-              {filteredIssues.length === 0 ? (
+              {currentIssues.length === 0 ? (
 
                 <div className="user-my-issues-empty">
 
@@ -389,7 +419,7 @@ export default function UserMyIssues() {
 
               ) : (
 
-                filteredIssues.map((issue) => (
+                currentIssues.map((issue) => (
 
                   <div
                     key={issue._id}
@@ -401,8 +431,23 @@ export default function UserMyIssues() {
                     }
                   >
 
-                    <div className="user-my-issues-card-left">
+                    <div className="user-my-issues-message-col">
+                      {issue.unreadMessageCount > 0 && (
+                        <div
+                          className="user-my-issues-message-label"
+                          title={`${issue.unreadMessageCount} new message${issue.unreadMessageCount === 1 ? "" : "s"
+                            }`}
+                        >
+                          <MessageCircle size={15} />
+                          <span>
+                            {issue.unreadMessageCount} new message
+                            {issue.unreadMessageCount > 1 && "s"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
+                    <div className="user-my-issues-card-left">
                       <h2>
                         {issue.title}
                       </h2>
@@ -416,25 +461,19 @@ export default function UserMyIssues() {
                       <div className="user-my-issues-meta">
 
                         <div className="user-my-issues-meta-item">
-
                           <MapPin />
 
                           <span>
-                            {issue.location ||
-                              "Unknown location"}
+                            {issue.location || "Unknown location"}
                           </span>
-
                         </div>
 
                         <div className="user-my-issues-meta-item">
-
                           <Building2 />
 
                           <span>
-                            {issue.campus ||
-                              "Unknown campus"}
+                            {issue.campus || "Unknown campus"}
                           </span>
-
                         </div>
 
                       </div>
@@ -443,7 +482,7 @@ export default function UserMyIssues() {
 
                     <div className="user-my-issues-card-right">
 
-                      <div>
+                      <div className="user-my-issues-status-block">
 
                         <p className="user-my-issues-card-right-label">
                           Status
@@ -466,9 +505,7 @@ export default function UserMyIssues() {
                         </p>
 
                         <p className="user-my-issues-date-value">
-                          {formatReportedDate(
-                            issue.dateTimeReported
-                          )}
+                          {formatReportedDate(issue.dateTimeReported)}
                         </p>
 
                       </div>
@@ -478,7 +515,6 @@ export default function UserMyIssues() {
                     <ChevronRight className="user-my-issues-card-arrow" />
 
                   </div>
-
                 ))
 
               )}
@@ -486,51 +522,56 @@ export default function UserMyIssues() {
             </div>
 
             {/* FOOTER */}
+            {
+              filteredIssues.length > ISSUES_PER_PAGE && (
+                <div className="user-my-issues-footer">
 
-            <div className="user-my-issues-footer">
+                  <div className="user-my-issues-count">
+                    Page {currentPage} of {totalPages} · {filteredIssues.length} issues total
+                  </div>
 
-              <div className="user-my-issues-count">
+                  <div className="user-my-issues-pagination">
 
-                Showing{" "}
-                {filteredIssues.length > 0 ? 1 : 0} to{" "}
-                {filteredIssues.length} of{" "}
-                {filteredIssues.length} issues
+                    {/* Previous page button */}
+                    <button
+                      type="button"
+                      className="user-my-issues-page-btn"
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft />
+                    </button>
 
-              </div>
+                    {/* Page number buttons */}
+                    {pageNumbers.map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        type="button"
+                        className={`user-my-issues-page-btn ${currentPage === pageNumber ? "active" : ""
+                          }`}
+                        onClick={() => setCurrentPage(pageNumber)}
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
 
-              <div className="user-my-issues-pagination">
+                    {/* Next page button */}
+                    <button
+                      type="button"
+                      className="user-my-issues-page-btn"
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                    >
+                      <ChevronRight />
+                    </button>
 
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn"
-                >
-                  <ChevronLeft />
-                </button>
+                  </div>
 
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn active"
-                >
-                  1
-                </button>
-
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn"
-                >
-                  2
-                </button>
-
-                <button
-                  type="button"
-                  className="user-my-issues-page-btn"
-                >
-                  <ChevronRight />
-                </button>
-
-              </div>
-
-            </div>
+                </div>
+              )
+            }
 
           </div>
 

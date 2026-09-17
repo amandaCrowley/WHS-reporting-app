@@ -40,15 +40,14 @@ import {
   LogOut,
   FileText,
   Clock3,
-  Wrench,
   Check,
   Plus,
-  ChevronDown,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
-
+import { useNotifications } from "../hooks/useNotifications";
+import NotificationBell from "../components/NotificationBell";
 import UONLogo from "../images/UONLogo White.png";
 
 import "./UserDashboard.css";
@@ -62,6 +61,7 @@ export default function UserDashboard() {
 
   const navigate = useNavigate();
   const logout = userLogout();
+  const { notifications, unreadCount } = useNotifications(userData?.firebaseUid);
 
   /**
    * Fetch all issues submitted by the logged-in user.
@@ -136,6 +136,8 @@ export default function UserDashboard() {
       return dateB - dateA;
     });
   }, [issues]);
+
+  const recentIssues = sortedIssues.slice(0, 5);
 
   if (loading) {
     return <p className="user-dashboard-message">Loading user data...</p>;
@@ -230,15 +232,14 @@ export default function UserDashboard() {
 
         <header className="user-dashboard-header">
           <h1>User dashboard</h1>
-          
+
           <div className="user-dashboard-header-user">
+
             <span>
               Welcome {userData.firstName || "User"}
             </span>
-          <div className="profile-avatar">
-            <span>{initials}</span>
-          </div>
-            
+            <NotificationBell firebaseUid={userData.firebaseUid} />
+
           </div>
         </header>
 
@@ -264,13 +265,11 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            <div
-              className="user-dashboard-watermark"
-              aria-hidden="true"
-            >
-              <div className="watermark-circle watermark-circle-one" />
-              <div className="watermark-circle watermark-circle-two" />
-              <div className="watermark-circle watermark-circle-three" />
+            <div className="dashboard-notifications-heading">
+              <h2>Notifications</h2>
+              <p>
+                {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}
+              </p>
             </div>
           </section>
 
@@ -395,33 +394,31 @@ export default function UserDashboard() {
               /* Existing issue information remains available */
 
               <div className="user-dashboard-table-container">
+
                 <table className="user-dashboard-table">
                   <thead>
                     <tr>
-                      <th>Date of incident</th>
-                      <th>Location</th>
                       <th>Title</th>
+                      <th>Location</th>
                       <th>Status</th>
+                      <th>Date reported</th>
                       <th>View</th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    {sortedIssues.map((issue) => (
+                    {recentIssues.map((issue) => (
                       <tr key={issue._id}>
-
+                        <td>{issue.title || "-"}</td>
+                        <td>{issue.location || "-"}</td>
+                        <td>{issue.status || "-"}</td>
                         <td>
-                          {issue.dateTimeIssueOccurred
+                          {issue.dateTimeReported
                             ? new Date(
-                              issue.dateTimeIssueOccurred
+                              issue.dateTimeReported
                             ).toLocaleDateString("en-AU")
                             : "-"}
                         </td>
-
-                        <td>{issue.location || "-"}</td>
-                        <td>{issue.title || "-"}</td>
-                        <td>{issue.status || "-"}</td>
-
                         <td>
                           <button
                             type="button"
@@ -439,6 +436,23 @@ export default function UserDashboard() {
                     ))}
                   </tbody>
                 </table>
+
+                {sortedIssues.length > 5 && (
+                  <div className="user-dashboard-issues-footer">
+                    <span>
+                      Showing your 5 most recent issues
+                    </span>
+
+                    <button
+                      type="button"
+                      className="user-dashboard-view-all-button"
+                      onClick={() => navigate("/myissues")}
+                    >
+                      View all issues
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </section>
