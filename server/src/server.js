@@ -862,51 +862,149 @@ app.post('/api/issues/:id/messages', async (req, res) => {
   }
 });
 
-app.post('/api/issues/:id/comments', async (req, res) => {
+/* Add a new comment to an issue. 
+* This API route allows an administrator to add a comment to a specific issue.
+* The route validates the issue ID, comment length, and admin privileges. 
+* 
+* It also handles file uploads for attachments (up to 5 files) and validates their types (JPEG, PNG, GIF, WebP images, and PDF files).
+* If the comment is valid and the admin has the necessary permissions, the comment is added to the "IssueComments" collection in MongoDB, and any attachments are uploaded to Cloudinary.
+*/
+app.post('/api/issues/:id/comments', upload.array("attachments", 5), async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { id } = req.params;
+
     const { firebaseUid, comment } = req.body || {};
 
     if (!ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid issue ID" });
     }
 
-    const trimmedComment = typeof comment === "string" ? comment.trim() : "";
+    const trimmedComment =
+      typeof comment === "string" ? comment.trim() : "";
+
     if (!trimmedComment || trimmedComment.length > 300) {
-      return res.status(400).json({ error: "Comment must be between 1 and 300 characters" });
+      return res.status(400).json({
+        error: "Comment must be between 1 and 300 characters",
+      });
     }
 
     const admin = await findUserByIdentity(db, firebaseUid);
+
     if (!admin) {
       return res.status(404).json({ error: "User not found" });
     }
+
     if (!admin.isAdmin) {
-      return res.status(403).json({ error: "Only admins can add comments" });
+      return res.status(403).json({
+        error: "Only admins can add comments",
+      });
     }
 
     const issueId = new ObjectId(id);
-    const issue = await db.collection("Issue").findOne({ _id: issueId }, { projection: { _id: 1 } });
+
+    const issue = await db.collection("Issue").findOne(
+      { _id: issueId },
+      { projection: { _id: 1 } }
+    );
+
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });
     }
 
-    const commentedByName = `${admin.firstName || ""} ${admin.lastName || ""}`.trim();
+    // Validate the uploaded attachments.
+    const files = req.files || [];
+
+    const allowedAttachmentTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "application/pdf",
+    ];
+
+    const invalidFile = files.find(
+      (file) => !allowedAttachmentTypes.includes(file.mimetype)
+    );
+
+    if (invalidFile) {
+      return res.status(400).json({
+        error:
+          "Only JPEG, PNG, GIF, WebP images and PDF files can be attached.",
+      });
+    }
+
+    // Upload attachments to Cloudinary.
+    const attachments =
+      files.length > 0
+        ? await uploadCommentAttachmentsToCloudinary(files, id)
+        : [];
+
+    const commentedByName =
+      `${admin.firstName || ""} ${admin.lastName || ""}`.trim();
+
     const newComment = {
       issueId,
       commentedBy: admin._id,
       commentedByName,
       comment: trimmedComment,
       dateTimeCommented: new Date(),
+      attachments,
     };
 
-    const result = await db.collection("IssueComments").insertOne(newComment);
-    res.status(201).json({ ...newComment, _id: result.insertedId });
+    const result = await db
+      .collection("IssueComments")
+      .insertOne(newComment);
+
+    res.status(201).json({
+      ...newComment,
+      _id: result.insertedId,
+    });
   } catch (err) {
     console.error("Failed to add issue comment:", err);
-    res.status(500).json({ error: "Failed to add issue comment" });
+
+    res.status(500).json({
+      error: "Failed to add issue comment",
+    });
   }
 });
+// This function uploads admin comment attachments to Cloudinary.
+// Images are stored as image resources and PDFs are stored as raw resources.
+const uploadCommentAttachmentsToCloudinary = (files = [], issueId) =>
+  Promise.all(
+    files.map((file) => (
+      new Promise((resolve, reject) => {
+        const fileBase64 =
+          `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+
+        const resourceType = file.mimetype === "application/pdf"
+          ? "raw"
+          : "image";
+
+        cloudinary.uploader.upload(
+          fileBase64,
+          {
+            folder: `uon_campus_hazards/issues/${issueId}/admin-comments`,
+            resource_type: resourceType,
+            use_filename: true,
+            unique_filename: true,
+          },
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve({
+                url: result.secure_url,
+                publicId: result.public_id,
+                fileName: file.originalname,
+                fileType: file.mimetype,
+              });
+            }
+          }
+        );
+      })
+    ))
+  );
 
 /**
  * Get all issues in the system for admin management - This route is used to populate the "All Issues" section of the admin dashboard. It retrieves all issues from the MongoDB database and sorts them by dateTimeReported in descending order (most recent first).
