@@ -31,6 +31,7 @@ import {
 
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
+import NotificationBell from "../components/NotificationBell";
 
 import UONLogo from "../images/UONLogo White.png";
 
@@ -60,7 +61,10 @@ export default function ManageIssues() {
       const query = userData?.firebaseUid
         ? `?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
         : "";
-      const response = await fetch(`http://localhost:8000/api/issues${query}`); //get all issues from the backend
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues${query}`
+      ); // get all issues from the backend
 
       if (!response.ok) {
         throw new Error("Failed to fetch system issues");
@@ -130,7 +134,9 @@ export default function ManageIssues() {
 
     // Filter by priority
     if (priorityFilter !== "All") {
-      temp = temp.filter((issue) => issue.priority === priorityFilter);
+      temp = temp.filter(
+        (issue) => issue.priority === priorityFilter
+      );
     }
 
     // Filter by search term on title, description, campus, location, or reporter
@@ -173,7 +179,9 @@ export default function ManageIssues() {
   ]);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredIssues.length / issuesPerPage);
+  const totalPages = Math.ceil(
+    filteredIssues.length / issuesPerPage
+  );
 
   const visibleIssues = filteredIssues.slice(
     (currentPage - 1) * issuesPerPage,
@@ -202,9 +210,13 @@ export default function ManageIssues() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response
+          .json()
+          .catch(() => ({}));
 
-        throw new Error(errorData.error || "Failed to assign issue");
+        throw new Error(
+          errorData.error || "Failed to assign issue"
+        );
       }
 
       // Update the issues state with the updated issue data returned
@@ -239,9 +251,13 @@ export default function ManageIssues() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response
+          .json()
+          .catch(() => ({}));
 
-        throw new Error(errorData.error || "Failed to clear assignment");
+        throw new Error(
+          errorData.error || "Failed to clear assignment"
+        );
       }
 
       // Update the issues state with the updated issue data returned
@@ -337,11 +353,6 @@ export default function ManageIssues() {
     );
   }
 
-  const initials =
-    `${userData.firstName?.[0] ?? ""}${
-      userData.lastName?.[0] ?? ""
-    }`.toUpperCase();
-
   return (
     <div className="user-dashboard manage-issues-page">
 
@@ -357,86 +368,27 @@ export default function ManageIssues() {
           />
         </div>
 
-      <div>
-        <input
-          type="text"
-          placeholder="Search by Issue ID, title, description, campus, location or reporter..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+        <nav
+          className="user-dashboard-nav"
+          aria-label="Administrator navigation"
         >
-          <option value="All">All statuses</option>
-          <option value="Active">Active</option>
-          <option value="Open">Open</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Closed">Closed</option>
-        </select>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/admin/dashboard")}
+          >
+            <LayoutDashboard />
+            <span>Dashboard</span>
+          </button>
 
-        <select
-          value={assignmentFilter}
-          onChange={(e) => setAssignmentFilter(e.target.value)}
-        >
-          <option value="All">All assignments</option>
-          <option value="Unassigned">Unassigned</option>
-          <option value="Assigned to me">Assigned to me</option>
-          <option value="Assigned to others">Assigned to others</option>
-        </select>
-
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="Newest">Newest first</option>
-          <option value="Oldest">Oldest first</option>
-
-        </select>
-        <select
-          value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value)}
-        >
-          <option value="All">All Priorities</option>
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-          <option value="Critical">Critical</option>
-        </select>
-      </div>
-
-      {loading ? (
-        <p>Loading issues...</p>
-      ) : filteredIssues.length === 0 ? (
-        <p>No issues found.</p>
-      ) : (
-        <ul>
-
-          {/* List to display all issues in the system - these can be filtered/searched as needed */}
-          {visibleIssues.map((issue) => {
-            const isAssignedToMe =
-              userData && issue.assignedTo && String(issue.assignedTo) === String(userData._id);
-
-            return (
-              <li key={issue._id}>
-                <strong>{issue.title}</strong>
-                <div>{issue.location} · {issue.campus}</div>
-                <div>Status: {issue.status}</div>
-                <div>Priority: {issue.priority || "Not set"}</div>
-                <div>Reported by: {issue.reportedByName || "Unknown"}</div>
-                <div>
-                  Reported: {new Date(issue.dateTimeReported).toLocaleString("en-AU", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
-                </div>
-                <div>
-                  Assigned to: {issue.assignedToName || "Unassigned"}
-                </div>
-                {issue.unreadMessageCount > 0 && (
-                  <div>New messages: {issue.unreadMessageCount}</div>
-                )}
+          <button
+            type="button"
+            className="user-dashboard-nav-item active"
+            onClick={() => navigate("/admin/manageissues")}
+          >
+            <ClipboardList />
+            <span>Manage Issues</span>
+          </button>
 
           <button
             type="button"
@@ -478,9 +430,9 @@ export default function ManageIssues() {
               Welcome {userData.firstName || "Admin"}
             </span>
 
-            <div className="profile-avatar">
-              <span>{initials || "A"}</span>
-            </div>
+            <NotificationBell
+                          firebaseUid={userData?.firebaseUid}
+                        />
           </div>
         </header>
 
@@ -582,6 +534,10 @@ export default function ManageIssues() {
                   >
                     <option value="All">
                       All statuses
+                    </option>
+
+                    <option value="Active">
+                      Active
                     </option>
 
                     <option value="Open">
