@@ -177,6 +177,7 @@ export default function IssueDetails() {
   const [copiedId, setCopiedId] = useState(false);
   const [statusError, setStatusError] = useState("");
   const assignmentDropdownRef = useRef(null);
+  const chatMessagesRef = useRef(null);
 
   // State variables for admin assignment dropdown
   const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
@@ -308,7 +309,7 @@ export default function IssueDetails() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [adminDropdownOpen]);
-  
+
   const addComment = async (event) => {
     event.preventDefault();
 
@@ -687,6 +688,13 @@ export default function IssueDetails() {
     }
   };
 
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop =
+        chatMessagesRef.current.scrollHeight;
+    }
+  }, [issue?.issueMessages]);
+
   //Display info to the user about what the page is doing
   if (loading) {
     return (
@@ -779,7 +787,7 @@ export default function IssueDetails() {
               </div>
 
               <div className="issue-details-card-body">
-                <p>
+                <p style={{ textAlign: "center" }}>
                   {issue.title ||
                     "No title provided."}
                 </p>
@@ -844,51 +852,63 @@ export default function IssueDetails() {
 
               <div className="issue-details-card-body">
                 {issue.issueMessages?.length ? (
-                  <div className="issue-comments-list">
-                    {issue.issueMessages.map(
-                      (message) => (
+                  <div className="issue-chat" ref={chatMessagesRef}>
+                    {issue.issueMessages.map((message) => {
+                      const isAdminMessage =
+                        message.senderRole === "Admin" ||
+                        message.senderRole === "Administrator";
+
+                      if (message.isDeleted) {
+                        return (
+                          <div
+                            className="issue-chat-message issue-chat-message-deleted"
+                            key={message._id}
+                          >
+                            <div className="issue-chat-deleted-bubble">
+                              <p>
+                                This message was removed by an administrator.
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
                         <div
-                          className="issue-comment"
+                          className={`issue-chat-message ${isAdminMessage
+                            ? "issue-chat-message-right"
+                            : "issue-chat-message-left"
+                            }`}
                           key={message._id}
                         >
-                          {message.isDeleted ? (
-                            <p className="issue-comment-deleted">
-                              This message was removed by an administrator.
-                            </p>
-                          ) : (
-                            <div className="issue-message-content">
-                              <p>
-                                {message.messageText}
-                              </p>
+                          <div className="issue-chat-sender">
+                            {message.senderName}
+                          </div>
 
-                              {userData?.isAdmin && (
-                                <button
-                                  type="button"
-                                  className="issue-comment-delete-button"
-                                  onClick={() =>
-                                    handleDeleteMessage(
-                                      message._id
-                                    )
-                                  }
-                                  title="Remove message"
-                                  aria-label="Remove message"
-                                >
-                                  <X size={16} />
-                                </button>
-                              )}
-                            </div>
-                          )}
+                          <div className="issue-chat-bubble">
+                            <p>{message.messageText}</p>
 
-                          <small>
-                            {message.senderName} (
-                            {message.senderRole}) ·{" "}
-                            {new Date(
-                              message.createdAt
-                            ).toLocaleString("en-AU")}
+                            {userData?.isAdmin && (
+                              <button
+                                type="button"
+                                className="issue-comment-delete-button"
+                                onClick={() =>
+                                  handleDeleteMessage(message._id)
+                                }
+                                title="Remove message"
+                                aria-label="Remove message"
+                              >
+                                <X size={16} />
+                              </button>
+                            )}
+                          </div>
+
+                          <small className="issue-chat-timestamp">
+                            {new Date(message.createdAt).toLocaleString("en-AU")}
                           </small>
                         </div>
-                      )
-                    )}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="issue-details-empty-text">
@@ -902,11 +922,7 @@ export default function IssueDetails() {
                 >
                   <textarea
                     value={newMessage}
-                    onChange={(event) =>
-                      setNewMessage(
-                        event.target.value
-                      )
-                    }
+                    onChange={(event) => setNewMessage(event.target.value)}
                     maxLength={1000}
                     placeholder={
                       userData?.isAdmin
@@ -918,14 +934,9 @@ export default function IssueDetails() {
 
                   <button
                     type="submit"
-                    disabled={
-                      sendingMessage ||
-                      !newMessage.trim()
-                    }
+                    disabled={sendingMessage || !newMessage.trim()}
                   >
-                    {sendingMessage
-                      ? "Sending..."
-                      : "Send message"}
+                    {sendingMessage ? "Sending..." : "Send message"}
                   </button>
 
                   {messageError && (
@@ -1229,9 +1240,9 @@ export default function IssueDetails() {
                     </button>
 
                     {/* Assign to Admin */}
-                    <div 
-                    className="issue-assignment-dropdown-container"
-                    ref={assignmentDropdownRef}>
+                    <div
+                      className="issue-assignment-dropdown-container"
+                      ref={assignmentDropdownRef}>
                       <button
                         className="issue-assignment-dropdown-button"
                         type="button"
