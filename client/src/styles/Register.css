@@ -122,3 +122,28 @@
 .login-link a:hover {
     text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+    .register-container {
+        padding: 30px 20px;
+    }
+
+    .register-container h1 {
+        font-size: 2.5rem;
+    }
+
+    .register-page .register-container .form-group label {
+        font-size: 16px !important;
+    }
+
+    .register-page .register-container .form-group input,
+    .register-page .register-container .form-group select {
+        font-size: 15px !important;
+        padding: 12px 14px;
+    }
+
+    .register-button {
+        font-size: 1rem;
+        padding: 12px;
+    }
+}

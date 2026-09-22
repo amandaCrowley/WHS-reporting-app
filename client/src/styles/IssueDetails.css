@@ -16,6 +16,63 @@
     box-sizing: border-box;
 }
 
+@media (max-width: 760px) {
+    .mobile-page-layout .issues-details-container {
+        min-height: 0;
+        padding: 16px 12px 32px;
+        overflow-wrap: anywhere;
+    }
+
+    .issues-details-container .issue-comment-form textarea,
+    .issues-details-container .issue-meta-row select,
+    .issues-details-container .issue-assignment-search input {
+        font-size: 16px;
+    }
+
+    .issues-details-container .issue-meta-row select {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .issues-details-container .btn,
+    .issues-details-container .admin-action-button,
+    .issues-details-container .issue-comment-form button,
+    .issues-details-container .issue-assignment-dropdown-button {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .issues-details-container .issue-comment-form button {
+        width: 100%;
+    }
+
+    .issues-details-container .copy-issue-id-button,
+    .issues-details-container .issue-comment-delete-button {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+    }
+
+    .issues-details-container .issue-message-content {
+        min-height: 44px;
+        padding-right: 52px;
+    }
+
+    .issues-details-container .issue-assignment-dropdown-button span {
+        position: static;
+        transform: none;
+        white-space: normal;
+    }
+
+    .issues-details-container .issue-assignment-option {
+        min-height: 48px;
+    }
+
+    .issues-details-container .witness-pill {
+        max-width: 100%;
+    }
+}
+
 
 /* =========================================================
    MAIN PAGE CONTAINER

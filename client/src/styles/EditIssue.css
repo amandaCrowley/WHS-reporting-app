@@ -606,3 +606,93 @@ button {
         font-size: 28px;
     }
 }
+
+@media (max-width: 760px) {
+    .edit-issue-content {
+        padding: 16px 12px 32px;
+        box-sizing: border-box;
+    }
+
+    .edit-form,
+    .edit-left-column,
+    .edit-right-column {
+        gap: 16px;
+    }
+
+    .edit-form .form-section {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .edit-form .edit-section-title {
+        margin: -14px -14px 7px;
+        padding: 12px 14px;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .edit-form .form-section > label,
+    .edit-form .form-section > p {
+        font-size: 16px;
+    }
+
+    .edit-form .form-section input,
+    .edit-form .form-section select,
+    .edit-form .form-section textarea {
+        font-size: 16px;
+    }
+
+    .edit-form .form-section input,
+    .edit-form .form-section select {
+        height: 48px;
+    }
+
+    .edit-form .edit-textarea-wrap textarea {
+        padding-bottom: 28px;
+    }
+
+    .edit-form .edit-char-count {
+        font-size: 12px;
+    }
+
+    .edit-form .multiple-item {
+        padding: 6px;
+    }
+
+    .edit-form .add-btn {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px;
+        max-width: 44px;
+        flex-shrink: 0;
+    }
+
+    .edit-issue-shell .edit-image-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .edit-issue-shell .image-remove-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .edit-upload-zone {
+        min-height: 180px;
+        padding: 20px 12px;
+    }
+
+    .edit-upload-zone h3,
+    .edit-upload-zone p {
+        font-size: 14px;
+        overflow-wrap: anywhere;
+    }
+
+    .edit-form .btn,
+    .edit-form .edit-upload-button {
+        width: 100%;
+        min-width: 0;
+        min-height: 48px;
+        height: auto;
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+}

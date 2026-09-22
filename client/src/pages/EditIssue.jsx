@@ -18,6 +18,7 @@ import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import '../styles/EditIssue.css';
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
 
 export default function EditIssue() {
     const { issueId } = useParams(); // Get the issue ID from the URL
@@ -25,6 +26,7 @@ export default function EditIssue() {
     const { userData } = getUserData();
 
     //Local state variables
+    const [menuOpen, setMenuOpen] = useState(false);
     const [issue, setIssue] = useState(null);       // Stores the fetched issue details
     const [loading, setLoading] = useState(true);   // True while fetching the issue
     const [error, setError] = useState("");         // Stores any error messages
@@ -282,8 +284,10 @@ export default function EditIssue() {
     if (!issue) return <p>No issue found.</p>;
 
     return (
-        <div className="user-dashboard edit-issue-shell">
-            <aside className="user-dashboard-sidebar">
+        <div className={`user-dashboard edit-issue-shell mobile-page-layout${menuOpen ? " mobile-menu-open" : ""}`} onKeyDown={(event) => {
+            if (event.key === "Escape") setMenuOpen(false);
+        }}>
+            <aside className="user-dashboard-sidebar" id="edit-issue-navigation">
                 <div className="user-dashboard-logo">
                     <img src={UONLogo} alt="The University of Newcastle Australia" />
                 </div>
@@ -336,7 +340,7 @@ export default function EditIssue() {
 
             <main className="user-dashboard-main">
                 <header className="user-dashboard-header">
-                    <h1>Edit issue</h1>
+                    <MobilePageHeading title="Edit issue" menuOpen={menuOpen} setMenuOpen={setMenuOpen} sidebarId="edit-issue-navigation" />
                     <div className="user-dashboard-header-user">
                         <span>Welcome, {displayName}</span>
                         <NotificationBell firebaseUid={userData?.firebaseUid} />

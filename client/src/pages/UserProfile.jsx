@@ -27,9 +27,11 @@ import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/UserProfile.css";
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
 
 export default function UserProfile() {
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // State variables
   const { userData, loading, error, updateUser } = getUserData();
@@ -180,8 +182,10 @@ export default function UserProfile() {
   };
 
   return (
-    <div className="user-dashboard">
-      <aside className="user-dashboard-sidebar">
+    <div className={`user-dashboard mobile-page-layout${menuOpen ? " mobile-menu-open" : ""}`} onKeyDown={(event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    }}>
+      <aside className="user-dashboard-sidebar" id="profile-navigation">
         <div className="user-dashboard-logo">
           <img
             src={UONLogo}
@@ -220,6 +224,7 @@ export default function UserProfile() {
           <button
             type="button"
             className="user-dashboard-nav-item active"
+            onClick={() => setMenuOpen(false)}
           >
             <UserRound />
             <span>Profile</span>
@@ -240,7 +245,7 @@ export default function UserProfile() {
 
       <main className="user-dashboard-main">
         <header className="user-dashboard-header">
-          <h1>Edit your information</h1>
+          <MobilePageHeading title="Edit your information" menuOpen={menuOpen} setMenuOpen={setMenuOpen} sidebarId="profile-navigation" />
 
           <div className="user-dashboard-header-user">
             <span>Welcome {displayName}</span>

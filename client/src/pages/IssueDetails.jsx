@@ -28,13 +28,14 @@ import {
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import "../styles/IssueDetails.css";
 
 function Sidebar({ userData, navigate, logout }) {
   return (
-    <aside className="user-dashboard-sidebar">
+    <aside className="user-dashboard-sidebar" id="issue-details-navigation">
       <div className="user-dashboard-logo">
         <img
           src={UONLogo}
@@ -132,8 +133,12 @@ function PageLayout({
   logout,
   displayName,
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <div className="user-dashboard">
+    <div className={`user-dashboard mobile-page-layout${menuOpen ? " mobile-menu-open" : ""}`} onKeyDown={(event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    }}>
       <Sidebar
         userData={userData}
         navigate={navigate}
@@ -142,7 +147,7 @@ function PageLayout({
 
       <div className="user-dashboard-main">
         <header className="user-dashboard-header">
-          <h1>Issue details</h1>
+          <MobilePageHeading title="Issue details" menuOpen={menuOpen} setMenuOpen={setMenuOpen} sidebarId="issue-details-navigation" />
 
           <div className="user-dashboard-header-user">
             <span>Welcome {displayName}</span>

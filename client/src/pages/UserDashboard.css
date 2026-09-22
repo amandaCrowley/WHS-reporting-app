@@ -772,6 +772,15 @@ body {
   border-bottom: 1px solid #edf0f4;
 }
 
+.user-dashboard-issue-row {
+  cursor: pointer;
+}
+
+.user-dashboard-issue-row:hover,
+.user-dashboard-issue-row:focus-within {
+  background: #f6f8fb;
+}
+
 /* =========================
      LOADING / ERROR
    ========================= */
@@ -891,6 +900,10 @@ body {
 }
 
 @media (max-width: 760px) {
+  .user-dashboard-table .user-dashboard-view-column {
+    display: none;
+  }
+
   .user-dashboard {
     display: block;
   }
@@ -976,5 +989,100 @@ body {
   .dashboard-notifications-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+.user-dashboard-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.user-dashboard-menu-toggle {
+  display: none;
+}
+
+/* Dashboard mobile navigation: expand it from the compact header. */
+@media (max-width: 760px) {
+  .user-dashboard-home {
+    position: relative;
+    display: block;
+  }
+
+  .user-dashboard-home .user-dashboard-sidebar {
+    display: none;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    z-index: 50;
+    padding: 12px;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 12px 24px rgba(0, 24, 58, 0.2);
+  }
+
+  .user-dashboard-home.mobile-menu-open .user-dashboard-sidebar {
+    display: flex;
+  }
+
+  .user-dashboard-home .user-dashboard-logo {
+    display: none;
+  }
+
+  .user-dashboard-home .user-dashboard-nav-item,
+  .user-dashboard-home .user-dashboard-logout {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  .user-dashboard-home .user-dashboard-logout-section {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .user-dashboard-home .user-dashboard-header {
+    height: 72px;
+    min-height: 72px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .user-dashboard-home .user-dashboard-header h1 {
+    font-size: clamp(18px, 4.8vw, 22px);
+  }
+
+  .user-dashboard-home .user-dashboard-header-user {
+    flex-shrink: 0;
+  }
+
+  .user-dashboard-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #002b5c;
+    cursor: pointer;
+  }
+
+  .user-dashboard-menu-toggle:focus-visible {
+    outline: 3px solid #0867f2;
+    outline-offset: 3px;
+  }
+
+  .user-dashboard-home .user-dashboard-content {
+    padding: 16px 12px 32px;
   }
 }

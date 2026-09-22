@@ -157,3 +157,36 @@
     color: #172554; 
 }
 
+@media (max-width: 480px) {
+    .login-page {
+        min-height: 100dvh;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .login-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 30px 24px;
+        box-sizing: border-box;
+    }
+
+    .login-page h1 {
+        font-size: 2rem;
+    }
+
+    .login-page .form-group label {
+        font-size: 16px;
+    }
+
+    .login-page .form-group input {
+        font-size: 15px;
+    }
+
+    .login-button {
+        font-size: 1rem;
+        padding: 12px 18px;
+    }
+}
+

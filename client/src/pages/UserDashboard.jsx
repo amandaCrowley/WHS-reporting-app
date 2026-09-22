@@ -29,7 +29,7 @@
  * Author/s: Grish Gautam
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -42,6 +42,8 @@ import {
   Clock3,
   Check,
   Plus,
+  Menu,
+  X,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
@@ -58,6 +60,21 @@ export default function UserDashboard() {
   const [issues, setIssues] = useState([]);
   const [issuesLoading, setIssuesLoading] = useState(true);
   const [issuesError, setIssuesError] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const navigationRef = useRef(null);
+
+  /* Mobile menu focus management: When the mobile menu is opened, focus should be set to the first navigation button.*/
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    menuButtonRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      navigationRef.current?.querySelector("nav button")?.focus();
+    }
+  }, [mobileMenuOpen]);
 
   const navigate = useNavigate();
   const logout = userLogout();
@@ -139,6 +156,12 @@ export default function UserDashboard() {
 
   const recentIssues = sortedIssues.slice(0, 5);
 
+  const openIssueDetails = (issueId) => {
+    navigate(`/issue/${issueId}`, {
+      state: { from: "dashboard" },
+    });
+  };
+
   if (loading) {
     return <p className="user-dashboard-message">Loading user data...</p>;
   }
@@ -160,12 +183,19 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className="user-dashboard">
+    <div
+      className={`user-dashboard user-dashboard-home${mobileMenuOpen ? " mobile-menu-open" : ""}`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && mobileMenuOpen) {
+          closeMobileMenu();
+        }
+      }}
+    >
       {/* =========================
           LEFT SIDEBAR
       ========================== */}
 
-      <aside className="user-dashboard-sidebar">
+      <aside ref={navigationRef} className="user-dashboard-sidebar" id="dashboard-navigation">
         <div className="user-dashboard-logo">
           <img
             src={UONLogo}
@@ -173,11 +203,12 @@ export default function UserDashboard() {
           />
         </div>
 
-        <nav className="user-dashboard-nav">
+        <nav className="user-dashboard-nav" aria-label="User navigation">
           <button
             type="button"
             className="user-dashboard-nav-item active"
-            onClick={() => navigate("/userdashboard")}
+            aria-current="page"
+            onClick={closeMobileMenu}
           >
             <LayoutDashboard />
             <span>Dashboard</span>
@@ -231,7 +262,20 @@ export default function UserDashboard() {
         {/* Top header */}
 
         <header className="user-dashboard-header">
-          <h1>User dashboard</h1>
+          <div className="user-dashboard-heading-row">
+            <button
+              ref={menuButtonRef}
+              type="button"
+              className="user-dashboard-menu-toggle"
+              aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="dashboard-navigation"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+            >
+              {mobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            </button>
+            <h1>User dashboard</h1>
+          </div>
 
           <div className="user-dashboard-header-user">
 
@@ -402,13 +446,17 @@ export default function UserDashboard() {
                       <th>Location</th>
                       <th>Status</th>
                       <th>Date reported</th>
-                      <th>View</th>
+                      <th className="user-dashboard-view-column">View</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     {recentIssues.map((issue) => (
-                      <tr key={issue._id}>
+                      <tr
+                        key={issue._id}
+                        className="user-dashboard-issue-row"
+                        onClick={() => openIssueDetails(issue._id)}
+                      >
                         <td>{issue.title || "-"}</td>
                         <td>{issue.location || "-"}</td>
                         <td>{issue.status || "-"}</td>
@@ -419,15 +467,15 @@ export default function UserDashboard() {
                             ).toLocaleDateString("en-AU")
                             : "-"}
                         </td>
-                        <td>
+                        <td className="user-dashboard-view-column">
                           <button
                             type="button"
                             className="user-dashboard-view-button"
-                            onClick={() =>
-                              navigate(`/issue/${issue._id}`, {
-                                state: { from: "dashboard" },
-                              })
-                            }
+                            aria-label={`View details for ${issue.title || "issue"}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openIssueDetails(issue._id);
+                            }}
                           >
                             View
                           </button>

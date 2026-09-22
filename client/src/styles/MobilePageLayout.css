@@ -1,0 +1,99 @@
+.mobile-page-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mobile-page-menu-toggle {
+  display: none;
+}
+
+/* Match the compact, expandable navigation on My Issues. */
+@media (max-width: 760px) {
+  .user-dashboard.mobile-page-layout {
+    position: relative;
+    display: block;
+    min-height: 100dvh;
+  }
+
+  .mobile-page-layout .user-dashboard-sidebar {
+    display: none;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    z-index: 50;
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 12px 24px rgba(0, 24, 58, 0.2);
+  }
+
+  .mobile-page-layout.mobile-menu-open .user-dashboard-sidebar {
+    display: flex;
+  }
+
+  .mobile-page-layout .user-dashboard-logo {
+    display: none;
+  }
+
+  .mobile-page-layout .user-dashboard-nav-item,
+  .mobile-page-layout .user-dashboard-logout {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  .mobile-page-layout .user-dashboard-logout-section {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .mobile-page-layout .user-dashboard-header {
+    height: 72px;
+    min-height: 72px;
+    padding: 0 16px;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  .mobile-page-layout .user-dashboard-header h1 {
+    font-size: clamp(18px, 4.8vw, 22px);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-page-layout .user-dashboard-header-user {
+    flex-shrink: 0;
+  }
+
+  .mobile-page-layout .user-dashboard-header-user > span {
+    display: none;
+  }
+
+  .mobile-page-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #002b5c;
+    cursor: pointer;
+  }
+
+  .mobile-page-menu-toggle:focus-visible {
+    outline: 3px solid #0867f2;
+    outline-offset: 3px;
+  }
+}

@@ -11,7 +11,7 @@
 
 import "../styles/UserMyIssues.css";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 
@@ -33,6 +33,8 @@ import {
   Building2,
   ClipboardList,
   MessageCircle,
+  Menu,
+  X,
 } from "lucide-react";
 
 export default function UserMyIssues() {
@@ -51,6 +53,22 @@ export default function UserMyIssues() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortOrder, setSortOrder] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const navigationRef = useRef(null);
+
+  /* Mobile menu focus management: When the mobile menu is opened, focus should be set to the first navigation button. 
+  When the mobile menu is closed, focus should return to the menu toggle button. */
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      navigationRef.current?.querySelector("nav button")?.focus();
+    }
+  }, [mobileMenuOpen]);
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+    menuButtonRef.current?.focus();
+  };
 
   const ISSUES_PER_PAGE = 5;
   const sortIssuesByDate = (issueList) => {
@@ -211,13 +229,20 @@ export default function UserMyIssues() {
     `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
   return (
-    <div className="user-dashboard">
+    <div
+      className={`user-dashboard user-my-issues-layout${mobileMenuOpen ? " mobile-menu-open" : ""}`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && mobileMenuOpen) {
+          closeMobileMenu();
+        }
+      }}
+    >
 
       {/* =========================
           SHARED DASHBOARD SIDEBAR
       ========================== */}
 
-      <aside className="user-dashboard-sidebar">
+      <aside ref={navigationRef} className="user-dashboard-sidebar" id="my-issues-navigation">
 
         <div className="user-dashboard-logo">
           <img
@@ -226,7 +251,7 @@ export default function UserMyIssues() {
           />
         </div>
 
-        <nav className="user-dashboard-nav">
+        <nav className="user-dashboard-nav" aria-label="User navigation">
 
           <button
             type="button"
@@ -249,6 +274,8 @@ export default function UserMyIssues() {
           <button
             type="button"
             className="user-dashboard-nav-item active"
+            aria-current="page"
+            onClick={closeMobileMenu}
           >
             <CircleAlert />
             <span>My Issues</span>
@@ -290,14 +317,27 @@ export default function UserMyIssues() {
 
         <header className="user-dashboard-header">
 
-          <h1>My issues</h1>
+          <div className="user-my-issues-heading-row">
+            <button
+              ref={menuButtonRef}
+              type="button"
+              className="user-my-issues-menu-toggle"
+              aria-label={mobileMenuOpen ? "Close navigation" : "Open navigation"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="my-issues-navigation"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+            >
+              {mobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            </button>
+            <h1>My issues</h1>
+          </div>
 
           <div className="user-dashboard-header-user">
             <span>
               Welcome {displayName}
             </span>
 
-            <NotificationBell firebaseUid={userData.firebaseUid} />
+            <NotificationBell firebaseUid={userData?.firebaseUid} />
           </div>
 
         </header>
@@ -327,7 +367,8 @@ export default function UserMyIssues() {
 
                   <input
                     type="text"
-                    placeholder="Search by issue ID, title, description, campus or location"
+                    placeholder="Search issues…"
+                    aria-label="Search by issue ID, title, description, campus or location"
                     value={search}
                     onChange={(e) =>
                       setSearch(e.target.value)

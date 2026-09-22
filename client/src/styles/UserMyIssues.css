@@ -664,6 +664,17 @@ body,
    RESPONSIVE
 ========================= */
 
+.user-my-issues-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.user-my-issues-menu-toggle {
+  display: none;
+}
+
 @media (max-width: 1100px) {
   .user-my-issues-controls {
     grid-template-columns: 1fr;
@@ -721,5 +732,117 @@ body,
   .user-my-issues-pagination {
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+}
+
+/* Compact mobile header with an expandable navigation panel. */
+@media (max-width: 760px) {
+  .user-my-issues-layout {
+    position: relative;
+    display: block;
+  }
+
+  .user-my-issues-layout .user-dashboard-sidebar {
+    display: none;
+    position: absolute;
+    top: 72px;
+    left: 0;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 0;
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    z-index: 50;
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 12px 24px rgba(0, 24, 58, 0.2);
+  }
+
+  .user-my-issues-layout.mobile-menu-open .user-dashboard-sidebar {
+    display: flex;
+  }
+
+  .user-my-issues-layout .user-dashboard-logo {
+    display: none;
+  }
+
+  .user-my-issues-layout .user-dashboard-nav-item,
+  .user-my-issues-layout .user-dashboard-logout {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  .user-my-issues-layout .user-dashboard-logout-section {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .user-my-issues-layout .user-dashboard-header {
+    height: 72px;
+    min-height: 72px;
+    padding: 0 16px;
+    gap: 12px;
+    box-sizing: border-box;
+  }
+
+  .user-my-issues-layout .user-dashboard-header h1 {
+    font-size: 22px;
+  }
+
+  .user-my-issues-layout .user-dashboard-header-user > span {
+    display: none;
+  }
+
+  .user-my-issues-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #002b5c;
+    cursor: pointer;
+  }
+
+  .user-my-issues-menu-toggle:focus-visible {
+    outline: 3px solid #0867f2;
+    outline-offset: 3px;
+  }
+
+  .user-my-issues-content {
+    padding: 16px 12px 32px;
+  }
+
+  .user-my-issues-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 10px;
+    margin-bottom: 20px;
+  }
+
+  .user-my-issues-search-group {
+    grid-column: 1 / -1;
+  }
+
+  .user-my-issues-filter-group {
+    min-width: 0;
+    text-align: left;
+  }
+
+  .user-my-issues-search-box input,
+  .user-my-issues-select-wrap select {
+    min-width: 0;
+    font-size: 16px;
+  }
+
+  .user-my-issues-select-wrap select {
+    padding: 0 10px;
+    appearance: auto;
   }
 }

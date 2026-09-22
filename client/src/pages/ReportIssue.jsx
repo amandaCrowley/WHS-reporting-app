@@ -19,6 +19,7 @@ import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 import UONLogo from "../images/UONLogo White.png";
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
 
 import {
   LayoutDashboard,
@@ -37,6 +38,7 @@ export default function ReportIssue() {
   const logout = userLogout();
   const { userData, loading, error } = getUserData();
   const fileInputRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
@@ -638,12 +640,17 @@ export default function ReportIssue() {
   }
 
   return (
-    <div className="report-issue-page">
+    <div
+      className={`report-issue-page mobile-page-layout${menuOpen ? " mobile-menu-open" : ""}`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setMenuOpen(false);
+      }}
+    >
       {/* =========================
           SHARED STUDENT SIDEBAR
       ========================== */}
 
-      <aside className="user-dashboard-sidebar">
+      <aside className="user-dashboard-sidebar" id="report-issue-navigation">
         <div className="user-dashboard-logo">
           <img
             src={UONLogo}
@@ -670,6 +677,7 @@ export default function ReportIssue() {
           <button
             type="button"
             className="user-dashboard-nav-item active"
+            onClick={() => setMenuOpen(false)}
           >
             <FilePlus2 />
             <span>
@@ -727,10 +735,13 @@ export default function ReportIssue() {
       ========================== */}
 
       <main className="report-issue-main">
-        <header className="report-issue-topbar">
-          <h1>
-            Report an issue
-          </h1>
+        <header className="report-issue-topbar user-dashboard-header">
+          <MobilePageHeading
+            title="Report an issue"
+            menuOpen={menuOpen}
+            setMenuOpen={setMenuOpen}
+            sidebarId="report-issue-navigation"
+          />
 
           <div className="report-issue-user">
             <span>
@@ -1072,13 +1083,14 @@ export default function ReportIssue() {
                   </div>
 
                   <div className="report-section-body">
-                    <label className="report-witness-label">
+                    <label className="report-witness-label" htmlFor="report-witness-name">
                       Add Witness
                       Name
                     </label>
 
                     <div className="report-witness-row">
                       <input
+                        id="report-witness-name"
                         type="text"
                         placeholder="Add witness names (Press Enter to add)"
                         value={
