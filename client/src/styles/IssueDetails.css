@@ -178,6 +178,7 @@
     color: #334155;
     font-size: 14px;
     line-height: 1.65;
+    text-align: left;
 }
 
 .issue-description-card .issue-details-card-body {
@@ -233,14 +234,14 @@
     border-bottom: none;
 }
 
-.issue-meta-row>span {
+.issue-meta-row > span {
     flex: 0 0 auto;
     color: #64748b;
     font-size: 13px;
     font-weight: 600;
 }
 
-.issue-meta-row>strong {
+.issue-meta-row > strong {
     min-width: 0;
     color: #334155;
     font-size: 13px;
@@ -356,8 +357,199 @@
 }
 
 
+/* =========================
+   ISSUE MESSAGE CHAT
+   ========================= */
+
+.issue-chat {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-height: 400px;
+    margin-bottom: 20px;
+    padding: 8px 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.issue-chat-message {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+}
+
+.issue-chat-message-left {
+    align-items: flex-start;
+}
+
+.issue-chat-message-right {
+    align-items: flex-end;
+}
+
+.issue-chat-sender {
+    max-width: 65%;
+    margin: 0 12px 5px;
+    color: #44506a;
+    font-size: 13px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.issue-chat-bubble {
+    position: relative;
+    max-width: 65%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: #f1f4f8;
+    color: #07132f;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.issue-chat-bubble p {
+    margin: 0;
+    color: inherit;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.issue-chat-message-right .issue-chat-bubble {
+    background: #4960df;
+    color: #ffffff;
+}
+
+.issue-chat-timestamp {
+    max-width: 65%;
+    margin: 5px 12px 0;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.issue-chat-message-right .issue-chat-timestamp {
+    text-align: right;
+}
+
+
+/* Delete button */
+
+.issue-chat-bubble .issue-comment-delete-button {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.issue-chat-bubble:hover .issue-comment-delete-button,
+.issue-chat-bubble .issue-comment-delete-button:focus {
+    opacity: 1;
+}
+
+.issue-chat-bubble .issue-comment-delete-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.issue-chat-bubble:has(.issue-comment-delete-button) p {
+    padding-right: 32px;
+}
+
+
+/* Deleted messages */
+
+.issue-chat-message-deleted {
+    align-items: flex-start;
+}
+
+.issue-chat-deleted-bubble {
+    max-width: 65%;
+    padding: 8px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 13px;
+    font-style: italic;
+    text-align: left;
+}
+
+.issue-chat-deleted-bubble p {
+    margin: 0;
+}
+
+
+/* =========================
+   CHAT RESPONSIVE DESIGN
+   ========================= */
+
+@media (max-width: 768px) {
+    .issue-chat {
+        max-height: 360px;
+        padding: 6px 2px;
+    }
+
+    .issue-chat-bubble,
+    .issue-chat-sender,
+    .issue-chat-timestamp,
+    .issue-chat-deleted-bubble {
+        max-width: 80%;
+    }
+}
+
+@media (max-width: 480px) {
+    .issue-chat {
+        max-height: 320px;
+        gap: 12px;
+        padding: 4px 2px;
+    }
+
+    .issue-chat-bubble {
+        max-width: 88%;
+        padding: 10px 13px;
+        border-radius: 14px;
+    }
+
+    .issue-chat-bubble p {
+        font-size: 13px;
+    }
+
+    .issue-chat-sender {
+        max-width: 88%;
+        margin-left: 8px;
+        margin-right: 8px;
+        font-size: 12px;
+    }
+
+    .issue-chat-timestamp {
+        max-width: 88%;
+        margin-left: 8px;
+        margin-right: 8px;
+        font-size: 10px;
+    }
+
+    .issue-chat-deleted-bubble {
+        max-width: 88%;
+        font-size: 12px;
+    }
+}
+
+
 /* =========================================================
-   MESSAGES / COMMENTS
+   COMMENT / MESSAGE FORM
    ========================================================= */
 
 .issue-comments-list {
@@ -365,14 +557,17 @@
     flex-direction: column;
     gap: 12px;
     margin-bottom: 20px;
+    text-align: left;
 }
 
 .issue-comment {
     position: relative;
+    width: 100%;
     padding: 14px 16px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     background: #f8fafc;
+    text-align: left;
 }
 
 .issue-comment p {
@@ -380,6 +575,7 @@
     color: #334155;
     font-size: 14px;
     line-height: 1.55;
+    text-align: left;
 }
 
 .issue-comment small {
@@ -387,45 +583,8 @@
     color: #64748b;
     font-size: 11px;
     line-height: 1.4;
+    text-align: left;
 }
-
-.issue-message-content {
-    position: relative;
-    padding-right: 32px;
-}
-
-.issue-comment-deleted {
-    margin: 0 0 8px;
-    color: #64748b !important;
-    font-style: italic;
-}
-
-.issue-comment-delete-button {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: 1px solid #fecaca;
-    border-radius: 6px;
-    background: #ffffff;
-    color: #dc2626;
-    cursor: pointer;
-}
-
-.issue-comment-delete-button:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
-}
-
-
-/* =========================================================
-   COMMENT / MESSAGE FORM
-   ========================================================= */
 
 .issue-comment-form {
     display: flex;
@@ -435,7 +594,7 @@
 
 .issue-comment-form textarea {
     width: 100%;
-    min-height: 100px;
+    min-height: 70px;
     padding: 11px 12px;
     resize: vertical;
     border: 1px solid #cbd5e1;
@@ -457,32 +616,226 @@
     color: #94a3b8;
 }
 
-.issue-comment-form button {
-    align-self: flex-start;
-    padding: 9px 16px;
-    border: none;
-    border-radius: 7px;
-    background: #4960df;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-
-.issue-comment-form button:hover:not(:disabled) {
-    background: #3f54c7;
-}
-
-.issue-comment-form button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 .issue-comment-error {
     margin: 0 !important;
     color: #b91c1c !important;
     font-size: 12px !important;
+}
+
+
+/* =========================================================
+   ADMIN COMMENT ATTACHMENTS
+   ========================================================= */
+
+.issue-comment-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 0 14px;
+}
+
+.issue-comment-image-link {
+    display: block;
+    width: 180px;
+    max-width: 100%;
+}
+
+.issue-comment-image {
+    display: block;
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    background: #ffffff;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.issue-comment-image-link:hover .issue-comment-image {
+    opacity: 0.9;
+    transform: scale(1.01);
+}
+
+.issue-comment-pdf {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #002b5c;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.issue-comment-pdf span:first-child {
+    flex-shrink: 0;
+    padding: 4px 6px;
+    border-radius: 4px;
+    background: #eef2f7;
+    color: #002b5c;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.issue-comment-pdf:hover {
+    border-color: #0057e7;
+    background: #f8fbff;
+}
+
+
+/* =========================================================
+   ADMIN COMMENT ATTACHMENT UPLOAD
+   ========================================================= */
+
+.issue-comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.issue-comment-upload {
+    display: flex;
+    align-items: center;
+}
+
+
+/*
+ * Keep Add attachments and Add comment exactly
+ * the same height, padding and typography.
+ */
+
+.issue-comment-actions .issue-comment-upload-label,
+.issue-comment-actions > button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 38px;
+    min-height: 38px;
+    padding: 9px 16px;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    white-space: nowrap;
+}
+
+
+/* Add attachments */
+
+.issue-comment-upload-label {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #002b5c;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.issue-comment-upload-label:hover {
+    border-color: #0057e7;
+    background: #eef4ff;
+}
+
+.issue-comment-upload input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* Add comment */
+
+.issue-comment-actions > button {
+    border: none;
+    background: #4960df;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.issue-comment-actions > button:hover:not(:disabled) {
+    background: #3f54c7;
+}
+
+.issue-comment-actions > button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* Attachment help text */
+
+.issue-comment-upload-help {
+    display: block;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.issue-comment-upload small {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+
+/* Selected files before submitting */
+
+.issue-comment-selected-files {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.issue-comment-selected-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 13px;
+}
+
+.issue-comment-selected-file span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.issue-comment-selected-file button {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.issue-comment-selected-file button:hover {
+    background: #e2e8f0;
+    color: #b42318;
 }
 
 
@@ -664,7 +1017,7 @@
     background: #ffffff;
 }
 
-.issue-assignment-search>svg {
+.issue-assignment-search > svg {
     flex: 0 0 auto;
     color: #64748b;
 }
@@ -685,7 +1038,7 @@
     color: #94a3b8;
 }
 
-.issue-assignment-search>button {
+.issue-assignment-search > button {
     flex: 0 0 auto;
     padding: 4px 6px;
     border: none;
@@ -697,7 +1050,7 @@
     cursor: pointer;
 }
 
-.issue-assignment-search>button:hover {
+.issue-assignment-search > button:hover {
     text-decoration: underline;
 }
 
@@ -741,7 +1094,7 @@
     cursor: default;
 }
 
-.issue-assignment-option>span {
+.issue-assignment-option > span {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -868,7 +1221,6 @@
    ========================================================= */
 
 @media (max-width: 1000px) {
-
     .issue-details-main-layout {
         grid-template-columns: 1fr;
     }
@@ -877,12 +1229,26 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: start;
+        width: 100%;
+    }
+
+    .issue-details-side-column .issue-details-card,
+    .issue-assignment-card {
+        width: 100%;
+        max-width: none;
+    }
+
+    .issue-assignment-actions {
+        width: 100%;
+    }
+
+    .issue-assignment-dropdown {
+        min-width: 0;
     }
 }
 
 
 @media (max-width: 768px) {
-
     .issues-details-container {
         padding: 24px 18px 36px;
     }
@@ -903,6 +1269,13 @@
     .issue-details-side-column {
         display: flex;
         flex-direction: column;
+        width: 100%;
+    }
+
+    .issue-details-side-column .issue-details-card,
+    .issue-assignment-card {
+        width: 100%;
+        max-width: none;
     }
 
     .issue-details-card-body {
@@ -915,7 +1288,7 @@
         gap: 5px;
     }
 
-    .issue-meta-row>strong {
+    .issue-meta-row > strong {
         text-align: left;
     }
 
@@ -937,10 +1310,7 @@
 
     .issue-assignment-actions {
         gap: 8px;
-    }
-
-    .issue-assignment-dropdown {
-        min-width: 0;
+        width: 100%;
     }
 
     .issue-details-actions {
@@ -955,7 +1325,6 @@
 
 
 @media (max-width: 480px) {
-
     .issues-details-container {
         padding: 18px 12px 30px;
     }
@@ -980,7 +1349,35 @@
         height: 180px;
     }
 
-    .issue-comment-form button {
+    .issue-comment-image-link {
+        width: 100%;
+    }
+
+    .issue-comment-image {
+        height: 160px;
+    }
+
+    .issue-comment-pdf {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /*
+     * Stack the attachment and comment buttons on
+     * smaller screens while keeping their dimensions
+     * consistent with each other.
+     */
+    .issue-comment-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .issue-comment-upload {
+        width: 100%;
+    }
+
+    .issue-comment-actions .issue-comment-upload-label,
+    .issue-comment-actions > button {
         width: 100%;
     }
 

@@ -176,12 +176,14 @@ export default function IssueDetails() {
   const [newComment, setNewComment] = useState("");
   const [commentError, setCommentError] = useState("");
   const [addingComment, setAddingComment] = useState(false);
+  const [commentAttachments, setCommentAttachments] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const [statusError, setStatusError] = useState("");
   const assignmentDropdownRef = useRef(null);
+  const chatMessagesRef = useRef(null);
 
   // State variables for admin assignment dropdown
   const [adminDropdownOpen, setAdminDropdownOpen] = useState(false);
@@ -313,7 +315,7 @@ export default function IssueDetails() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [adminDropdownOpen]);
-  
+
   const addComment = async (event) => {
     event.preventDefault();
 
@@ -323,26 +325,38 @@ export default function IssueDetails() {
       return;
     }
 
+    if (commentAttachments.length > 5) {
+      setCommentError("You can attach a maximum of 5 files.");
+      return;
+    }
+
     try {
       setAddingComment(true);
       setCommentError("");
+
+      const formData = new FormData();
+
+      formData.append("firebaseUid", userData.firebaseUid);
+      formData.append("comment", comment);
+
+      commentAttachments.forEach((file) => {
+        formData.append("attachments", file);
+      });
 
       const response = await fetch(
         `http://localhost:8000/api/issues/${issueId}/comments`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firebaseUid: userData.firebaseUid,
-            comment,
-          }),
+          body: formData,
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to add comment");
+        throw new Error(
+          data.error || "Failed to add comment"
+        );
       }
 
       setIssue((previousIssue) => ({
@@ -354,11 +368,76 @@ export default function IssueDetails() {
       }));
 
       setNewComment("");
+      setCommentAttachments([]);
     } catch (err) {
       setCommentError(err.message);
     } finally {
       setAddingComment(false);
     }
+  };
+
+  const handleCommentAttachments = (event) => {
+    const selectedFiles = Array.from(event.target.files || []);
+
+    if (selectedFiles.length === 0) {
+      return;
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "application/pdf",
+    ];
+
+    const invalidFile = selectedFiles.find(
+      (file) => !allowedTypes.includes(file.type)
+    );
+
+    if (invalidFile) {
+      setCommentError(
+        "Only JPEG, PNG, GIF, WebP images and PDF files can be attached."
+      );
+      event.target.value = "";
+      return;
+    }
+
+    const oversizedFile = selectedFiles.find(
+      (file) => file.size > 5 * 1024 * 1024
+    );
+
+    if (oversizedFile) {
+      setCommentError(
+        `"${oversizedFile.name}" exceeds the 5 MB file size limit.`
+      );
+      event.target.value = "";
+      return;
+    }
+
+    if (commentAttachments.length + selectedFiles.length > 5) {
+      setCommentError(
+        "You can attach a maximum of 5 files to each comment."
+      );
+      event.target.value = "";
+      return;
+    }
+
+    setCommentAttachments((previousFiles) => [
+      ...previousFiles,
+      ...selectedFiles,
+    ]);
+
+    setCommentError("");
+    event.target.value = "";
+  };
+
+  const removeCommentAttachment = (indexToRemove) => {
+    setCommentAttachments((previousFiles) =>
+      previousFiles.filter(
+        (_, index) => index !== indexToRemove
+      )
+    );
   };
 
   //Helper method to assign the issue to the current user/admin. This will update the assignedTo field in the mongoDB database for that issue to the current user's id.
@@ -692,6 +771,37 @@ export default function IssueDetails() {
     }
   };
 
+  const downloadCommentAttachment = async (attachment) => {
+    try {
+      const response = await fetch(attachment.url);
+
+      if (!response.ok) {
+        throw new Error("Failed to download attachment.");
+      }
+
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = attachment.fileName || "attachment";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Failed to download attachment:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop =
+        chatMessagesRef.current.scrollHeight;
+    }
+  }, [issue?.issueMessages]);
+
   //Display info to the user about what the page is doing
   if (loading) {
     return (
@@ -784,7 +894,7 @@ export default function IssueDetails() {
               </div>
 
               <div className="issue-details-card-body">
-                <p>
+                <p style={{ textAlign: "center" }}>
                   {issue.title ||
                     "No title provided."}
                 </p>
@@ -849,51 +959,63 @@ export default function IssueDetails() {
 
               <div className="issue-details-card-body">
                 {issue.issueMessages?.length ? (
-                  <div className="issue-comments-list">
-                    {issue.issueMessages.map(
-                      (message) => (
+                  <div className="issue-chat" ref={chatMessagesRef}>
+                    {issue.issueMessages.map((message) => {
+                      const isAdminMessage =
+                        message.senderRole === "Admin" ||
+                        message.senderRole === "Administrator";
+
+                      if (message.isDeleted) {
+                        return (
+                          <div
+                            className="issue-chat-message issue-chat-message-deleted"
+                            key={message._id}
+                          >
+                            <div className="issue-chat-deleted-bubble">
+                              <p>
+                                This message was removed by an administrator.
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
                         <div
-                          className="issue-comment"
+                          className={`issue-chat-message ${isAdminMessage
+                            ? "issue-chat-message-right"
+                            : "issue-chat-message-left"
+                            }`}
                           key={message._id}
                         >
-                          {message.isDeleted ? (
-                            <p className="issue-comment-deleted">
-                              This message was removed by an administrator.
-                            </p>
-                          ) : (
-                            <div className="issue-message-content">
-                              <p>
-                                {message.messageText}
-                              </p>
+                          <div className="issue-chat-sender">
+                            {message.senderName}
+                          </div>
 
-                              {userData?.isAdmin && (
-                                <button
-                                  type="button"
-                                  className="issue-comment-delete-button"
-                                  onClick={() =>
-                                    handleDeleteMessage(
-                                      message._id
-                                    )
-                                  }
-                                  title="Remove message"
-                                  aria-label="Remove message"
-                                >
-                                  <X size={16} />
-                                </button>
-                              )}
-                            </div>
-                          )}
+                          <div className="issue-chat-bubble">
+                            <p>{message.messageText}</p>
 
-                          <small>
-                            {message.senderName} (
-                            {message.senderRole}) ·{" "}
-                            {new Date(
-                              message.createdAt
-                            ).toLocaleString("en-AU")}
+                            {userData?.isAdmin && (
+                              <button
+                                type="button"
+                                className="issue-comment-delete-button"
+                                onClick={() =>
+                                  handleDeleteMessage(message._id)
+                                }
+                                title="Remove message"
+                                aria-label="Remove message"
+                              >
+                                <X size={16} />
+                              </button>
+                            )}
+                          </div>
+
+                          <small className="issue-chat-timestamp">
+                            {new Date(message.createdAt).toLocaleString("en-AU")}
                           </small>
                         </div>
-                      )
-                    )}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="issue-details-empty-text">
@@ -907,11 +1029,7 @@ export default function IssueDetails() {
                 >
                   <textarea
                     value={newMessage}
-                    onChange={(event) =>
-                      setNewMessage(
-                        event.target.value
-                      )
-                    }
+                    onChange={(event) => setNewMessage(event.target.value)}
                     maxLength={1000}
                     placeholder={
                       userData?.isAdmin
@@ -923,14 +1041,9 @@ export default function IssueDetails() {
 
                   <button
                     type="submit"
-                    disabled={
-                      sendingMessage ||
-                      !newMessage.trim()
-                    }
+                    disabled={sendingMessage || !newMessage.trim()}
                   >
-                    {sendingMessage
-                      ? "Sending..."
-                      : "Send message"}
+                    {sendingMessage ? "Sending..." : "Send message"}
                   </button>
 
                   {messageError && (
@@ -963,16 +1076,59 @@ export default function IssueDetails() {
                               {issueComment.comment}
                             </p>
 
+                            {/* Comment attachments */}
+                            {issueComment.attachments?.length > 0 && (
+                              <div className="issue-comment-attachments">
+                                {issueComment.attachments.map(
+                                  (attachment, index) => {
+                                    const isPdf =
+                                      attachment.fileType ===
+                                      "application/pdf";
+
+                                    return isPdf ? (
+                                      <button
+                                        key={index}
+                                        type="button"
+                                        className="issue-comment-pdf"
+                                        onClick={() => downloadCommentAttachment(attachment)}
+                                      >
+                                        <span>
+                                          PDF
+                                        </span>
+
+                                        <span>
+                                          {attachment.fileName}
+                                        </span>
+                                      </button>
+                                    ) : (
+                                      <a
+                                        key={index}
+                                        href={attachment.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="issue-comment-image-link"
+                                      >
+                                        <img
+                                          src={attachment.url}
+                                          alt={
+                                            attachment.fileName ||
+                                            "Comment attachment"
+                                          }
+                                          className="issue-comment-image"
+                                        />
+                                      </a>
+                                    );
+                                  }
+                                )}
+                              </div>
+                            )}
+
                             <small>
-                              {
-                                issueComment.commentedByName
-                              }{" "}
+                              {issueComment.commentedByName}{" "}
                               ·{" "}
                               {new Date(
                                 issueComment.dateTimeCommented
-                              ).toLocaleString(
-                                "en-AU"
-                              )}
+                              ).toLocaleString("en-AU")}
                             </small>
                           </div>
                         )
@@ -992,26 +1148,95 @@ export default function IssueDetails() {
                     <textarea
                       value={newComment}
                       onChange={(event) =>
-                        setNewComment(
-                          event.target.value
-                        )
+                        setNewComment(event.target.value)
                       }
                       maxLength={300}
                       placeholder="Add a progress or resolution comment"
                       aria-label="New admin comment"
                     />
 
-                    <button
-                      type="submit"
-                      disabled={
-                        addingComment ||
-                        !newComment.trim()
-                      }
-                    >
-                      {addingComment
-                        ? "Adding..."
-                        : "Add comment"}
-                    </button>
+                    {/* Selected attachments */}
+                    {commentAttachments.length > 0 && (
+                      <div className="issue-comment-selected-files">
+                        {commentAttachments.map(
+                          (file, index) => (
+                            <div
+                              className="issue-comment-selected-file"
+                              key={`${file.name}-${index}`}
+                            >
+                              <span>
+                                {file.type === "application/pdf"
+                                  ? "PDF"
+                                  : "Image"}{" "}
+                                · {file.name}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeCommentAttachment(index)
+                                }
+                                disabled={addingComment}
+                                aria-label={`Remove ${file.name}`}
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    {/* Comment actions */}
+                    <div className="issue-comment-actions">
+                      {/* Add comment */}
+                      <button
+                        type="submit"
+                        disabled={
+                          addingComment ||
+                          !newComment.trim()
+                        }
+                        title={
+                          addingComment
+                            ? "Adding comment..."
+                            : !newComment.trim()
+                              ? "Enter a comment first"
+                              : "Add this progress comment"
+                        }
+                      >
+                        {addingComment
+                          ? "Adding..."
+                          : "Add comment"}
+                      </button>
+
+                      {/* Add attachments */}
+                      <div className="issue-comment-upload">
+                        <label
+                          htmlFor="comment-attachments"
+                          className="issue-comment-upload-label"
+                        >
+                          Add attachments
+                        </label>
+
+                        <input
+                          id="comment-attachments"
+                          type="file"
+                          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                          multiple
+                          onChange={handleCommentAttachments}
+                          disabled={
+                            addingComment ||
+                            commentAttachments.length >= 5
+                          }
+                        />
+                      </div>
+
+
+
+                    </div>
+                    <small className="issue-comment-upload-help">
+                      Up to 5 files per comment, maximum 5 MB each. Images and PDF files are accepted.
+                    </small>
 
                     {commentError && (
                       <p className="issue-comment-error">
@@ -1234,9 +1459,9 @@ export default function IssueDetails() {
                     </button>
 
                     {/* Assign to Admin */}
-                    <div 
-                    className="issue-assignment-dropdown-container"
-                    ref={assignmentDropdownRef}>
+                    <div
+                      className="issue-assignment-dropdown-container"
+                      ref={assignmentDropdownRef}>
                       <button
                         className="issue-assignment-dropdown-button"
                         type="button"
@@ -1422,7 +1647,7 @@ export default function IssueDetails() {
             </button>
           )}
         </div>
-      </div>
+      </div >
     </PageLayout >
   );
 }
