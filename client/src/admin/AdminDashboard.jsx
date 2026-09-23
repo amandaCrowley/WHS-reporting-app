@@ -36,7 +36,6 @@ import NotificationBell from "../components/NotificationBell";
 
 import UONLogo from "../images/UONLogo White.png";
 
-import "../pages/UserDashboard.css";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
@@ -121,8 +120,29 @@ export default function AdminDashboard() {
     );
   }
 
-  const initials =
-    `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
+  if (!userData) {
+    return (
+      <p className="admin-dashboard-message">
+        No user data found.
+      </p>
+    );
+  }
+
+  const getStatusClass = (status) => {
+    if (status === "Open") {
+      return "admin-dashboard-status-open";
+    }
+
+    if (status === "In Progress") {
+      return "admin-dashboard-status-progress";
+    }
+
+    if (status === "Closed") {
+      return "admin-dashboard-status-closed";
+    }
+
+    return "admin-dashboard-status-default";
+  };
 
   return (
     <div className="user-dashboard admin-dashboard">
@@ -355,64 +375,84 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="admin-dashboard-issue-list">
-                {assignedIssues.map((issue) => (
-                  <article
-                    className="admin-dashboard-issue-card"
-                    key={issue._id}
-                  >
-                    <div className="admin-dashboard-issue-main">
-                      <h3>
-                        {issue.title || "Untitled Issue"}
-                      </h3>
+                {assignedIssues.map((issue) => {
+                  const statusClass = getStatusClass(issue.status);
 
-                      <p className="admin-dashboard-location">
-                        {issue.location || "-"} ·{" "}
-                        {issue.campus || "-"}
-                      </p>
-                    </div>
-
-                    <div className="admin-dashboard-issue-details">
-                      <div>
-                        <span>Priority</span>
-                        <strong>
-                          {issue.priority || "Not set"}
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Status</span>
-                        <strong>
-                          {issue.status || "-"}
-                        </strong>
-                      </div>
-
-
-
-                      <div>
-                        <span>Date Reported</span>
-                        <strong>
-                          {new Date(
-                            issue.dateTimeReported
-                          ).toLocaleString("en-AU", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="admin-dashboard-view-button"
-                      onClick={() =>
-                        navigate(
-                          `/issue/${issue._id}`
-                        )
-                      }
+                  return (
+                    <article
+                      className={`admin-dashboard-issue-card ${statusClass}`}
+                      key={issue._id}
+                      onClick={() => navigate(`/issue/${issue._id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          navigate(`/issue/${issue._id}`);
+                        }
+                      }}
                     >
-                      View Issue
-                    </button>
-                  </article>
-                ))}
+                      <div className="admin-dashboard-issue-main">
+                        <h3>
+                          {issue.title || "Untitled Issue"}
+                        </h3>
+
+                        <p className="admin-dashboard-location">
+                          {issue.location || "-"} ·{" "}
+                          {issue.campus || "-"}
+                        </p>
+                      </div>
+
+                      <div className="admin-dashboard-issue-details">
+                        <div>
+                          <span>                          Priority
+                          </span>
+                          <strong>
+                            {issue.priority || "Not set"}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>
+                            Status
+                          </span>
+                          <strong className={`admin-dashboard-status-badge ${statusClass}`}>
+                            {issue.status || "-"}
+                          </strong>
+                        </div>
+
+
+
+                        <div className="admin-dashboard-date-field">
+                          <span>
+                            Date reported
+                          </span>
+                          <strong>
+                            {issue.dateTimeReported
+                              ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })
+                              : "-"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="admin-dashboard-view-button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/issue/${issue._id}`);
+                        }}
+                      >
+                        View Issue
+                      </button>
+                    </article>
+                  );
+                })}
               </div>
             )}
             <div className="admin-dashboard-issues-footer">
@@ -458,61 +498,78 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="admin-dashboard-issue-list">
-                {recentIssues.map((issue) => (
-                  <article
-                    className="admin-dashboard-issue-card"
-                    key={issue._id}
-                  >
-                    <div className="admin-dashboard-issue-main">
-                      <h3>
-                        {issue.title || "Untitled Issue"}
-                      </h3>
+                {recentIssues.map((issue) => {
+                  const statusClass = getStatusClass(issue.status);
 
-                      <p className="admin-dashboard-location">
-                        {issue.campus || "-"} ·{" "}
-                        {issue.location || "-"}
-                      </p>
-                    </div>
-
-                    <div className="admin-dashboard-issue-details">
-                      <div>
-                        <span>Priority</span>
-                        <strong>
-                          {issue.priority || "Not set"}
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Status</span>
-                        <strong>
-                          {issue.status || "-"}
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Date Reported</span>
-                        <strong>
-                          {new Date(
-                            issue.dateTimeReported
-                          ).toLocaleString("en-AU", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })}
-                        </strong>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="admin-dashboard-view-button"
-                      onClick={() =>
-                        navigate(
-                          `/issue/${issue._id}`
-                        )
-                      }
+                  return (
+                    <article
+                      className={`admin-dashboard-issue-card ${statusClass}`}
+                      key={issue._id}
+                      onClick={() => navigate(`/issue/${issue._id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          navigate(`/issue/${issue._id}`);
+                        }
+                      }}
                     >
-                      View Issue
-                    </button>
-                  </article>
-                ))}
+                      <div className="admin-dashboard-issue-main">
+                        <h3>
+                          {issue.title || "Untitled Issue"}
+                        </h3>
+
+                        <p className="admin-dashboard-location">
+                          {issue.campus || "-"} ·{" "}
+                          {issue.location || "-"}
+                        </p>
+                      </div>
+
+                      <div className="admin-dashboard-issue-details">
+                        <div>
+                          <span>Priority</span>
+                          <strong>
+                            {issue.priority || "Not set"}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Status</span>
+                          <strong className={`admin-dashboard-status-badge ${statusClass}`}>
+                            {issue.status || "-"}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>
+                            Date reported
+                          </span>
+                          <strong>
+                            {issue.dateTimeReported
+                              ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })
+                              : "-"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="admin-dashboard-view-button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/issue/${issue._id}`);
+                        }}
+                      >
+                        View Issue
+                      </button>
+                    </article>
+                  );
+                })}
               </div>
             )}
             <div className="admin-dashboard-issues-footer">

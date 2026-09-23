@@ -181,6 +181,21 @@ export default function UserDashboard() {
   if (!userData) {
     return <p className="user-dashboard-message">No user data found.</p>;
   }
+  const getStatusClass = (status) => {
+    if (status === "Open") {
+      return "user-dashboard-status-open";
+    }
+
+    if (status === "In Progress") {
+      return "user-dashboard-status-progress";
+    }
+
+    if (status === "Closed") {
+      return "user-dashboard-status-closed";
+    }
+
+    return "user-dashboard-status-default";
+  };
 
   return (
     <div
@@ -437,53 +452,75 @@ export default function UserDashboard() {
             ) : (
               /* Existing issue information remains available */
 
-              <div className="user-dashboard-table-container">
+              <div className="user-dashboard-issue-list">
+                {recentIssues.map((issue) => {
+                  const statusClass = getStatusClass(issue.status);
 
-                <table className="user-dashboard-table">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Location</th>
-                      <th>Status</th>
-                      <th>Date reported</th>
-                      <th className="user-dashboard-view-column">View</th>
-                    </tr>
-                  </thead>
+                  return (
+                    <div
+                      key={issue._id}
+                      className="user-dashboard-issue-card"
+                      onClick={() => openIssueDetails(issue._id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          openIssueDetails(issue._id);
+                        }
+                      }}
+                    >
+                      <div className="user-dashboard-issue-main">
+                        <h3>{issue.title || "-"}</h3>
 
-                  <tbody>
-                    {recentIssues.map((issue) => (
-                      <tr
-                        key={issue._id}
-                        className="user-dashboard-issue-row"
-                        onClick={() => openIssueDetails(issue._id)}
+                        <p className="user-dashboard-location">
+                          {issue.location || "-"}
+                        </p>
+                      </div>
+
+                      <div className="user-dashboard-issue-details">
+                        <div>
+                          <span>Status</span>
+                          <strong className={`user-dashboard-status-badge ${statusClass}`}>
+                            {issue.status || "-"}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>Campus</span>
+                          <strong>{issue.campus || "-"}</strong>
+                        </div>
+
+                        <div>
+                          <span>Date reported</span>
+                          <strong>
+                            {issue.dateTimeReported
+                              ? new Date(issue.dateTimeReported).toLocaleString("en-AU", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })
+                              : "-"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="user-dashboard-view-button"
+                        aria-label={`View details for ${issue.title || "issue"}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openIssueDetails(issue._id);
+                        }}
                       >
-                        <td>{issue.title || "-"}</td>
-                        <td>{issue.location || "-"}</td>
-                        <td>{issue.status || "-"}</td>
-                        <td>
-                          {issue.dateTimeReported
-                            ? new Date(
-                              issue.dateTimeReported
-                            ).toLocaleDateString("en-AU")
-                            : "-"}
-                        </td>
-                        <td className="user-dashboard-view-column">
-                          <button
-                            type="button"
-                            className="user-dashboard-view-button"
-                            aria-label={`View details for ${issue.title || "issue"}`}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openIssueDetails(issue._id);
-                            }}
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        View <span aria-hidden="true">→</span>
+                      </button>
+                  </div>
+                );
+              })}
 
                 {sortedIssues.length > 5 && (
                   <div className="user-dashboard-issues-footer">
