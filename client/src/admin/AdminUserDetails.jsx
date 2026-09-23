@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Users,
   LogOut,
+  BarChart3,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -124,11 +125,21 @@ export default function AdminUserDetails() {
 
           <button
             type="button"
-            className="user-dashboard-nav-item active"
+            className="user-dashboard-nav-item"
             onClick={() => navigate("/admin/usermanagement")}
           >
             <Users />
             <span>User Management</span>
+          </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() =>
+              navigate("/admin/reporting")
+            }
+          >
+            <BarChart3 />
+            <span>Reporting & Analytics</span>
           </button>
         </nav>
 

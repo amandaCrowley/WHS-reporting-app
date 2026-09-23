@@ -27,6 +27,7 @@ import {
   Check,
   UserMinus,
   UserCheck,
+  BarChart3,
 } from "lucide-react";
 
 import { userLogout } from "../hooks/userLogout";
@@ -184,6 +185,16 @@ export default function AdminDashboard() {
           >
             <Users />
             <span>User Management</span>
+          </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() =>
+              navigate("/admin/reporting")
+            }
+          >
+            <BarChart3 />
+            <span>Reporting & Analytics</span>
           </button>
         </nav>
 

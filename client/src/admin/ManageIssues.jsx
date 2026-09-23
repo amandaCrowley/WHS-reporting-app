@@ -27,6 +27,7 @@ import {
   UserMinus,
   ChevronLeft,
   ChevronRight,
+  BarChart3,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
@@ -398,6 +399,16 @@ export default function ManageIssues() {
             <Users />
             <span>User Management</span>
           </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() =>
+              navigate("/admin/reporting")
+            }
+          >
+            <BarChart3 />
+            <span>Reporting & Analytics</span>
+          </button>
         </nav>
 
         <div className="user-dashboard-logout-section">
@@ -431,8 +442,8 @@ export default function ManageIssues() {
             </span>
 
             <NotificationBell
-                          firebaseUid={userData?.firebaseUid}
-                        />
+              firebaseUid={userData?.firebaseUid}
+            />
           </div>
         </header>
 
@@ -686,7 +697,7 @@ export default function ManageIssues() {
                 Loading issues...
               </div>
 
-            /* No results */
+              /* No results */
 
             ) : filteredIssues.length === 0 ? (
               <div className="manage-empty-state">
@@ -700,7 +711,7 @@ export default function ManageIssues() {
                 </p>
               </div>
 
-            /* Issues table */
+              /* Issues table */
 
             ) : (
               <div className="user-dashboard-table-container manage-table-container">
@@ -724,7 +735,7 @@ export default function ManageIssues() {
                         userData &&
                         issue.assignedTo &&
                         String(issue.assignedTo) ===
-                          String(userData._id);
+                        String(userData._id);
 
                       return (
                         <tr key={issue._id}>
@@ -831,7 +842,7 @@ export default function ManageIssues() {
                               </button>
 
                               {!issue.assignedTo ||
-                              isAssignedToMe ? (
+                                isAssignedToMe ? (
                                 <button
                                   type="button"
                                   className="manage-action-button manage-assign-button"
@@ -842,10 +853,10 @@ export default function ManageIssues() {
                                   }
                                   disabled={
                                     assigningIssueId ===
-                                      issue._id ||
+                                    issue._id ||
                                     isAssignedToMe ||
                                     issue.status ===
-                                      "Closed"
+                                    "Closed"
                                   }
                                 >
                                   <UserCheck />
@@ -879,9 +890,9 @@ export default function ManageIssues() {
                                   }
                                   disabled={
                                     assigningIssueId ===
-                                      issue._id ||
+                                    issue._id ||
                                     issue.status ===
-                                      "Closed"
+                                    "Closed"
                                   }
                                 >
                                   <UserMinus />
@@ -917,7 +928,7 @@ export default function ManageIssues() {
                     <strong>
                       {Math.min(
                         currentPage *
-                          issuesPerPage,
+                        issuesPerPage,
                         filteredIssues.length
                       )}
                     </strong>

@@ -21,6 +21,7 @@ import dotenv from 'dotenv';
 import upload from "./uploadMiddleware.js"; // Middleware for handling file uploads (using multer with memory storage)
 import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
 import { findUserByIdentity } from "./userIdentity.js";
+import adminAnalyticsRoutes from "./analyticsAPI.js";
 import {
   normalizeAndValidateIssueStatus,
   normalizeIssueStatus,
@@ -93,6 +94,9 @@ const DBclient = new MongoClient(uri, {
   }
 });
 //----------------------------------------------------------------------
+
+//---------------------------Admin Analytics Route--------------------------------
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 /**
  * Start the Express server and connect to MongoDB

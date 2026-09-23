@@ -24,6 +24,7 @@ import {
   X,
   Search,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -107,6 +108,16 @@ function Sidebar({ userData, navigate, logout }) {
             >
               <Users />
               <span>User Management</span>
+            </button>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() =>
+                navigate("/admin/reporting")
+              }
+            >
+              <BarChart3 />
+              <span>Reporting & Analytics</span>
             </button>
           </>
         )}

@@ -1,0 +1,2142 @@
+/**
+ * AdminReporting.css
+ *
+ * Styling for the Admin Reporting page.
+ * Uses the same visual language and responsive issue-list
+ * design as AdminDashboard.
+ */
+
+/* =========================================================
+   REPORTING PAGE
+   ========================================================= */
+
+.admin-reporting {
+    min-width: 0;
+}
+
+.admin-reporting,
+.admin-reporting section,
+.admin-reporting article,
+.admin-reporting div {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   PAGE INTRO
+   ========================================================= */
+
+.admin-reporting-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding: 24px 28px;
+    background: #ffffff;
+    border: 1px solid #e7eaf0;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(7, 19, 47, 0.05);
+}
+
+.admin-reporting-intro-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+.admin-reporting-intro-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    background: #eaf2ff;
+    border-radius: 50%;
+    color: #0057e7;
+}
+
+.admin-reporting-intro-icon svg {
+    width: 23px;
+    height: 23px;
+    stroke-width: 2;
+}
+
+.admin-reporting-intro-content h2 {
+    margin: 0;
+    color: #07132f;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.admin-reporting-intro-content p {
+    margin: 7px 0 0;
+    max-width: 700px;
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+
+
+.admin-reporting-intro > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+    min-width: 0;
+}
+
+.admin-reporting-intro h1 {
+    margin: 0;
+
+    color: #07132f;
+
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.25;
+
+    white-space: nowrap;
+}
+
+.admin-reporting-intro p {
+    margin: 0;
+
+    color: #667085;
+
+    font-size: 15px;
+    line-height: 1.5;
+
+    max-width: 600px;
+}
+
+
+/* =========================================================
+   EXPORT REPORT
+   ========================================================= */
+
+.admin-reporting-export {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    flex-shrink: 0;
+}
+
+.admin-reporting-export-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-reporting-export button {
+    min-height: 38px;
+
+    padding: 0 16px;
+
+    border: 1px solid #0758d7;
+    border-radius: 6px;
+
+    background: #0758d7;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.admin-reporting-export button:hover {
+    background: #0047b3;
+
+    transform: translateY(-1px);
+}
+
+.admin-reporting-export button:focus-visible {
+    outline: 3px solid rgba(8, 103, 242, 0.18);
+    outline-offset: 2px;
+}
+
+.admin-reporting-export-hint {
+    margin-top: 7px;
+
+    color: #667085;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+.admin-reporting-filters {
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr)) auto;
+
+    gap: 16px;
+
+    margin-bottom: 24px;
+
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e7eaf0;
+    border-radius: 10px;
+
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.055);
+}
+
+.admin-reporting-filter {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+.admin-reporting-filter label {
+    margin-bottom: 6px;
+
+    color: #44506a;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-reporting-filter input,
+.admin-reporting-filter select {
+    width: 100%;
+    min-width: 0;
+    height: 38px;
+
+    padding: 0 10px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+
+    background: #ffffff;
+    color: #07132f;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.admin-reporting-filter input:focus,
+.admin-reporting-filter select:focus {
+    border-color: #0758d7;
+
+    box-shadow: 0 0 0 3px rgba(7, 88, 215, 0.1);
+}
+
+.admin-reporting-filter-clear {
+    align-self: end;
+
+    height: 38px;
+
+    padding: 0 14px;
+
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+
+    background: #ffffff;
+    color: #44506a;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.admin-reporting-filter-clear:hover {
+    background: #f8faff;
+    border-color: #98a2b3;
+}
+
+.admin-reporting-filter-clear:focus-visible {
+    outline: 3px solid rgba(8, 103, 242, 0.18);
+    outline-offset: 2px;
+}
+
+.admin-reporting-filter-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.admin-reporting-apply-button {
+    height: 38px;
+
+    padding: 0 14px;
+
+    border: 1px solid #0758d7;
+    border-radius: 6px;
+
+    background: #0758d7;
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+}
+
+.admin-reporting-apply-button:hover {
+    background: #0047b3;
+}
+
+.admin-reporting-apply-button:focus-visible {
+    outline: 3px solid rgba(8, 103, 242, 0.18);
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.admin-reporting .user-dashboard-status-grid {
+    margin-bottom: 20px;
+}
+
+.admin-reporting .user-dashboard-status-card {
+    min-width: 0;
+}
+
+.admin-reporting .user-dashboard-status-content h3 {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.admin-reporting .user-dashboard-status-content strong {
+    display: block;
+}
+
+.admin-reporting-stat-unit {
+    margin-left: 4px;
+
+    color: #667085;
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   SECONDARY STATISTICS
+   ========================================================= */
+
+.admin-reporting-unassigned,
+.admin-reporting-resolution {
+    min-width: 0;
+}
+
+.admin-reporting-unassigned strong,
+.admin-reporting-resolution strong {
+    display: block;
+}
+
+
+/* =========================================================
+   GENERAL REPORTING PANELS
+   ========================================================= */
+
+.admin-reporting-panel {
+    min-width: 0;
+
+    background: #ffffff;
+
+    border: 1px solid #e7eaf0;
+    border-radius: 10px;
+
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.055);
+
+    overflow: hidden;
+}
+
+.admin-reporting-panel-header {
+    min-height: 92px;
+
+    padding: 20px 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    border-bottom: 1px solid #e7eaf0;
+}
+
+.admin-reporting-panel-header h2 {
+    margin: 0 0 6px;
+
+    color: #07132f;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.admin-reporting-panel-header p {
+    margin: 0;
+
+    color: #667085;
+
+    font-size: 14px;
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   REPORTING SECTIONS
+   ========================================================= */
+
+.admin-reporting-section {
+    min-width: 0;
+
+    margin-top: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #e7eaf0;
+    border-radius: 10px;
+
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.055);
+
+    overflow: hidden;
+}
+
+.admin-reporting-section-header {
+    min-height: 92px;
+
+    padding: 20px 24px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 0;
+
+    text-align: center;
+
+    border-bottom: 1px solid #e7eaf0;
+}
+
+.admin-reporting-section-header h2 {
+    margin: 0 0 6px;
+
+    color: #07132f;
+
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.admin-reporting-section-header p {
+    margin: 0;
+
+    color: #667085;
+
+    font-size: 14px;
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
+}
+
+.admin-reporting-secondary-button {
+    min-height: 36px;
+
+    padding: 0 13px;
+
+    border: 1px solid #0758d7;
+    border-radius: 6px;
+
+    background: #ffffff;
+    color: #0758d7;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.admin-reporting-secondary-button:hover {
+    background: #f1f6fd;
+
+    transform: translateY(-1px);
+}
+
+.admin-reporting-secondary-button:focus-visible {
+    outline: 3px solid rgba(8, 103, 242, 0.18);
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   ISSUES REQUIRING ATTENTION
+   ========================================================= */
+
+.admin-reporting-issue-list {
+    display: flex;
+    flex-direction: column;
+
+    background: #ffffff;
+}
+
+.admin-reporting-issue-card {
+    padding: 24px;
+
+    background: #ffffff;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(220px, 1.4fr) minmax(360px, 2fr) auto;
+
+    align-items: center;
+
+    gap: 24px;
+
+    border-bottom: 1px solid #e7eaf0;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.admin-reporting-issue-card:last-child {
+    border-bottom: 0;
+}
+
+.admin-reporting-issue-card:hover {
+    background-color: #f8faff;
+
+    box-shadow: inset 0 0 0 1px #e7eaf0;
+}
+
+.admin-reporting-issue-card:focus-visible {
+    outline: 3px solid #0867f2;
+    outline-offset: -3px;
+}
+
+
+/* =========================================================
+   ISSUE MAIN INFORMATION
+   ========================================================= */
+
+.admin-reporting-issue-main {
+    min-width: 0;
+}
+
+.admin-reporting-issue-main h3 {
+    margin: 0 0 8px;
+
+    color: #07132f;
+
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.admin-reporting-location {
+    margin: 0;
+
+    color: #667085;
+
+    font-size: 14px;
+    line-height: 1.45;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   ISSUE DETAILS
+   ========================================================= */
+
+.admin-reporting-issue-details {
+    display: grid;
+
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+
+    gap: 18px;
+
+    min-width: 0;
+}
+
+.admin-reporting-issue-details>div {
+    min-width: 0;
+}
+
+.admin-reporting-issue-details>div>span:first-child {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #667085;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    overflow-wrap: anywhere;
+}
+
+.admin-reporting-issue-details>div>strong {
+    display: block;
+
+    color: #07132f;
+
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   STATUS BADGES
+   Same styling as AdminDashboard
+   ========================================================= */
+
+.admin-reporting-issue-details .admin-reporting-status-badge {
+    display: inline-flex !important;
+
+    align-items: center;
+    justify-content: center;
+
+    width: fit-content !important;
+    min-width: 0 !important;
+
+    padding: 4px 10px !important;
+
+    border-radius: 7px !important;
+
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+
+    border: 1px solid transparent !important;
+}
+
+.admin-reporting-issue-details .admin-reporting-status-badge.admin-reporting-status-open {
+    color: #1d4ed8 !important;
+
+    background-color: #eaf2ff !important;
+
+    border-color: #bfd5ff !important;
+}
+
+.admin-reporting-issue-details .admin-reporting-status-badge.admin-reporting-status-progress {
+    color: #d97706 !important;
+
+    background-color: #fff4df !important;
+
+    border-color: #f6d8a8 !important;
+}
+
+.admin-reporting-issue-details .admin-reporting-status-badge.admin-reporting-status-closed {
+    color: #15803d !important;
+
+    background-color: #e7f7ea !important;
+
+    border-color: #b7e2c0 !important;
+}
+
+.admin-reporting-issue-details .admin-reporting-status-badge.admin-reporting-status-default {
+    color: #475569 !important;
+
+    background-color: #f1f5f9 !important;
+
+    border-color: #cbd5e1 !important;
+}
+
+
+/* =========================================================
+   PRIORITY
+   Keep priority neutral rather than introducing
+   additional coloured badges.
+   ========================================================= */
+
+.admin-reporting-priority-badge {
+    display: inline;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: 0;
+
+    color: #07132f;
+
+    font-size: 14px;
+    font-weight: 400;
+}
+
+
+/* =========================================================
+   VIEW ISSUE BUTTON
+   Same visual style as AdminDashboard
+   ========================================================= */
+
+.admin-reporting-view-button {
+    min-width: 76px;
+    height: 34px;
+
+    padding: 0 11px;
+
+    border: 1px solid #1762db;
+    border-radius: 6px;
+
+    background: #ffffff;
+    color: #0758d7;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.admin-reporting-view-button:hover {
+    background-color: #f1f6fd;
+
+    border-color: #0758d7;
+
+    transform: translateY(-1px);
+}
+
+.admin-reporting-view-button:focus-visible {
+    outline: 3px solid rgba(8, 103, 242, 0.18);
+    outline-offset: 2px;
+}
+
+
+/* =========================================================
+   ISSUE SECTION FOOTER
+   ========================================================= */
+
+.admin-reporting-issues-footer {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 14px 18px;
+
+    border-top: 1px solid #edf0f4;
+
+    background: #ffffff;
+
+    gap: 16px;
+}
+
+.admin-reporting-issues-footer>span {
+    color: #667085;
+
+    font-size: 13px;
+}
+
+.admin-reporting-view-all-button {
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+    color: #0758d7;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    white-space: nowrap;
+}
+
+.admin-reporting-view-all-button:hover {
+    color: #0047b3;
+}
+
+.admin-reporting-view-all-button span {
+    font-size: 16px;
+
+    line-height: 1;
+
+    transition: transform 0.15s ease;
+}
+
+.admin-reporting-view-all-button:hover span {
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   TWO COLUMN REPORTING PANELS
+   ========================================================= */
+
+.admin-reporting-two-column {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 20px;
+
+    margin-top: 20px;
+}
+
+
+/* =========================================================
+   BAR CHARTS
+   ========================================================= */
+
+.admin-reporting-bar-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 18px;
+
+    padding: 24px;
+}
+
+.admin-reporting-bar-item {
+    min-width: 0;
+}
+
+.admin-reporting-bar-label {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-bottom: 7px;
+
+    color: #44506a;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-reporting-bar-label span:first-child {
+    min-width: 0;
+
+    overflow-wrap: anywhere;
+}
+
+.admin-reporting-bar-label span:last-child {
+    flex-shrink: 0;
+
+    color: #07132f;
+}
+
+.admin-reporting-bar-track {
+    width: 100%;
+    height: 9px;
+
+    overflow: hidden;
+
+    background: #edf0f4;
+
+    border-radius: 999px;
+}
+
+.admin-reporting-bar-fill {
+    height: 100%;
+
+    min-width: 2px;
+
+    border-radius: 999px;
+
+    transition: width 0.3s ease;
+}
+
+.admin-reporting-bar-fill.status-open {
+    background: #0758d7;
+}
+
+.admin-reporting-bar-fill.status-progress {
+    background: #d97706;
+}
+
+.admin-reporting-bar-fill.status-closed {
+    background: #15803d;
+}
+
+.admin-reporting-bar-fill.age {
+    background: #7c18b6;
+}
+
+
+/* =========================================================
+   DOUGHNUT / PIE CHARTS
+   ========================================================= */
+
+.admin-reporting-pie-content {
+    display: grid;
+
+    grid-template-columns: minmax(180px, 220px) 1fr;
+
+    align-items: center;
+
+    gap: 28px;
+
+    padding: 24px;
+}
+
+.admin-reporting-pie-chart {
+    position: relative;
+
+    width: 180px;
+    height: 180px;
+
+    margin: 0 auto;
+
+    border-radius: 50%;
+}
+
+.admin-reporting-pie-centre {
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: 92px;
+    height: 92px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background: #ffffff;
+
+    border-radius: 50%;
+}
+
+.admin-reporting-pie-centre strong {
+    color: #07132f;
+
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.admin-reporting-pie-centre span {
+    margin-top: 2px;
+
+    color: #667085;
+
+    font-size: 12px;
+}
+
+.admin-reporting-pie-legend {
+    display: flex;
+    flex-direction: column;
+
+    gap: 11px;
+
+    min-width: 0;
+}
+
+.admin-reporting-pie-legend-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    min-width: 0;
+}
+
+.admin-reporting-pie-legend-dot {
+    flex-shrink: 0;
+
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+}
+
+.admin-reporting-pie-legend-label {
+    min-width: 0;
+
+    flex: 1;
+
+    color: #44506a;
+
+    font-size: 13px;
+
+    overflow-wrap: anywhere;
+}
+
+.admin-reporting-pie-legend-value {
+    flex-shrink: 0;
+
+    color: #07132f;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   ISSUES OVER TIME
+   ========================================================= */
+
+.admin-reporting-time-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 18px 24px;
+
+    border-bottom: 1px solid #e7eaf0;
+}
+
+.admin-reporting-time-header h2 {
+    margin: 0;
+
+    color: #07132f;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.admin-reporting-time-toggle {
+    display: inline-flex;
+
+    padding: 3px;
+
+    background: #f2f4f7;
+
+    border-radius: 7px;
+}
+
+.admin-reporting-time-toggle button {
+    min-height: 30px;
+
+    padding: 0 11px;
+
+    border: 0;
+    border-radius: 5px;
+
+    background: transparent;
+    color: #667085;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.admin-reporting-time-toggle button.active {
+    background: #ffffff;
+    color: #0758d7;
+
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+}
+
+.admin-reporting-time-chart {
+    display: flex;
+
+    align-items: flex-end;
+
+    gap: 14px;
+
+    min-height: 260px;
+
+    padding: 30px 24px 24px;
+
+    overflow-x: auto;
+}
+
+.admin-reporting-time-column {
+    flex: 1;
+
+    min-width: 42px;
+
+    height: 210px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 8px;
+}
+
+.admin-reporting-time-bar {
+    width: 100%;
+
+    max-width: 44px;
+
+    min-height: 2px;
+
+    border-radius: 5px 5px 0 0;
+
+    background: #0758d7;
+
+    transition: height 0.3s ease;
+}
+
+.admin-reporting-time-value {
+    color: #44506a;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.admin-reporting-time-label {
+    max-width: 70px;
+
+    color: #667085;
+
+    font-size: 10px;
+
+    text-align: center;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   CHART CLASS NAMES USED BY REPORTING JSX
+   ========================================================= */
+
+.admin-reporting-chart-column {
+    flex: 1;
+
+    min-width: 42px;
+    height: 210px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    gap: 8px;
+}
+
+.admin-reporting-chart-value {
+    min-height: 16px;
+
+    color: #44506a;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.admin-reporting-chart-bar-container {
+    width: 100%;
+    max-width: 44px;
+    height: 170px;
+
+    display: flex;
+    align-items: flex-end;
+
+    overflow: hidden;
+
+    border-radius: 5px 5px 0 0;
+
+    background: #f0f3f7;
+}
+
+.admin-reporting-chart-bar {
+    width: 100%;
+
+    min-height: 3px;
+
+    border-radius: 5px 5px 0 0;
+
+    background: #0758d7;
+
+    transition: height 0.3s ease;
+}
+
+.admin-reporting-solved-chart-bar {
+    background: #15803d;
+}
+
+.admin-reporting-chart-column>span,
+.admin-reporting-chart-label {
+    width: 70px;
+
+    color: #667085;
+
+    font-size: 10px;
+    line-height: 1.3;
+
+    text-align: center;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   PANEL MESSAGES
+   ========================================================= */
+
+.admin-reporting-panel-message {
+    min-height: 150px;
+
+    display: grid;
+
+    place-items: center;
+
+    padding: 30px;
+
+    color: #667085;
+
+    font-size: 15px;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.admin-reporting-error {
+    padding: 16px 18px;
+
+    margin-bottom: 20px;
+
+    background: #fff7f7;
+
+    border: 1px solid #efc2c2;
+    border-radius: 8px;
+
+    color: #a52828;
+
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   PAGE MESSAGE / LOADING
+   ========================================================= */
+
+.admin-reporting-message {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    font-family: Arial, Helvetica, sans-serif;
+
+    color: #07132f;
+
+    background: #f7f8fb;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   FILTER LABELS
+   ========================================================= */
+
+.admin-reporting-chart-filters {
+    margin: 12px 24px 16px;
+
+    color: #667085;
+
+    font-size: 12px;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
+    .admin-reporting-filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .admin-reporting-filter-clear {
+        align-self: end;
+
+        width: max-content;
+    }
+
+    .admin-reporting-filter-actions {
+        align-items: center;
+    }
+
+    .admin-reporting-two-column {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 1250px) {
+
+    .admin-reporting-issue-card {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-reporting-view-button {
+        width: max-content;
+    }
+}
+
+
+@media (max-width: 1050px) {
+
+    .admin-reporting-issue-details {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-reporting-pie-content {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-reporting-pie-chart {
+        width: 170px;
+        height: 170px;
+    }
+}
+
+
+@media (max-width: 900px) {
+
+    .admin-reporting-intro {
+        flex-direction: column;
+    }
+
+    .admin-reporting-export {
+        align-items: flex-start;
+    }
+
+    .admin-reporting-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-reporting-section-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .admin-reporting-secondary-button {
+        width: max-content;
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    .admin-reporting-filters {
+        grid-template-columns: 1fr;
+
+        padding: 18px;
+    }
+
+    .admin-reporting-filter-clear {
+        width: 100%;
+    }
+
+    .admin-reporting-filter-actions {
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-reporting-apply-button,
+    .admin-reporting-filter-clear {
+        width: 100%;
+    }
+
+    .admin-reporting-issue-details {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-reporting-issue-card {
+        padding: 18px;
+
+        gap: 20px;
+    }
+
+    .admin-reporting-view-button {
+        width: 100%;
+    }
+
+    .admin-reporting-issues-footer {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        padding: 14px 18px;
+    }
+
+    .admin-reporting-view-all-button {
+        width: 100%;
+
+        justify-content: flex-start;
+    }
+
+    .admin-reporting-time-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        padding: 18px;
+    }
+
+    .admin-reporting-time-toggle {
+        width: 100%;
+    }
+
+    .admin-reporting-time-toggle button {
+        flex: 1;
+    }
+
+    .admin-reporting-time-chart {
+        padding: 24px 18px 20px;
+
+        gap: 10px;
+    }
+
+    .admin-reporting-pie-content {
+        padding: 20px;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .admin-reporting-intro h1 {
+        font-size: 24px;
+    }
+
+    .admin-reporting-export-controls {
+        width: 100%;
+
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-reporting-export button {
+        width: 100%;
+    }
+
+    .admin-reporting-panel-header,
+    .admin-reporting-section-header {
+        padding: 18px;
+    }
+
+    .admin-reporting-panel-header h2,
+    .admin-reporting-section-header h2 {
+        font-size: 18px;
+    }
+
+    .admin-reporting-issue-card {
+        padding: 16px;
+    }
+
+    .admin-reporting-issue-main h3 {
+        font-size: 15px;
+    }
+
+    .admin-reporting-location {
+        font-size: 13px;
+    }
+
+    .admin-reporting-issue-details>div>strong {
+        font-size: 13px;
+    }
+
+    .admin-reporting-pie-chart {
+        width: 150px;
+        height: 150px;
+    }
+
+    .admin-reporting-time-chart {
+        min-height: 230px;
+    }
+}
+
+
+/* =========================================================
+   PRINT REPORT
+   ========================================================= */
+
+/*
+ * The print report is hidden during normal screen use.
+ * It is displayed only when the browser print dialog is opened.
+ */
+
+.admin-reporting-print-sheet {
+    display: none;
+}
+
+
+@media print {
+
+    /* -----------------------------------------------------
+       PAGE SETUP
+       ----------------------------------------------------- */
+
+    @page {
+        size: A4 portrait;
+
+        margin: 12mm;
+    }
+
+
+    /* -----------------------------------------------------
+       HIDE NORMAL DASHBOARD UI
+       -----------------------------------------------------
+
+       The print sheet lives inside user-dashboard-content.
+
+       Everything else inside that content area is hidden.
+       This prevents the normal dashboard, navigation,
+       filters, statistic cards and screen charts from
+       appearing in the PDF.
+       */
+
+    .admin-reporting>.user-dashboard-sidebar,
+    .admin-reporting>.user-dashboard-main>.user-dashboard-header,
+    .admin-reporting>.user-dashboard-main>.user-dashboard-content>*:not(.admin-reporting-print-sheet) {
+        display: none !important;
+    }
+
+
+    /* -----------------------------------------------------
+       RESET DASHBOARD CONTAINER
+       ----------------------------------------------------- */
+
+    .admin-reporting,
+    .admin-reporting .user-dashboard,
+    .admin-reporting .user-dashboard-main,
+    .admin-reporting .user-dashboard-content {
+        display: block !important;
+
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        position: static !important;
+
+        background: #ffffff !important;
+
+        box-shadow: none !important;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT SHEET
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-sheet {
+        display: block !important;
+
+        width: 100% !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        box-sizing: border-box;
+
+        background: #ffffff !important;
+
+        color: #07132f;
+
+        font-family: Arial, Helvetica, sans-serif;
+
+        font-size: 11px;
+
+        line-height: 1.4;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT HEADER
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-header {
+        display: flex;
+
+        align-items: flex-start;
+        justify-content: space-between;
+
+        gap: 24px;
+
+        padding-bottom: 14px;
+
+        margin-bottom: 14px;
+
+        border-bottom: 3px solid #07132f;
+    }
+
+    .admin-reporting-print-header-main {
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+    }
+
+    .admin-reporting-print-uon-mark {
+        width: 46px;
+        height: 46px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        background: #07132f;
+        color: #ffffff;
+
+        font-size: 12px;
+        font-weight: 700;
+
+        letter-spacing: 0.5px;
+    }
+
+    .admin-reporting-print-eyebrow {
+        margin: 0 0 2px;
+
+        color: #0758d7;
+
+        font-size: 9px;
+        font-weight: 700;
+
+        letter-spacing: 0.8px;
+    }
+
+    .admin-reporting-print-header h1 {
+        margin: 0;
+
+        color: #07132f;
+
+        font-size: 22px;
+        font-weight: 700;
+
+        line-height: 1.2;
+    }
+
+    .admin-reporting-print-subtitle {
+        margin: 3px 0 0;
+
+        color: #667085;
+
+        font-size: 10px;
+    }
+
+    .admin-reporting-print-date {
+        display: flex;
+        flex-direction: column;
+
+        align-items: flex-end;
+
+        flex-shrink: 0;
+
+        text-align: right;
+    }
+
+    .admin-reporting-print-date span {
+        color: #667085;
+
+        font-size: 9px;
+    }
+
+    .admin-reporting-print-date strong {
+        margin-top: 2px;
+
+        color: #07132f;
+
+        font-size: 10px;
+    }
+
+
+    /* -----------------------------------------------------
+       FILTER SUMMARY
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-filter-summary {
+        display: grid;
+
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+
+        gap: 8px;
+
+        margin-bottom: 18px;
+
+        padding: 10px 12px;
+
+        background: #f7f8fb;
+
+        border: 1px solid #e2e6ed;
+
+        border-radius: 5px;
+    }
+
+    .admin-reporting-print-filter-summary>div {
+        min-width: 0;
+    }
+
+    .admin-reporting-print-filter-summary span {
+        display: block;
+
+        margin-bottom: 2px;
+
+        color: #667085;
+
+        font-size: 8px;
+        font-weight: 700;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.4px;
+    }
+
+    .admin-reporting-print-filter-summary strong {
+        display: block;
+
+        color: #07132f;
+
+        font-size: 9px;
+        font-weight: 600;
+
+        overflow-wrap: anywhere;
+    }
+
+
+    /* -----------------------------------------------------
+       EXECUTIVE SUMMARY
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-summary {
+        margin-bottom: 18px;
+    }
+
+    .admin-reporting-print-summary h2 {
+        margin: 0 0 5px;
+
+        color: #07132f;
+
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .admin-reporting-print-summary p {
+        margin: 0;
+
+        color: #44506a;
+
+        font-size: 10px;
+
+        line-height: 1.5;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT SECTIONS
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-section {
+        margin-bottom: 20px;
+
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .admin-reporting-print-section>h2 {
+        margin: 0 0 9px;
+
+        padding-bottom: 5px;
+
+        color: #07132f;
+
+        border-bottom: 1px solid #dfe3ea;
+
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT CHART GRID
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-chart-grid {
+        display: grid;
+
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        gap: 12px;
+    }
+
+    .admin-reporting-print-chart-card {
+        min-width: 0;
+
+        padding: 10px;
+
+        background: #ffffff;
+
+        border: 1px solid #e1e5eb;
+
+        border-radius: 5px;
+
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .admin-reporting-print-chart-card h3 {
+        margin: 0 0 8px;
+
+        color: #07132f;
+
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT DONUT CHART
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-donut {
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        min-height: 125px;
+    }
+
+    .admin-reporting-print-donut svg {
+        width: 105px;
+        height: 105px;
+
+        flex-shrink: 0;
+
+        overflow: visible;
+    }
+
+    .admin-reporting-print-donut-legend {
+        display: flex;
+        flex-direction: column;
+
+        gap: 5px;
+
+        min-width: 0;
+    }
+
+    .admin-reporting-print-donut-legend-item {
+        display: flex;
+
+        align-items: center;
+
+        gap: 5px;
+
+        min-width: 0;
+    }
+
+    .admin-reporting-print-donut-legend-dot {
+        width: 7px;
+        height: 7px;
+
+        flex-shrink: 0;
+
+        border-radius: 50%;
+    }
+
+    .admin-reporting-print-donut-legend-label {
+        min-width: 0;
+
+        flex: 1;
+
+        color: #44506a;
+
+        font-size: 8px;
+
+        overflow-wrap: anywhere;
+    }
+
+    .admin-reporting-print-donut-legend-value {
+        color: #07132f;
+
+        font-size: 8px;
+        font-weight: 700;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT BAR CHART
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-bar-chart {
+        width: 100%;
+
+        padding-top: 2px;
+    }
+
+    .admin-reporting-print-bar-row {
+        display: grid;
+
+        grid-template-columns: 90px 1fr 25px;
+
+        align-items: center;
+
+        gap: 6px;
+
+        margin-bottom: 6px;
+    }
+
+    .admin-reporting-print-bar-label {
+        color: #44506a;
+
+        font-size: 8px;
+
+        overflow-wrap: anywhere;
+    }
+
+    .admin-reporting-print-bar-track {
+        width: 100%;
+        height: 9px;
+
+        overflow: hidden;
+
+        background: #edf0f4;
+
+        border-radius: 3px;
+    }
+
+    .admin-reporting-print-bar-fill {
+        height: 100%;
+
+        min-width: 2px;
+
+        background: #7c3aed;
+
+        border-radius: 3px;
+    }
+
+    .admin-reporting-print-bar-value {
+        color: #07132f;
+
+        font-size: 8px;
+        font-weight: 700;
+
+        text-align: right;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT TIME BAR CHARTS
+       -----------------------------------------------------
+
+       These are vertical bar charts.
+
+       Used for:
+       - Issues Reported Over Time
+       - Issues Solved Over Time
+       */
+
+    .admin-reporting-print-time-chart {
+        width: 100%;
+
+        overflow: hidden;
+    }
+
+    .admin-reporting-print-time-chart svg {
+        display: block;
+
+        width: 100%;
+        height: 190px;
+    }
+
+    .admin-reporting-print-time-label {
+        fill: #667085;
+
+        font-size: 7px;
+    }
+
+    .admin-reporting-print-time-value {
+        fill: #07132f;
+
+        font-size: 7px;
+        font-weight: 700;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT TABLE
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-table {
+        width: 100%;
+
+        border-collapse: collapse;
+
+        table-layout: fixed;
+
+        font-size: 8px;
+    }
+
+    .admin-reporting-print-table th {
+        padding: 6px 5px;
+
+        background: #07132f;
+        color: #ffffff;
+
+        font-size: 7px;
+        font-weight: 700;
+
+        text-align: left;
+    }
+
+    .admin-reporting-print-table td {
+        padding: 6px 5px;
+
+        color: #44506a;
+
+        border-bottom: 1px solid #e2e6ed;
+
+        vertical-align: top;
+
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .admin-reporting-print-table tr:nth-child(even) td {
+        background: #f8f9fb;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT FILTER LABEL
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-filter-label {
+        margin: 7px 0 0;
+
+        color: #667085;
+
+        font-size: 8px;
+
+        line-height: 1.4;
+    }
+
+
+    /* -----------------------------------------------------
+       PRINT FOOTER
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-footer {
+        margin-top: 20px;
+
+        padding-top: 8px;
+
+        border-top: 1px solid #dfe3ea;
+
+        color: #667085;
+
+        font-size: 8px;
+
+        text-align: center;
+    }
+
+
+    /* -----------------------------------------------------
+       PAGE BREAK CONTROL
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-section,
+    .admin-reporting-print-chart-card,
+    .admin-reporting-print-table {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+
+    /* -----------------------------------------------------
+       FORCE COLOURS TO PRINT
+       ----------------------------------------------------- */
+
+    .admin-reporting-print-sheet,
+    .admin-reporting-print-sheet * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
