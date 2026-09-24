@@ -25,6 +25,7 @@ import {
   Search,
   UserRound,
   ShieldCheck,
+  BarChart3,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
@@ -243,6 +244,16 @@ export default function UserManagement() {
             <Users />
             <span>User Management</span>
           </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() =>
+              navigate("/admin/reporting")
+            }
+          >
+            <BarChart3 />
+            <span>Reporting & Analytics</span>
+          </button>
         </nav>
 
         <div className="user-dashboard-logout-section">
@@ -286,82 +297,28 @@ export default function UserManagement() {
         ========================== */}
 
         <main className="user-dashboard-content user-management-content">
-
-          {/* =========================
-              PAGE INTRODUCTION
-          ========================== */}
-
-          <section className="user-management-intro">
-            <div>
-              <h2>User Management</h2>
-
-              <p>
-                Search and manage registered users,
-                roles and administrator access.
-              </p>
-            </div>
-
-            <div className="user-management-result-count">
-              <strong>
-                {loading
-                  ? "..."
-                  : filteredUsers.length}
-              </strong>
-
-              <span>
-                {filteredUsers.length === 1
-                  ? "User found"
-                  : "Users found"}
-              </span>
-            </div>
-          </section>
-
-          {/* =========================
-              INFORMATION CARD
-          ========================== */}
-
-          <section className="user-management-info-card">
-            <div className="user-management-info-icon">
-              <ShieldCheck />
-            </div>
-
-            <div>
-              <h3>User administration</h3>
-
-              <p>
-                Review registered users and manage
-                their system permissions.
-                Administrator access can only be
-                granted to staff accounts.
-              </p>
-            </div>
-          </section>
-
           {/* =========================
               USER DIRECTORY
           ========================== */}
 
           <section className="user-management-directory">
-
             <div className="user-management-directory-header">
-              <div>
-                <span className="user-management-section-label">
-                  DIRECTORY
-                </span>
-
-                <h2>User Directory</h2>
-
+              <div className="user-management-info-icon">
+                <ShieldCheck />
+              </div>
+              <div className="user-management-directory-info">
                 <p>
-                  {filteredUsers.length}{" "}
-                  {filteredUsers.length === 1
-                    ? "user"
-                    : "users"}{" "}
-                  found
+                  Review registered users and manage their system permissions.
+                  Administrator access can only be granted to staff accounts.
                 </p>
               </div>
 
-              <div className="user-management-directory-icon">
-                <UserRound />
+
+              <div className="user-management-result-count">
+                <strong>{filteredUsers.length}</strong>
+                <span>
+                  {filteredUsers.length === 1 ? "user found" : "users found"}
+                </span>
               </div>
             </div>
 
@@ -494,12 +451,10 @@ export default function UserManagement() {
                                     event.target
                                       .value,
                                 },
-                                `change the role from ${
-                                  user.role ||
-                                  "Student"
-                                } to ${
-                                  event.target
-                                    .value
+                                `change the role from ${user.role ||
+                                "Student"
+                                } to ${event.target
+                                  .value
                                 }`
                               )
                             }
@@ -524,11 +479,10 @@ export default function UserManagement() {
 
                         <td data-label="Administrator">
                           <span
-                            className={`user-management-admin-status ${
-                              user.isAdmin
-                                ? "is-admin"
-                                : ""
-                            }`}
+                            className={`user-management-admin-status ${user.isAdmin
+                              ? "is-admin"
+                              : ""
+                              }`}
                           >
                             {user.isAdmin
                               ? "Yes"
@@ -595,7 +549,7 @@ export default function UserManagement() {
                               }
                               disabled={
                                 updatingUserId ===
-                                  user._id ||
+                                user._id ||
                                 (user.isAdmin &&
                                   isCurrentAdmin(
                                     user
@@ -607,12 +561,12 @@ export default function UserManagement() {
                               }
                               title={
                                 user.isAdmin &&
-                                isCurrentAdmin(user)
+                                  isCurrentAdmin(user)
                                   ? "Another administrator must remove your admin status"
                                   : !user.isAdmin &&
-                                      !canGrantAdminAccess(
-                                        user
-                                      )
+                                    !canGrantAdminAccess(
+                                      user
+                                    )
                                     ? "Only Staff users can be granted administrator access"
                                     : undefined
                               }

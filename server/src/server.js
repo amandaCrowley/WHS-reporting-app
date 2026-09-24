@@ -21,7 +21,9 @@ import dotenv from 'dotenv';
 import upload from "./uploadMiddleware.js"; // Middleware for handling file uploads (using multer with memory storage)
 import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
 import { findUserByIdentity } from "./userIdentity.js";
+import adminAnalyticsRoutes from "./analyticsAPI.js";
 import {
+  normalizeAndValidateIssueArchiveState,
   normalizeAndValidateIssueStatus,
   normalizeIssueStatus,
   validateAdminEligibility,
@@ -93,6 +95,9 @@ const DBclient = new MongoClient(uri, {
   }
 });
 //----------------------------------------------------------------------
+
+//---------------------------Admin Analytics Route--------------------------------
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 /**
  * Start the Express server and connect to MongoDB
@@ -582,8 +587,9 @@ app.get('/api/issues/user/:firebaseUid', async (req, res) => {
     //   return res.status(403).json({ error: "Access denied" });
     // }
 
-    // Find issues reported by this user
-    let query = { reportedBy: user._id };
+    // Find issues reported by this user, hiding archived issues by default unless explicitly requested.
+    const includeArchived = req.query.archived === "true" || req.query.archived === "1";
+    const query = { reportedBy: user._id, ...(includeArchived ? {} : { isArchived: false }) };
     let cursor = db.collection("Issue")
       .find(query)
       .sort({ "dateTimeReported": -1 }); // latest issues first
@@ -1016,7 +1022,8 @@ app.get('/api/issues', async (req, res) => {
       ? await findUserByIdentity(db, req.query.firebaseUid)
       : null;
 
-    const issues = await issueWithAssigneeName(db, {});
+    const includeArchived = req.query.archived === "true" || req.query.archived === "1";
+    const issues = await issueWithAssigneeName(db, includeArchived ? {} : { isArchived: false });
     const issuesWithUnreadMessages = admin?.isAdmin
       ? await Promise.all(issues.map(async (issue) => ({
         ...issue,
@@ -1116,19 +1123,21 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
 
     const [total, open, inProgress, closed, unassigned, assignedToMe, assignedIssues, recentIssues] =
       await Promise.all([
-        issueCollection.countDocuments(),
-        issueCollection.countDocuments({ status: "Open" }),
-        issueCollection.countDocuments({ status: "In Progress" }),
-        issueCollection.countDocuments({ status: "Closed" }),
+        issueCollection.countDocuments({ isArchived: false }),
+        issueCollection.countDocuments({ isArchived: false, status: "Open" }),
+        issueCollection.countDocuments({ isArchived: false, status: "In Progress" }),
+        issueCollection.countDocuments({ isArchived: false, status: "Closed" }),
 
         //Only count unassigned issues that are currently active (Open or In Progress)
         issueCollection.countDocuments({
+          isArchived: false,
           assignedTo: null,
           status: { $in: ["Open", "In Progress"] },
         }),
 
         // Count only active issues currently assigned to the logged-in admin.
         issueCollection.countDocuments({
+          isArchived: false,
           assignedTo: user._id,
           status: { $in: ["Open", "In Progress"] },
         }),
@@ -1136,6 +1145,7 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
         // Retrieve only the 5 most recent active issues assigned to the logged-in admin.
         getDashboardIssues(
           {
+            isArchived: false,
             assignedTo: user._id,
             status: { $in: ["Open", "In Progress"] },
           },
@@ -1145,6 +1155,7 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
         // Get the 5 most recent unassigned issues that are currently active (Open or In Progress) for the dashboard.
         getDashboardIssues(
           {
+            isArchived: false,
             assignedTo: null,
             status: { $in: ["Open", "In Progress"] },
           },
@@ -1367,6 +1378,7 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       status,
       priority,
       dateTimeIssueOccurred,
+      isArchived,
     } = body;
     const witnessNames = parseArrayField(body.witnessNames);
     const imageURLs = parseArrayField(body.imageURLs ?? body.imageURL);
@@ -1405,11 +1417,27 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       }
       updateFields.status = validation.normalizedStatus;
     }
-    if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
-
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });
     }
+
+    if (isArchived !== undefined) {
+      const validation = normalizeAndValidateIssueArchiveState(isArchived);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+
+      if (validation.normalizedArchived === true && issue.status !== "Closed") {
+        return res.status(400).json({ error: "Only closed issues can be archived." });
+      }
+
+      if (validation.normalizedArchived === false && issue.isArchived === true) {
+        updateFields.isArchived = false;
+      } else if (validation.normalizedArchived === true) {
+        updateFields.isArchived = true;
+      }
+    }
+    if (witnessNames !== undefined) updateFields.witnessNames = witnessNames;
 
     if (updateFields.status === "Closed") {
 

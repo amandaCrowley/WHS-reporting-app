@@ -234,14 +234,14 @@
     border-bottom: none;
 }
 
-.issue-meta-row > span {
+.issue-meta-row>span {
     flex: 0 0 auto;
     color: #64748b;
     font-size: 13px;
     font-weight: 600;
 }
 
-.issue-meta-row > strong {
+.issue-meta-row>strong {
     min-width: 0;
     color: #334155;
     font-size: 13px;
@@ -498,7 +498,8 @@
 
 @media (max-width: 768px) {
     .issue-chat {
-        max-height: 360px;
+        max-height: 400px;
+        min-height: 200px;
         padding: 6px 2px;
     }
 
@@ -512,7 +513,8 @@
 
 @media (max-width: 480px) {
     .issue-chat {
-        max-height: 320px;
+max-height: 380px;
+        min-height: 200px;
         gap: 12px;
         padding: 4px 2px;
     }
@@ -594,7 +596,7 @@
 
 .issue-comment-form textarea {
     width: 100%;
-    min-height: 70px;
+    min-height: 90px;
     padding: 11px 12px;
     resize: vertical;
     border: 1px solid #cbd5e1;
@@ -711,7 +713,7 @@
  */
 
 .issue-comment-actions .issue-comment-upload-label,
-.issue-comment-actions > button {
+.issue-comment-actions>button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -754,7 +756,7 @@
 
 /* Add comment */
 
-.issue-comment-actions > button {
+.issue-comment-actions>button {
     border: none;
     background: #4960df;
     color: #ffffff;
@@ -762,11 +764,11 @@
     transition: background 0.15s ease;
 }
 
-.issue-comment-actions > button:hover:not(:disabled) {
+.issue-comment-actions>button:hover:not(:disabled) {
     background: #3f54c7;
 }
 
-.issue-comment-actions > button:disabled {
+.issue-comment-actions>button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
@@ -1017,7 +1019,7 @@
     background: #ffffff;
 }
 
-.issue-assignment-search > svg {
+.issue-assignment-search>svg {
     flex: 0 0 auto;
     color: #64748b;
 }
@@ -1038,7 +1040,7 @@
     color: #94a3b8;
 }
 
-.issue-assignment-search > button {
+.issue-assignment-search>button {
     flex: 0 0 auto;
     padding: 4px 6px;
     border: none;
@@ -1050,7 +1052,7 @@
     cursor: pointer;
 }
 
-.issue-assignment-search > button:hover {
+.issue-assignment-search>button:hover {
     text-decoration: underline;
 }
 
@@ -1094,7 +1096,7 @@
     cursor: default;
 }
 
-.issue-assignment-option > span {
+.issue-assignment-option>span {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1288,7 +1290,7 @@
         gap: 5px;
     }
 
-    .issue-meta-row > strong {
+    .issue-meta-row>strong {
         text-align: left;
     }
 
@@ -1377,7 +1379,7 @@
     }
 
     .issue-comment-actions .issue-comment-upload-label,
-    .issue-comment-actions > button {
+    .issue-comment-actions>button {
         width: 100%;
     }
 

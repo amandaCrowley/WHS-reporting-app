@@ -189,7 +189,7 @@ body,
   color: #07132f;
 }
 
-.user-my-issues-header-user > span {
+.user-my-issues-header-user>span {
   color: #07132f;
   font-size: 15px;
   font-weight: 600;
@@ -482,7 +482,7 @@ body,
   padding: 6px 4px;
   border: 1px solid #bfdbfe;
   border-radius: 8px;
-  
+
   background: #fef2f2;
   color: #dc2626;
   border-color: #fecaca;
@@ -689,7 +689,14 @@ body,
   }
 
   .user-my-issues-card-right {
-    justify-self: start;
+    justify-self: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .user-my-issues-date-block {
+    align-items: center;
+    text-align: center;
   }
 
   .user-my-issues-card-arrow {
@@ -792,7 +799,7 @@ body,
     font-size: 22px;
   }
 
-  .user-my-issues-layout .user-dashboard-header-user > span {
+  .user-my-issues-layout .user-dashboard-header-user>span {
     display: none;
   }
 

@@ -15,723 +15,584 @@
    USER MANAGEMENT PAGE CONTENT
    ========================================================= */
 
-   .user-management-content {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  
-  
-  /* =========================================================
-     PAGE INTRODUCTION
-     ========================================================= */
-  
-  .user-management-intro {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-  
-    padding: 4px 0 0;
-  }
-  
-  .user-management-intro h2 {
-    margin: 0 0 8px;
-  
-    color: #07132f;
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-  
-  .user-management-intro p {
-    margin: 0;
-  
-    color: #667085;
-    font-size: 15px;
-    line-height: 1.6;
-  }
-  
-  .user-management-result-count {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  
-    min-width: 120px;
-    padding: 14px 22px;
-  
-    background: #ffffff;
-    border: 1px solid #e7eaf0;
-    border-radius: 10px;
-  
-    box-shadow: 0 2px 8px rgba(7, 19, 47, 0.04);
-  }
-  
-  .user-management-result-count strong {
-    color: #07132f;
-    font-size: 26px;
-    font-weight: 700;
-    line-height: 1;
-  }
-  
-  .user-management-result-count span {
-    margin-top: 5px;
-  
-    color: #667085;
-    font-size: 12px;
-    font-weight: 500;
-  }
-  
-  
-  /* =========================================================
-     USER ADMINISTRATION INFORMATION CARD
-     ========================================================= */
-  
-  .user-management-info-card {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-  
-    padding: 20px 24px;
-  
-    background: #ffffff;
-    border: 1px solid #e7eaf0;
-    border-left: 4px solid #0057e7;
-    border-radius: 10px;
-  
-    box-shadow: 0 2px 8px rgba(7, 19, 47, 0.04);
-  }
-  
-  .user-management-info-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    flex: 0 0 52px;
-    width: 52px;
-    height: 52px;
-  
-    background: #eaf2ff;
-    border-radius: 50%;
-  
-    color: #0057e7;
-  }
-  
-  .user-management-info-icon svg {
-    width: 25px;
-    height: 25px;
-    stroke-width: 2;
-  }
-  
-  .user-management-info-card h3 {
-    margin: 0 0 5px;
-  
-    color: #07132f;
-    font-size: 17px;
-    font-weight: 700;
-  }
-  
-  .user-management-info-card p {
-    margin: 0;
-  
-    max-width: 800px;
-  
-    color: #667085;
-    font-size: 14px;
-    line-height: 1.55;
-  }
-  
-  
-  /* =========================================================
-     USER DIRECTORY CARD
-     ========================================================= */
-  
-  .user-management-directory {
-    overflow: hidden;
-  
-    background: #ffffff;
-    border: 1px solid #e7eaf0;
-    border-radius: 10px;
-  
-    box-shadow: 0 2px 10px rgba(7, 19, 47, 0.05);
-  }
-  
-  
-  /* =========================================================
-     DIRECTORY HEADER
-     ========================================================= */
-  
-  .user-management-directory-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-  
-    padding: 24px 28px;
-  
-    border-bottom: 1px solid #e7eaf0;
-  }
-  
-  .user-management-section-label {
-    display: block;
-  
-    margin-bottom: 6px;
-  
-    color: #0057e7;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-  }
-  
-  .user-management-directory-header h2 {
-    margin: 0;
-  
-    color: #07132f;
-    font-size: 22px;
-    font-weight: 700;
-  }
-  
-  .user-management-directory-header p {
-    margin: 6px 0 0;
-  
-    color: #667085;
-    font-size: 13px;
-  }
-  
-  .user-management-directory-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    flex: 0 0 48px;
-    width: 48px;
-    height: 48px;
-  
-    background: #eaf2ff;
-    border-radius: 50%;
-  
-    color: #0057e7;
-  }
-  
-  .user-management-directory-icon svg {
-    width: 23px;
-    height: 23px;
-  }
-  
-  
-  /* =========================================================
-     SEARCH AND FILTERS
-     ========================================================= */
-  
+.user-management-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+
+/* =========================================================
+   USER DIRECTORY CARD
+   ========================================================= */
+
+.user-management-directory {
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e7eaf0;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(7, 19, 47, 0.05);
+}
+
+
+/* =========================================================
+   DIRECTORY HEADER
+   ========================================================= */
+
+.user-management-directory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 24px 28px;
+  border-bottom: 1px solid #e7eaf0;
+}
+
+.user-management-directory-info {
+  flex: 1;
+}
+
+.user-management-directory-title-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-management-directory-info h2 {
+  margin: 0;
+  color: #07132f;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.user-management-directory-info p {
+  margin: 7px 0 0;
+  max-width: 700px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   DIRECTORY INFORMATION ICON
+   ========================================================= */
+
+.user-management-info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  background: #eaf2ff;
+  border-radius: 50%;
+  color: #0057e7;
+}
+
+.user-management-info-icon svg {
+  width: 23px;
+  height: 23px;
+  stroke-width: 2;
+}
+
+
+/* =========================================================
+   RESULT COUNT
+   ========================================================= */
+
+.user-management-result-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 110px;
+  width: 110px;
+  min-width: 110px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: #f8f9fb;
+  border: 1px solid #e7eaf0;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.user-management-result-count strong {
+  display: block;
+  width: 100%;
+  margin: 0;
+  color: #07132f;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+}
+
+.user-management-result-count span {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   SEARCH AND FILTERS
+   ========================================================= */
+
+.user-management-filters {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 190px 190px;
+  gap: 14px;
+  padding: 20px 28px;
+  background: #f8f9fb;
+  border-bottom: 1px solid #e7eaf0;
+}
+
+.user-management-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.user-management-search svg {
+  position: absolute;
+  left: 15px;
+  width: 19px;
+  height: 19px;
+  color: #667085;
+  pointer-events: none;
+}
+
+.user-management-search input,
+.user-management-filters select,
+.user-management-role-select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  background: #ffffff;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  color: #07132f;
+  font-family: inherit;
+  font-size: 14px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.user-management-search input {
+  padding: 0 15px 0 44px;
+}
+
+.user-management-filters select {
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.user-management-search input::placeholder {
+  color: #98a2b3;
+}
+
+.user-management-search input:focus,
+.user-management-filters select:focus,
+.user-management-role-select:focus {
+  border-color: #0057e7;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 87, 231, 0.1);
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.user-management-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.user-management-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.user-management-table thead {
+  background: #f7f8fa;
+}
+
+.user-management-table th {
+  padding: 14px 16px;
+  border-bottom: 1px solid #dfe4eb;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.user-management-table td {
+  padding: 15px 16px;
+  border-bottom: 1px solid #e7eaf0;
+  color: #475467;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.user-management-table tbody tr {
+  background: #ffffff;
+  transition: background 0.15s ease;
+}
+
+.user-management-table tbody tr:hover {
+  background: #f8faff;
+}
+
+.user-management-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.user-management-table td:nth-child(3) {
+  min-width: 190px;
+}
+
+.user-management-table td:last-child {
+  min-width: 430px;
+}
+
+
+/* =========================================================
+   ROLE SELECT
+   ========================================================= */
+
+.user-management-role-select {
+  min-width: 125px;
+  height: 38px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.user-management-role-select:disabled {
+  background: #f2f4f7;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ADMINISTRATOR STATUS
+   ========================================================= */
+
+.user-management-admin-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 6px 11px;
+  background: #f0f2f5;
+  border-radius: 999px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.user-management-admin-status.is-admin {
+  background: #e5f1ff;
+  color: #0057e7;
+}
+
+
+/* =========================================================
+   USER ACTION BUTTONS
+   ========================================================= */
+
+.user-management-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+
+.user-management-actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.user-management-action-secondary {
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  color: #344054;
+}
+
+.user-management-action-secondary:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #98a2b3;
+}
+
+.user-management-action-primary {
+  background: #0057e7;
+  border: 1px solid #0057e7;
+  color: #ffffff;
+}
+
+.user-management-action-primary:hover:not(:disabled) {
+  background: #0046bd;
+  border-color: #0046bd;
+}
+
+.user-management-actions button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.user-management-actions button:disabled {
+  background: #eef1f4;
+  border: 1px solid #e4e7ec;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   LOADING / ERROR / EMPTY STATES
+   ========================================================= */
+
+.user-management-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  padding: 30px;
+  background: #ffffff;
+}
+
+.user-management-state p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+}
+
+.user-management-error p {
+  color: #b42318;
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+
+.user-management-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 18px 28px;
+  background: #f8f9fb;
+  border-top: 1px solid #e7eaf0;
+}
+
+.user-management-pagination span {
+  color: #667085;
+  font-size: 13px;
+}
+
+.user-management-pagination button {
+  min-height: 38px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  color: #344054;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.user-management-pagination button:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #98a2b3;
+}
+
+.user-management-pagination button:disabled {
+  background: #f2f4f7;
+  color: #98a2b3;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   CONFIRMATION POPUP
+   ========================================================= */
+
+.user-management-confirmation-backdrop {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(7, 19, 47, 0.58);
+}
+
+.user-management-confirmation-dialog {
+  width: min(460px, 100%);
+  box-sizing: border-box;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e7eaf0;
+  border-radius: 10px;
+  box-shadow: 0 20px 55px rgba(7, 19, 47, 0.22);
+}
+
+.user-management-confirmation-eyebrow {
+  margin: 0 0 8px;
+  color: #0057e7;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.user-management-confirmation-dialog h2 {
+  margin: 0 0 12px;
+  color: #07132f;
+  font-size: 23px;
+  font-weight: 700;
+}
+
+.user-management-confirmation-dialog > p:not(
+    .user-management-confirmation-eyebrow
+  ) {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.user-management-confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.user-management-confirmation-actions button {
+  min-height: 40px;
+  padding: 0 17px;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  color: #344054;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.user-management-confirmation-actions button:hover {
+  background: #f8fafc;
+}
+
+.user-management-confirmation-actions
+  .user-management-confirmation-confirm {
+  background: #0057e7;
+  border-color: #0057e7;
+  color: #ffffff;
+}
+
+.user-management-confirmation-actions
+  .user-management-confirmation-confirm:hover {
+  background: #0046bd;
+  border-color: #0046bd;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1200px) {
+
   .user-management-filters {
-    display: grid;
-    grid-template-columns: minmax(300px, 1fr) 190px 190px;
-    gap: 14px;
-  
-    padding: 20px 28px;
-  
-    background: #f8f9fb;
-    border-bottom: 1px solid #e7eaf0;
+    grid-template-columns: minmax(240px, 1fr) 160px 160px;
   }
-  
-  .user-management-search {
-    position: relative;
-  
-    display: flex;
-    align-items: center;
-  }
-  
-  .user-management-search svg {
-    position: absolute;
-    left: 15px;
-  
-    width: 19px;
-    height: 19px;
-  
-    color: #667085;
-  
-    pointer-events: none;
-  }
-  
-  .user-management-search input,
-  .user-management-filters select,
-  .user-management-role-select {
-    box-sizing: border-box;
-  
-    width: 100%;
-    height: 44px;
-  
-    background: #ffffff;
-    border: 1px solid #d8dee8;
-    border-radius: 6px;
-  
-    color: #07132f;
-    font-family: inherit;
-    font-size: 14px;
-  
-    transition:
-      border-color 0.15s ease,
-      box-shadow 0.15s ease;
-  }
-  
-  .user-management-search input {
-    padding: 0 15px 0 44px;
-  }
-  
-  .user-management-filters select {
-    padding: 0 12px;
-    cursor: pointer;
-  }
-  
-  .user-management-search input::placeholder {
-    color: #98a2b3;
-  }
-  
-  .user-management-search input:focus,
-  .user-management-filters select:focus,
-  .user-management-role-select:focus {
-    border-color: #0057e7;
-    outline: none;
-  
-    box-shadow: 0 0 0 3px rgba(0, 87, 231, 0.1);
-  }
-  
-  
-  /* =========================================================
-     TABLE
-     ========================================================= */
-  
-  .user-management-table-wrapper {
-    width: 100%;
-  
-    overflow-x: auto;
-  }
-  
-  .user-management-table {
-    width: 100%;
-  
-    border-collapse: collapse;
-    border-spacing: 0;
-  }
-  
-  .user-management-table thead {
-    background: #f7f8fa;
-  }
-  
-  .user-management-table th {
-    padding: 14px 16px;
-  
-    border-bottom: 1px solid #dfe4eb;
-  
-    color: #344054;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.1px;
-    text-align: left;
-    white-space: nowrap;
-  }
-  
-  .user-management-table td {
-    padding: 15px 16px;
-  
-    border-bottom: 1px solid #e7eaf0;
-  
-    color: #475467;
-    font-size: 14px;
-    vertical-align: middle;
-  }
-  
-  .user-management-table tbody tr {
-    background: #ffffff;
-  
-    transition: background 0.15s ease;
-  }
-  
-  .user-management-table tbody tr:hover {
-    background: #f8faff;
-  }
-  
-  .user-management-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-  
-  .user-management-table td:nth-child(3) {
-    min-width: 190px;
-  }
-  
+
   .user-management-table td:last-child {
-    min-width: 430px;
+    min-width: 400px;
   }
-  
-  
-  /* =========================================================
-     ROLE SELECT
-     ========================================================= */
-  
-  .user-management-role-select {
-    min-width: 125px;
-    height: 38px;
-  
-    padding: 0 10px;
-  
-    cursor: pointer;
+}
+
+
+@media (max-width: 900px) {
+
+  .user-management-directory-header {
+    align-items: flex-start;
   }
-  
-  .user-management-role-select:disabled {
-    background: #f2f4f7;
-    color: #98a2b3;
-  
-    cursor: not-allowed;
+
+  .user-management-filters {
+    grid-template-columns: 1fr;
   }
-  
-  
-  /* =========================================================
-     ADMINISTRATOR STATUS
-     ========================================================= */
-  
-  .user-management-admin-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  
-    min-width: 42px;
-  
-    padding: 6px 11px;
-  
-    background: #f0f2f5;
-    border-radius: 999px;
-  
-    color: #667085;
-    font-size: 12px;
-    font-weight: 700;
-  }
-  
-  .user-management-admin-status.is-admin {
-    background: #e5f1ff;
-    color: #0057e7;
-  }
-  
-  
-  /* =========================================================
-     USER ACTION BUTTONS
-     ========================================================= */
-  
+
   .user-management-actions {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
-  
-  .user-management-actions button {
-    min-height: 36px;
-  
-    padding: 0 12px;
-  
-    border-radius: 6px;
-  
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-  
-    cursor: pointer;
-  
-    transition:
-      background 0.15s ease,
-      border-color 0.15s ease,
-      color 0.15s ease,
-      transform 0.15s ease;
+
+  .user-management-table td:last-child {
+    min-width: 300px;
   }
-  
-  .user-management-action-secondary {
-    background: #ffffff;
-    border: 1px solid #d0d5dd;
-  
-    color: #344054;
+}
+
+
+@media (max-width: 600px) {
+
+  .user-management-directory-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px 18px;
   }
-  
-  .user-management-action-secondary:hover:not(:disabled) {
-    background: #f8fafc;
-    border-color: #98a2b3;
+
+  .user-management-directory-title-row {
+    align-items: flex-start;
   }
-  
-  .user-management-action-primary {
-    background: #0057e7;
-    border: 1px solid #0057e7;
-  
-    color: #ffffff;
+
+  .user-management-directory-info h2 {
+    font-size: 20px;
   }
-  
-  .user-management-action-primary:hover:not(:disabled) {
-    background: #0046bd;
-    border-color: #0046bd;
+
+  .user-management-result-count {
+    align-items: flex-start;
+    min-width: 0;
   }
-  
-  .user-management-actions button:active:not(:disabled) {
-    transform: translateY(1px);
+
+  .user-management-filters {
+    padding: 18px;
   }
-  
-  .user-management-actions button:disabled {
-    background: #eef1f4;
-    border: 1px solid #e4e7ec;
-  
-    color: #98a2b3;
-  
-    cursor: not-allowed;
-  }
-  
-  
-  /* =========================================================
-     LOADING / ERROR / EMPTY STATES
-     ========================================================= */
-  
-  .user-management-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    min-height: 160px;
-  
-    padding: 30px;
-  
-    background: #ffffff;
-  }
-  
-  .user-management-state p {
-    margin: 0;
-  
-    color: #667085;
-    font-size: 14px;
-  }
-  
-  .user-management-error p {
-    color: #b42318;
-  }
-  
-  
-  /* =========================================================
-     PAGINATION
-     ========================================================= */
-  
+
   .user-management-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 14px;
-  
-    padding: 18px 28px;
-  
-    background: #f8f9fb;
-    border-top: 1px solid #e7eaf0;
-  }
-  
-  .user-management-pagination span {
-    color: #667085;
-    font-size: 13px;
-  }
-  
-  .user-management-pagination button {
-    min-height: 38px;
-  
-    padding: 0 16px;
-  
-    background: #ffffff;
-    border: 1px solid #d0d5dd;
-    border-radius: 6px;
-  
-    color: #344054;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-  
-    cursor: pointer;
-  
-    transition:
-      background 0.15s ease,
-      border-color 0.15s ease;
-  }
-  
-  .user-management-pagination button:hover:not(:disabled) {
-    background: #f8fafc;
-    border-color: #98a2b3;
-  }
-  
-  .user-management-pagination button:disabled {
-    background: #f2f4f7;
-    color: #98a2b3;
-  
-    cursor: not-allowed;
-  }
-  
-  
-  /* =========================================================
-     CONFIRMATION POPUP
-     ========================================================= */
-  
-  .user-management-confirmation-backdrop {
-    position: fixed;
-    z-index: 2000;
-    inset: 0;
-  
-    display: flex;
-    align-items: center;
     justify-content: center;
-  
-    padding: 24px;
-  
-    background: rgba(7, 19, 47, 0.58);
+    padding: 16px 18px;
   }
-  
-  .user-management-confirmation-dialog {
-    width: min(460px, 100%);
-  
-    box-sizing: border-box;
-  
-    padding: 28px;
-  
-    background: #ffffff;
-    border: 1px solid #e7eaf0;
-    border-radius: 10px;
-  
-    box-shadow: 0 20px 55px rgba(7, 19, 47, 0.22);
-  }
-  
-  .user-management-confirmation-eyebrow {
-    margin: 0 0 8px;
-  
-    color: #0057e7;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-  }
-  
-  .user-management-confirmation-dialog h2 {
-    margin: 0 0 12px;
-  
-    color: #07132f;
-    font-size: 23px;
-    font-weight: 700;
-  }
-  
-  .user-management-confirmation-dialog > p:not(
-      .user-management-confirmation-eyebrow
-    ) {
-    margin: 0;
-  
-    color: #667085;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  
-  .user-management-confirmation-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  
-    margin-top: 24px;
-  }
-  
-  .user-management-confirmation-actions button {
-    min-height: 40px;
-  
-    padding: 0 17px;
-  
-    background: #ffffff;
-    border: 1px solid #d0d5dd;
-    border-radius: 6px;
-  
-    color: #344054;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-  
-    cursor: pointer;
-  }
-  
-  .user-management-confirmation-actions button:hover {
-    background: #f8fafc;
-  }
-  
-  .user-management-confirmation-actions
-    .user-management-confirmation-confirm {
-    background: #0057e7;
-    border-color: #0057e7;
-  
-    color: #ffffff;
-  }
-  
-  .user-management-confirmation-actions
-    .user-management-confirmation-confirm:hover {
-    background: #0046bd;
-    border-color: #0046bd;
-  }
-  
-  
-  /* =========================================================
-     RESPONSIVE
-     ========================================================= */
-  
-  @media (max-width: 1200px) {
-    .user-management-filters {
-      grid-template-columns: minmax(240px, 1fr) 160px 160px;
-    }
-  
-    .user-management-table td:last-child {
-      min-width: 400px;
-    }
-  }
-  
-  @media (max-width: 900px) {
-    .user-management-intro {
-      align-items: flex-start;
-      flex-direction: column;
-    }
-  
-    .user-management-result-count {
-      align-items: flex-start;
-  
-      min-width: 0;
-    }
-  
-    .user-management-filters {
-      grid-template-columns: 1fr;
-    }
-  
-    .user-management-actions {
-      flex-wrap: wrap;
-    }
-  
-    .user-management-table td:last-child {
-      min-width: 300px;
-    }
-  }
-  
-  @media (max-width: 600px) {
-    .user-management-intro h2 {
-      font-size: 24px;
-    }
-  
-    .user-management-info-card {
-      align-items: flex-start;
-  
-      padding: 18px;
-    }
-  
-    .user-management-directory-header {
-      padding: 20px 18px;
-    }
-  
-    .user-management-filters {
-      padding: 18px;
-    }
-  
-    .user-management-pagination {
-      justify-content: center;
-  
-      padding: 16px 18px;
-    }
-  }
+}

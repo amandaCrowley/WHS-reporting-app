@@ -24,6 +24,7 @@ import {
   X,
   Search,
   ChevronDown,
+  BarChart3,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -108,6 +109,16 @@ function Sidebar({ userData, navigate, logout }) {
               <Users />
               <span>User Management</span>
             </button>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() =>
+                navigate("/admin/reporting")
+              }
+            >
+              <BarChart3 />
+              <span>Reporting & Analytics</span>
+            </button>
           </>
         )}
       </nav>
@@ -172,6 +183,7 @@ export default function IssueDetails() {
   const [loading, setLoading] = useState(true); // True while fetching the issue
   const [error, setError] = useState(""); // Stores any error messages
   const [assigningIssue, setAssigningIssue] = useState(false);
+  const [archivingIssue, setArchivingIssue] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [commentError, setCommentError] = useState("");
@@ -671,6 +683,48 @@ export default function IssueDetails() {
       );
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const toggleArchiveIssue = async () => {
+    if (!issue?._id || !userData?.firebaseUid) {
+      return;
+    }
+
+    if (issue.status !== "Closed" && !issue.isArchived) {
+      alert("Only closed issues can be archived.");
+      return;
+    }
+
+    try {
+      setArchivingIssue(true);
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issue._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            isArchived: !issue.isArchived,
+            firebaseUid: userData.firebaseUid,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update archive state");
+      }
+
+      updateIssueState(data);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not update archive state");
+    } finally {
+      setArchivingIssue(false);
     }
   };
 
@@ -1367,6 +1421,14 @@ export default function IssueDetails() {
                 </div>
 
                 <div className="issue-meta-row">
+                  <span>Archived:</span>
+
+                  <strong>
+                    {issue.isArchived ? "Yes" : "No"}
+                  </strong>
+                </div>
+
+                <div className="issue-meta-row">
                   <span>Priority:</span>
 
                   <strong>
@@ -1633,6 +1695,30 @@ export default function IssueDetails() {
           >
             Edit Issue
           </button>
+
+          {userData?.isAdmin && (
+            <button
+              className="btn secondary-btn"
+              type="button"
+              onClick={toggleArchiveIssue}
+              disabled={archivingIssue || (!issue.isArchived && issue.status !== "Closed")}
+              title={
+                !issue.isArchived && issue.status !== "Closed"
+                  ? "Archive unavailable: only closed issues can be archived"
+                  : issue.isArchived
+                    ? "Restore this issue from the archive"
+                    : "Archive this issue"
+              }
+            >
+              {archivingIssue
+                ? issue.isArchived
+                  ? "Restoring..."
+                  : "Archiving..."
+                : issue.isArchived
+                  ? "Restore issue"
+                  : "Archive issue"}
+            </button>
+          )}
 
           {/* Admin navigation */}
           {userData?.isAdmin && (

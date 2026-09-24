@@ -17,7 +17,7 @@ import MobilePageHeading from "../components/MobilePageHeading";
 import useMobileNavigation from "../hooks/useMobileNavigation";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { userLogout } from "../hooks/userLogout";
-import { LayoutDashboard, ClipboardList, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Users, LogOut, BarChart3 } from "lucide-react";
 import { getUserData } from "../hooks/getUserData";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
@@ -146,8 +146,18 @@ export default function AdminAssignedIssues() {
           <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/manageissues")}>
             <ClipboardList /><span>Manage Issues</span>
           </button>
-          <button type="button" className="user-dashboard-nav-item active" onClick={() => navigate("/admin/usermanagement")}>
+          <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/usermanagement")}>
             <Users /><span>User Management</span>
+          </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() =>
+              navigate("/admin/reporting")
+            }
+          >
+            <BarChart3 />
+            <span>Reporting & Analytics</span>
           </button>
         </nav>
         <div className="user-dashboard-logout-section">

@@ -35,6 +35,7 @@ import UserManagement from './admin/UserManagement.jsx'
 import AdminUserDetails from './admin/AdminUserDetails.jsx'
 import AdminAssignedIssues from './admin/AdminAssignedIssues.jsx'
 import AdminEditUser from './admin/AdminEditUser.jsx'
+import AdminReporting from "./admin/AdminReporting.jsx";
 
 // This component is used to protect routes that require authentication. It checks if the user is logged in and redirects them to the login page if they are not. 
 // If the route requires admin privileges, it also checks if the user is an admin and redirects them to the user dashboard if they are not.
@@ -142,6 +143,9 @@ const routes = [{
     },{
       path: '/admin/dashboard',
       element: adminElement(<AdminDashboard />)
+    },{
+      path: '/admin/reporting',
+      element: adminElement(<AdminReporting />)
     }]
   }]
 const router = createBrowserRouter(routes);

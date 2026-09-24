@@ -306,6 +306,35 @@
   .manage-issues-panel {
     margin-top: 20px;
   }
+
+  .manage-archive-tabs {
+    display: inline-flex;
+    gap: 8px;
+    padding: 8px;
+    margin: 16px 24px 0;
+    border: 1px solid #e7eaf0;
+    border-radius: 10px;
+    background: #f8fafc;
+  }
+
+  .manage-archive-tab {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #475467;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .manage-archive-tab.active {
+    background: #0057e7;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 87, 231, 0.2);
+  }
   
   .manage-issues-panel-header {
     min-height: 92px;
@@ -564,6 +593,21 @@
     background: #e6f6ec;
     color: #177245;
   }
+
+  .manage-archive-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f2f4f7;
+    color: #475467;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
   
   
   /* =========================
@@ -716,6 +760,36 @@
   .manage-clear-button:hover:not(:disabled) {
     background: #f7f8fb;
     border-color: #c5ccd7;
+  }
+
+  .manage-archive-button {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a5b00;
+  }
+
+  .manage-archive-button:hover:not(:disabled) {
+    background: #ffedd5;
+    border-color: #fdba74;
+  }
+
+  .manage-restore-button {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
+  }
+
+  .manage-restore-button:hover:not(:disabled) {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+  }
+
+  .manage-action-button:disabled.manage-archive-button,
+  .manage-action-button:disabled.manage-restore-button {
+    background: #f2f4f7;
+    border-color: #e4e7ec;
+    color: #98a2b3;
+    cursor: not-allowed;
   }
   
   
