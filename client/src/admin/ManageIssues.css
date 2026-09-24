@@ -467,6 +467,39 @@
   
     table-layout: fixed;
   }
+
+  /* Keep desktop columns aligned while enclosing each issue in its own box. */
+  @media (min-width: 761px) {
+    .manage-issues-page .manage-table-container {
+      padding: 0 16px 16px;
+      background: #f7f8fb;
+    }
+
+    .manage-issues-page .manage-issues-table {
+      border-collapse: separate;
+      border-spacing: 0 12px;
+    }
+
+    .manage-issues-page .manage-issues-table tbody td {
+      border-top: 1px solid #cbd5e1;
+      border-bottom: 1px solid #cbd5e1;
+      background: #ffffff;
+    }
+
+    .manage-issues-page .manage-issues-table tbody td:first-child {
+      border-left: 4px solid #0057e7;
+      border-radius: 10px 0 0 10px;
+    }
+
+    .manage-issues-page .manage-issues-table tbody td:last-child {
+      border-right: 1px solid #cbd5e1;
+      border-radius: 0 10px 10px 0;
+    }
+
+    .manage-issues-page .manage-issues-table tbody tr:hover td {
+      background: #f0f6ff;
+    }
+  }
   
   
   /* =========================
