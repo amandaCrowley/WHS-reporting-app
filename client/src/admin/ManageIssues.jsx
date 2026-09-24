@@ -527,35 +527,6 @@ export default function ManageIssues() {
         ========================== */}
 
         <main className="user-dashboard-content manage-issues-content">
-
-          {/* =========================
-              PAGE INFORMATION
-          ========================== */}
-
-          <section className="manage-issues-intro">
-            <div>
-              <h2>Manage reported issues</h2>
-
-              <p>
-                Review all reported workplace health and safety issues,
-                filter the list, view issue details and manage admin
-                assignments.
-              </p>
-            </div>
-
-            <div className="manage-issues-result-count">
-              <strong>
-                {loading ? "..." : filteredIssues.length}
-              </strong>
-
-              <span>
-                {filteredIssues.length === 1
-                  ? "Issue found"
-                  : "Issues found"}
-              </span>
-            </div>
-          </section>
-
           {/* =========================
               SEARCH AND FILTER PANEL
           ========================== */}
@@ -573,6 +544,17 @@ export default function ManageIssues() {
                   Narrow the issue list by keyword, status,
                   assignment, priority or reported date.
                 </p>
+              </div>
+              <div className="manage-issues-result-count">
+                <strong>
+                  {loading ? "..." : filteredIssues.length}
+                </strong>
+
+                <span>
+                  {filteredIssues.length === 1
+                    ? "Issue found"
+                    : "Issues found"}
+                </span>
               </div>
             </div>
 
@@ -596,11 +578,6 @@ export default function ManageIssues() {
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-
-                <p className="manage-field-caption">
-                  Search across issue titles, descriptions,
-                  locations, campuses and reporter names.
-                </p>
               </div>
 
               {/* Filters */}
@@ -638,10 +615,6 @@ export default function ManageIssues() {
                       Closed
                     </option>
                   </select>
-
-                  <p className="manage-field-caption">
-                    Filter by issue progress.
-                  </p>
                 </div>
 
                 <div className="manage-filter-field">
@@ -672,10 +645,6 @@ export default function ManageIssues() {
                       Assigned to others
                     </option>
                   </select>
-
-                  <p className="manage-field-caption">
-                    View issues by admin assignment.
-                  </p>
                 </div>
 
                 <div className="manage-filter-field">
@@ -710,10 +679,6 @@ export default function ManageIssues() {
                       Critical
                     </option>
                   </select>
-
-                  <p className="manage-field-caption">
-                    Filter by reported priority.
-                  </p>
                 </div>
 
                 <div className="manage-filter-field">
@@ -736,10 +701,6 @@ export default function ManageIssues() {
                       Oldest first
                     </option>
                   </select>
-
-                  <p className="manage-field-caption">
-                    Order issues by report date.
-                  </p>
                 </div>
               </div>
             </div>
@@ -759,10 +720,6 @@ export default function ManageIssues() {
                   directly from the list below.
                 </p>
               </div>
-
-              <span className="manage-issues-count">
-                {loading ? "..." : filteredIssues.length}
-              </span>
             </div>
 
             <div className="manage-archive-tabs" aria-label="Issue archive tabs">
