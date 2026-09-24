@@ -1014,8 +1014,11 @@
 }
 
 .admin-reporting-pie-legend-label {
-    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
 
+    min-width: 0;
     flex: 1;
 
     color: #44506a;
