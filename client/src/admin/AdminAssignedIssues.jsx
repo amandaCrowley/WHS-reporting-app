@@ -13,6 +13,8 @@
  */
 
 import { useEffect, useState } from "react";
+import MobilePageHeading from "../components/MobilePageHeading";
+import useMobileNavigation from "../hooks/useMobileNavigation";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { userLogout } from "../hooks/userLogout";
 import { LayoutDashboard, ClipboardList, Users, LogOut } from "lucide-react";
@@ -23,6 +25,7 @@ import "../styles/AdminAssignedIssues.css";
 import NotificationBell from "../components/NotificationBell";
 
 export default function AdminAssignedIssues() {
+  const mobileNavigation = useMobileNavigation();
   const navigate = useNavigate();
   const { userId } = useParams();
   const logout = userLogout();
@@ -131,8 +134,8 @@ export default function AdminAssignedIssues() {
   }, { open: 0, inProgress: 0, closed: 0 });
 
   return (
-    <div className="user-dashboard admin-dashboard admin-assigned-issues-shell">
-      <aside className="user-dashboard-sidebar">
+    <div className={`user-dashboard admin-dashboard admin-assigned-issues-shell ${mobileNavigation.layoutClassName}`} onKeyDown={mobileNavigation.onKeyDown}>
+      <aside className="user-dashboard-sidebar" {...mobileNavigation.sidebarProps}>
         <div className="user-dashboard-logo">
           <img src={UONLogo} alt="The University of Newcastle Australia" />
         </div>
@@ -156,7 +159,7 @@ export default function AdminAssignedIssues() {
 
       <div className="user-dashboard-main">
         <header className="user-dashboard-header">
-          <h1>Assigned Issues</h1>
+          <MobilePageHeading title="Assigned Issues" {...mobileNavigation.headingProps} />
           <div className="user-dashboard-header-user">
             <span>Welcome {userData?.firstName || "Admin"}</span>
             <NotificationBell firebaseUid={userData?.firebaseUid} />

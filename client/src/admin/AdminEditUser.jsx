@@ -8,6 +8,8 @@
  */
 
 import { useEffect, useState } from "react";
+import MobilePageHeading from "../components/MobilePageHeading";
+import useMobileNavigation from "../hooks/useMobileNavigation";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -25,6 +27,7 @@ import NotificationBell from "../components/NotificationBell";
 const ROLE_OPTIONS = ["Student", "Staff", "Visitor", "Contractor"];
 
 export default function AdminEditUser() {
+  const mobileNavigation = useMobileNavigation();
   const navigate = useNavigate();
   const { userId } = useParams();
   const logout = userLogout();
@@ -193,8 +196,8 @@ export default function AdminEditUser() {
   const initials = `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
   return (
-    <div className="user-dashboard admin-dashboard admin-edit-user-shell">
-      <aside className="user-dashboard-sidebar">
+    <div className={`user-dashboard admin-dashboard admin-edit-user-shell ${mobileNavigation.layoutClassName}`} onKeyDown={mobileNavigation.onKeyDown}>
+      <aside className="user-dashboard-sidebar" {...mobileNavigation.sidebarProps}>
         <div className="user-dashboard-logo">
           <img src={UONLogo} alt="The University of Newcastle Australia" />
         </div>
@@ -238,7 +241,7 @@ export default function AdminEditUser() {
 
       <div className="user-dashboard-main">
         <header className="user-dashboard-header">
-          <h1>Edit User Details</h1>
+          <MobilePageHeading title="Edit User Details" {...mobileNavigation.headingProps} />
 
           <div className="user-dashboard-header-user">
             <span>Welcome {userData?.firstName || "Admin"}</span>

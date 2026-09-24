@@ -469,3 +469,34 @@
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
+
+/* Use the same compact dashboard spacing and stacked banner as the user view. */
+@media (max-width: 760px) {
+  .admin-dashboard.mobile-page-layout .user-dashboard-content {
+    padding: 16px 12px 32px;
+  }
+
+  .admin-dashboard .user-dashboard-total-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .admin-dashboard .dashboard-notifications-heading {
+    min-height: auto;
+    padding-left: 0;
+    padding-top: 20px;
+    border-left: 0;
+    border-top: 1px solid #e7eaf0;
+  }
+
+  .admin-dashboard-issues-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-dashboard-view-all-button {
+    min-height: 44px;
+    white-space: normal;
+    text-align: left;
+  }
+}

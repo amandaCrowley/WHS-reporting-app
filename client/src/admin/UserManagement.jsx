@@ -30,13 +30,17 @@ import {
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
+import useMobileNavigation from "../hooks/useMobileNavigation";
 
 import UONLogo from "../images/UONLogo White.png";
 
 import "../pages/UserDashboard.css";
 import "./UserManagement.css";
+import "../styles/MobileAdminTables.css";
 
 export default function UserManagement() {
+  const mobileNavigation = useMobileNavigation();
   const navigate = useNavigate();
   const logout = userLogout();
 
@@ -192,13 +196,13 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="user-dashboard user-management-page">
+    <div className={`user-dashboard user-management-page ${mobileNavigation.layoutClassName}`} onKeyDown={mobileNavigation.onKeyDown}>
 
       {/* =========================
           LEFT SIDEBAR
       ========================== */}
 
-      <aside className="user-dashboard-sidebar">
+      <aside className="user-dashboard-sidebar" {...mobileNavigation.sidebarProps}>
         <div className="user-dashboard-logo">
           <img
             src={UONLogo}
@@ -264,7 +268,7 @@ export default function UserManagement() {
         ========================== */}
 
         <header className="user-dashboard-header">
-          <h1>User management</h1>
+          <MobilePageHeading title="User management" {...mobileNavigation.headingProps} />
 
           <div className="user-dashboard-header-user">
             <span>
@@ -442,7 +446,7 @@ export default function UserManagement() {
               </div>
             ) : (
               <div className="user-management-table-wrapper">
-                <table className="user-management-table">
+                <table className="user-management-table mobile-admin-table" role="table">
                   <thead>
                     <tr>
                       <th>First name</th>
@@ -458,20 +462,21 @@ export default function UserManagement() {
                     {/* Render each visible user as a table row */}
                     {visibleUsers.map((user) => (
                       <tr key={user._id}>
-                        <td>
+                        <td data-label="First name">
                           {user.firstName}
                         </td>
 
-                        <td>
+                        <td data-label="Last name">
                           {user.lastName}
                         </td>
 
-                        <td>
+                        <td data-label="Email">
                           {user.email}
                         </td>
 
-                        <td>
+                        <td data-label="Role">
                           <select
+                            aria-label={`Role for ${user.firstName} ${user.lastName}`}
                             className="user-management-role-select"
                             value={
                               user.role ||
@@ -517,7 +522,7 @@ export default function UserManagement() {
                           </select>
                         </td>
 
-                        <td>
+                        <td data-label="Administrator">
                           <span
                             className={`user-management-admin-status ${
                               user.isAdmin
@@ -531,7 +536,7 @@ export default function UserManagement() {
                           </span>
                         </td>
 
-                        <td>
+                        <td data-label="Actions">
                           <div className="user-management-actions">
 
                             <button

@@ -1,0 +1,106 @@
+/* Mobile Admin Tables CSS
+ *
+ * This file contains styles for the mobile admin tables used in the application.
+ * It ensures that the tables are responsive and accessible on smaller screens.
+ * It also provides a consistent look and feel across different mobile devices. Ensure the information is presented in a clear and user-friendly manner without needing to scroll horizontally.
+ * Author: Dinh Dinh
+ * Date: 2026-24-09
+ */
+
+/* Present each record vertically on phones so every field stays in view. */
+@media (max-width: 760px) {
+  .mobile-page-layout .mobile-admin-table,
+  .mobile-page-layout .mobile-admin-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Keep column headers available to assistive technology. */
+  .mobile-admin-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .mobile-page-layout .mobile-admin-table tbody tr {
+    display: block;
+    margin: 12px;
+    padding: 8px 14px;
+    border: 1px solid #e7eaf0;
+    border-radius: 10px;
+    background: #ffffff;
+  }
+
+  .mobile-page-layout .mobile-admin-table tbody td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    padding: 10px 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  .mobile-admin-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 6px;
+    color: #667085;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .mobile-admin-table .manage-title-cell > span {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
+  }
+
+  .mobile-admin-table .manage-action-buttons,
+  .mobile-admin-table .user-management-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mobile-admin-table .manage-action-button,
+  .mobile-admin-table .user-management-actions button {
+    flex: 1 1 110px;
+    min-height: 44px;
+    padding: 8px 12px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-admin-table .user-management-role-select {
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .manage-issues-page .manage-pagination-controls,
+  .user-management-page .user-management-pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .manage-issues-page .manage-filter-grid,
+  .user-management-page .user-management-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .manage-issues-page .manage-filter-grid input,
+  .manage-issues-page .manage-filter-grid select,
+  .user-management-page .user-management-filters input,
+  .user-management-page .user-management-filters select {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

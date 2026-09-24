@@ -9,7 +9,7 @@
   display: none;
 }
 
-/* Match the compact, expandable navigation on My Issues. */
+/* Match the compact, same mobile header and expandable navigation menu as in the old version of the app. */
 @media (max-width: 760px) {
   .user-dashboard.mobile-page-layout {
     position: relative;

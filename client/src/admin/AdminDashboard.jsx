@@ -33,6 +33,8 @@ import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 import { useNotifications } from "../hooks/useNotifications";
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
+import useMobileNavigation from "../hooks/useMobileNavigation";
 
 import UONLogo from "../images/UONLogo White.png";
 
@@ -40,6 +42,7 @@ import "../pages/UserDashboard.css";
 import "./AdminDashboard.css";
 
 export default function AdminDashboard() {
+  const mobileNavigation = useMobileNavigation();
   const navigate = useNavigate();
   const logout = userLogout();
 
@@ -125,12 +128,12 @@ export default function AdminDashboard() {
     `${userData?.firstName?.[0] ?? ""}${userData?.lastName?.[0] ?? ""}`.toUpperCase();
 
   return (
-    <div className="user-dashboard admin-dashboard">
+    <div className={`user-dashboard admin-dashboard ${mobileNavigation.layoutClassName}`} onKeyDown={mobileNavigation.onKeyDown}>
       {/* =========================
           LEFT SIDEBAR
       ========================== */}
 
-      <aside className="user-dashboard-sidebar">
+      <aside className="user-dashboard-sidebar" {...mobileNavigation.sidebarProps}>
         <div className="user-dashboard-logo">
           <img
             src={UONLogo}
@@ -185,7 +188,7 @@ export default function AdminDashboard() {
 
       <div className="user-dashboard-main">
         <header className="user-dashboard-header">
-          <h1>Admin dashboard</h1>
+          <MobilePageHeading title="Admin dashboard" {...mobileNavigation.headingProps} />
 
           {/* User info */}
           <div className="user-dashboard-header-user">

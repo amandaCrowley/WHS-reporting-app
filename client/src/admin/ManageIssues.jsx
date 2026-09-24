@@ -32,13 +32,17 @@ import {
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
+import useMobileNavigation from "../hooks/useMobileNavigation";
 
 import UONLogo from "../images/UONLogo White.png";
 
 import "../pages/UserDashboard.css";
 import "./ManageIssues.css";
+import "../styles/MobileAdminTables.css";
 
 export default function ManageIssues() {
+  const mobileNavigation = useMobileNavigation();
   const navigate = useNavigate();
   const logout = userLogout();
   const { userData, loading: userLoading, error: userError } = getUserData();
@@ -354,13 +358,13 @@ export default function ManageIssues() {
   }
 
   return (
-    <div className="user-dashboard manage-issues-page">
+    <div className={`user-dashboard manage-issues-page ${mobileNavigation.layoutClassName}`} onKeyDown={mobileNavigation.onKeyDown}>
 
       {/* =========================
           LEFT SIDEBAR
       ========================== */}
 
-      <aside className="user-dashboard-sidebar">
+      <aside className="user-dashboard-sidebar" {...mobileNavigation.sidebarProps}>
         <div className="user-dashboard-logo">
           <img
             src={UONLogo}
@@ -423,7 +427,7 @@ export default function ManageIssues() {
         ========================== */}
 
         <header className="user-dashboard-header">
-          <h1>Manage issues</h1>
+          <MobilePageHeading title="Manage issues" {...mobileNavigation.headingProps} />
 
           <div className="user-dashboard-header-user">
             <span>
@@ -704,7 +708,7 @@ export default function ManageIssues() {
 
             ) : (
               <div className="user-dashboard-table-container manage-table-container">
-                <table className="user-dashboard-table manage-issues-table">
+                <table className="user-dashboard-table manage-issues-table mobile-admin-table" role="table">
                   <thead>
                     <tr>
                       <th>Issue</th>
@@ -731,7 +735,7 @@ export default function ManageIssues() {
 
                           {/* Issue */}
 
-                          <td className="manage-wrap-cell manage-title-cell">
+                          <td data-label="Issue" className="manage-wrap-cell manage-title-cell">
                             <strong>
                               {issue.title || "-"}
                             </strong>
@@ -744,7 +748,7 @@ export default function ManageIssues() {
 
                           {/* Location */}
 
-                          <td className="manage-wrap-cell">
+                          <td data-label="Location" className="manage-wrap-cell">
                             <strong>
                               {issue.campus || "-"}
                             </strong>
@@ -756,7 +760,7 @@ export default function ManageIssues() {
 
                           {/* Status */}
 
-                          <td>
+                          <td data-label="Status">
                             <span
                               className={`manage-status-badge ${getStatusClass(
                                 issue.status
@@ -768,7 +772,7 @@ export default function ManageIssues() {
 
                           {/* Priority */}
 
-                          <td>
+                          <td data-label="Priority">
                             <span
                               className={`manage-priority-badge ${getPriorityClass(
                                 issue.priority
@@ -780,13 +784,13 @@ export default function ManageIssues() {
 
                           {/* Reporter */}
 
-                          <td className="manage-wrap-cell">
+                          <td data-label="Reported by" className="manage-wrap-cell">
                             {issue.reportedByName || "Unknown"}
                           </td>
 
                           {/* Reported date */}
 
-                          <td className="manage-date-cell">
+                          <td data-label="Reported" className="manage-date-cell">
                             {formatReportedDate(
                               issue.dateTimeReported
                             )}
@@ -794,7 +798,7 @@ export default function ManageIssues() {
 
                           {/* Assignment */}
 
-                          <td className="manage-wrap-cell">
+                          <td data-label="Assigned to" className="manage-wrap-cell">
                             {isAssignedToMe ? (
                               <span className="manage-assigned-me">
                                 Assigned to you
@@ -810,7 +814,7 @@ export default function ManageIssues() {
 
                           {/* Actions */}
 
-                          <td>
+                          <td data-label="Actions">
                             <div className="manage-action-buttons">
                               <button
                                 type="button"
