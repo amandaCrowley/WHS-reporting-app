@@ -51,17 +51,30 @@ export default function ManageIssues() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [assignmentFilter, setAssignmentFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
+  const [archiveTab, setArchiveTab] = useState(() => {
+    const savedTab = localStorage.getItem("manageIssuesArchiveTab");
+    return savedTab === "archived" ? "archived" : "active";
+  });
   const [sortBy, setSortBy] = useState("Newest");
   const [assigningIssueId, setAssigningIssueId] = useState(null);
+  const [archivingIssueId, setArchivingIssueId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const issuesPerPage = 10;
 
   const fetchIssues = async () => {
     try {
-      const query = userData?.firebaseUid
-        ? `?firebaseUid=${encodeURIComponent(userData.firebaseUid)}`
-        : "";
+      const params = new URLSearchParams();
+
+      if (userData?.firebaseUid) {
+        params.set("firebaseUid", userData.firebaseUid);
+      }
+
+      if (archiveTab === "archived") {
+        params.set("archived", "true");
+      }
+
+      const query = params.toString() ? `?${params.toString()}` : "";
 
       const response = await fetch(
         `http://localhost:8000/api/issues${query}`
@@ -85,15 +98,25 @@ export default function ManageIssues() {
     }
   };
 
-  // Fetch issues when the component mounts
+  // Fetch issues when the component mounts or when the selected archive tab changes.
   useEffect(() => {
     fetchIssues();
-  }, [userData?.firebaseUid]);
+  }, [userData?.firebaseUid, archiveTab]);
+
+  useEffect(() => {
+    localStorage.setItem("manageIssuesArchiveTab", archiveTab);
+  }, [archiveTab]);
 
   // Filter and sort issues whenever the issues, search, statusFilter,
   // assignmentFilter, priorityFilter, userData, or sortBy state changes
   useEffect(() => {
     let temp = [...issues];
+
+    if (archiveTab === "archived") {
+      temp = temp.filter((issue) => issue.isArchived === true);
+    } else {
+      temp = temp.filter((issue) => issue.isArchived !== true);
+    }
 
     // Filter by status
     // Active includes both Open and In Progress issues.
@@ -175,6 +198,7 @@ export default function ManageIssues() {
     statusFilter,
     assignmentFilter,
     priorityFilter,
+    archiveTab,
     userData,
     sortBy,
   ]);
@@ -276,6 +300,53 @@ export default function ManageIssues() {
       alert(err.message || "Could not clear assignment");
     } finally {
       setAssigningIssueId(null);
+    }
+  };
+
+  const toggleArchiveIssue = async (issueId, isArchived) => {
+    if (!userData?.firebaseUid) return;
+
+    const issue = issues.find((item) => item._id === issueId);
+    if (!issue) return;
+
+    if (!isArchived && issue.status !== "Closed") {
+      alert("Only closed issues can be archived.");
+      return;
+    }
+
+    try {
+      setArchivingIssueId(issueId);
+
+      const response = await fetch(
+        `http://localhost:8000/api/issues/${issueId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            isArchived: !isArchived,
+            firebaseUid: userData.firebaseUid,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update archive state");
+      }
+
+      setIssues((currentIssues) =>
+        currentIssues.map((issueItem) =>
+          issueItem._id === issueId ? data : issueItem
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Could not update archive state");
+    } finally {
+      setArchivingIssueId(null);
     }
   };
 
@@ -690,6 +761,24 @@ export default function ManageIssues() {
               </span>
             </div>
 
+            <div className="manage-archive-tabs" aria-label="Issue archive tabs">
+              <button
+                type="button"
+                className={archiveTab === "active" ? "manage-archive-tab active" : "manage-archive-tab"}
+                onClick={() => setArchiveTab("active")}
+              >
+                Active
+              </button>
+
+              <button
+                type="button"
+                className={archiveTab === "archived" ? "manage-archive-tab active" : "manage-archive-tab"}
+                onClick={() => setArchiveTab("archived")}
+              >
+                Archived
+              </button>
+            </div>
+
             {/* Loading */}
 
             {loading ? (
@@ -703,11 +792,16 @@ export default function ManageIssues() {
               <div className="manage-empty-state">
                 <ClipboardList />
 
-                <h3>No issues found</h3>
+                <h3>
+                  {archiveTab === "archived"
+                    ? "No archived issues found"
+                    : "No issues found"}
+                </h3>
 
                 <p>
-                  No reported issues match your current
-                  search and filter selections.
+                  {archiveTab === "archived"
+                    ? "No reported issues have been archived yet."
+                    : "No reported issues match your current search and filter selections."}
                 </p>
               </div>
 
@@ -775,6 +869,9 @@ export default function ManageIssues() {
                             >
                               {issue.status || "-"}
                             </span>
+                            {issue.isArchived && (
+                              <div className="manage-archive-tag">Archived</div>
+                            )}
                           </td>
 
                           {/* Priority */}
@@ -899,6 +996,25 @@ export default function ManageIssues() {
                                   <span>Clear</span>
                                 </button>
                               )}
+
+                              <button
+                                type="button"
+                                className={`manage-action-button ${issue.isArchived ? "manage-restore-button" : "manage-archive-button"}`}
+                                onClick={() => toggleArchiveIssue(issue._id, issue.isArchived)}
+                                disabled={
+                                  archivingIssueId === issue._id ||
+                                  (!issue.isArchived && issue.status !== "Closed")
+                                }
+                                title={
+                                  !issue.isArchived && issue.status !== "Closed"
+                                    ? "Archive unavailable: only closed issues can be archived"
+                                    : issue.isArchived
+                                      ? "Restore this issue"
+                                      : "Archive this issue"
+                                }
+                              >
+                                <span>{issue.isArchived ? "Restore" : "Archive"}</span>
+                              </button>
                             </div>
                           </td>
                         </tr>

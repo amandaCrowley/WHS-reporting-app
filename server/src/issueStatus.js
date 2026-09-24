@@ -34,6 +34,29 @@ export function normalizeIssueStatus(status) {
   return normalized;
 }
 
+export function normalizeIssueArchiveState(value) {
+  if (value === undefined || value === null || value === '') {
+    return false;
+  }
+
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  const normalized = String(value).trim();
+  const lower = normalized.toLowerCase();
+
+  if (lower === 'true' || lower === '1' || lower === 'yes' || lower === 'y') {
+    return true;
+  }
+
+  if (lower === 'false' || lower === '0' || lower === 'no' || lower === 'n') {
+    return false;
+  }
+
+  return value;
+}
+
 export function normalizeAndValidateIssueStatus(status) {
   const normalizedStatus = normalizeIssueStatus(status);
 
@@ -48,6 +71,24 @@ export function normalizeAndValidateIssueStatus(status) {
   return {
     valid: true,
     normalizedStatus,
+    error: null,
+  };
+}
+
+export function normalizeAndValidateIssueArchiveState(value) {
+  const normalizedArchived = normalizeIssueArchiveState(value);
+
+  if (typeof normalizedArchived !== 'boolean') {
+    return {
+      valid: false,
+      normalizedArchived,
+      error: 'Archive state must be a boolean value.',
+    };
+  }
+
+  return {
+    valid: true,
+    normalizedArchived,
     error: null,
   };
 }
