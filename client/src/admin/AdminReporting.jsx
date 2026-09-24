@@ -55,6 +55,8 @@ import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 import { useNotifications } from "../hooks/useNotifications";
 import NotificationBell from "../components/NotificationBell";
+import MobilePageHeading from "../components/MobilePageHeading";
+import useMobileNavigation from "../hooks/useMobileNavigation";
 
 import UONLogo from "../images/UONLogo White.png";
 
@@ -1050,6 +1052,7 @@ function PrintTable({
    ========================================================= */
 
 export default function AdminReporting() {
+    const mobileNavigation = useMobileNavigation();
 
     const navigate =
         useNavigate();
@@ -1747,14 +1750,17 @@ export default function AdminReporting() {
 
     return (
 
-        <div className="user-dashboard admin-reporting">
+        <div
+            className={`user-dashboard admin-reporting ${mobileNavigation.layoutClassName}`}
+            onKeyDown={mobileNavigation.onKeyDown}
+        >
 
 
             {/* =================================================
                 SIDEBAR
             ================================================== */}
 
-            <aside className="user-dashboard-sidebar">
+            <aside className="user-dashboard-sidebar" {...mobileNavigation.sidebarProps}>
 
                 <div className="user-dashboard-logo">
 
@@ -1766,7 +1772,7 @@ export default function AdminReporting() {
                 </div>
 
 
-                <nav className="user-dashboard-nav">
+                <nav className="user-dashboard-nav" aria-label="Administrator navigation">
 
                     <button
                         type="button"
@@ -1904,9 +1910,10 @@ export default function AdminReporting() {
 
                 <header className="user-dashboard-header">
 
-                    <h1>
-                        Reporting & Analytics
-                    </h1>
+                    <MobilePageHeading
+                        title="Reporting & Analytics"
+                        {...mobileNavigation.headingProps}
+                    />
 
 
                     <div className="user-dashboard-header-user">

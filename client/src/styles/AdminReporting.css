@@ -1528,6 +1528,102 @@
 }
 
 
+/* Match the shared mobile shell and keep reporting content within the screen. */
+@media screen and (max-width: 760px) {
+    .admin-reporting .user-dashboard-content {
+        padding: 16px 12px 32px;
+    }
+
+    .admin-reporting-intro {
+        align-items: stretch;
+        gap: 20px;
+        padding: 18px;
+    }
+
+    .admin-reporting-intro > div:first-child {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .admin-reporting-export,
+    .admin-reporting-export-controls,
+    .admin-reporting-export button {
+        width: 100%;
+    }
+
+    .admin-reporting-export-hint {
+        overflow-wrap: anywhere;
+    }
+
+    .admin-reporting-filters,
+    .admin-reporting-issue-details {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-reporting-filter-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-reporting-filter-actions button {
+        width: 100%;
+        padding: 8px;
+        white-space: normal;
+    }
+
+    .admin-reporting-filter input,
+    .admin-reporting-filter select,
+    .admin-reporting-filter-actions button,
+    .admin-reporting-export button,
+    .admin-reporting-view-button,
+    .admin-reporting-time-toggle button,
+    .admin-reporting-view-all-button {
+        min-height: 44px;
+    }
+
+    .admin-reporting-time-header,
+    .admin-reporting-issues-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-reporting-time-toggle {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .admin-reporting-time-toggle button {
+        flex: 1;
+    }
+
+    .admin-reporting-view-button {
+        width: 100%;
+    }
+
+    .admin-reporting-view-all-button {
+        white-space: normal;
+        text-align: left;
+        justify-content: flex-start;
+    }
+
+    /* Wrap time periods into rows rather than requiring a sideways swipe. */
+    .admin-reporting-time-chart {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+        gap: 20px 12px;
+        padding: 24px 18px 20px;
+    }
+
+    .admin-reporting-chart-column > span,
+    .admin-reporting-chart-label {
+        width: 100%;
+    }
+
+    .admin-reporting-pie-legend-item {
+        flex-wrap: wrap;
+    }
+}
+
 /* =========================================================
    PRINT REPORT
    ========================================================= */

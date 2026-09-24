@@ -60,6 +60,7 @@
   .mobile-admin-table .manage-title-cell > span {
     display: block;
     overflow: visible;
+    line-clamp: unset;
     -webkit-line-clamp: unset;
   }
 
