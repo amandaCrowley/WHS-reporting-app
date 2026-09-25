@@ -21,6 +21,7 @@ import dotenv from 'dotenv';
 import upload from "./uploadMiddleware.js"; // Middleware for handling file uploads (using multer with memory storage)
 import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
 import { findUserByIdentity } from "./userIdentity.js";
+import { sendStatusChangeEmail } from "./emailService.js";
 import adminAnalyticsRoutes from "./analyticsAPI.js";
 import {
   normalizeAndValidateIssueArchiveState,
@@ -1519,6 +1520,26 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
         title: "Issue status updated",
         notificationText: `Issue status changed from ${issue.status || "unknown"} to ${updateFields.status}.`,
       });
+    
+      // Send an email notification to the user who originally reported the issue.
+      try {
+        const reportingUser = await db.collection("User").findOne({
+          _id: result.reportedBy,
+        });
+    
+        if (reportingUser?.email) {
+          await sendStatusChangeEmail({
+            recipientEmail: reportingUser.email,
+            recipientName:
+              `${reportingUser.firstName || ""} ${reportingUser.lastName || ""}`.trim() || "User",
+            issueTitle: result.title,
+            oldStatus: issue.status || "Unknown",
+            newStatus: updateFields.status,
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send status change email:", emailError);
+      }
     }
 
     // Remove images from Cloudinary that are no longer associated with the issue
