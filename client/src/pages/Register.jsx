@@ -49,6 +49,10 @@ export default function RegisterPage() {
             return;
         }
 
+        function validateName(name) {
+            return /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(name.trim());
+        }
+
         if (!validatePassword(password)) {
             setError("Password must be at least 6 characters long and contain an uppercase letter, a lowercase letter, number and special character.");
             setLoading(false);
@@ -63,6 +67,12 @@ export default function RegisterPage() {
 
         if (firstName.trim().length < 2 || lastName.trim().length < 2) {
             setError("First and last name must be at least 2 characters.");
+            setLoading(false);
+            return;
+        }
+
+        if (!validateName(firstName) || !validateName(lastName)) {
+            setError("First and last name can only contain letters, spaces, hyphens and apostrophes.");
             setLoading(false);
             return;
         }
@@ -91,7 +101,7 @@ export default function RegisterPage() {
             }
 
             navigate("/login", { state: { message: "Account created successfully. Please log in." } });
-                } catch (err) {
+        } catch (err) {
             switch (err.code) {
                 case 'auth/email-already-in-use':
                     setError('This email is already registered. Please log in or use a different email.');
@@ -178,7 +188,7 @@ export default function RegisterPage() {
                 <header className="app-header">
                     <img src={UONLogo} alt="University of Newcastle logo" className="logo" />
                 </header>
-                <h1>Create WHS Account</h1> <br/>
+                <h1>Create WHS Account</h1> <br />
 
                 {error && <div className="error-message">{error}</div>}
 

@@ -31,7 +31,6 @@ import { getUserData } from "../hooks/getUserData";
 import NotificationBell from "../components/NotificationBell";
 import MobilePageHeading from "../components/MobilePageHeading";
 import UONLogo from "../images/UONLogo White.png";
-import "../pages/UserDashboard.css";
 import "../styles/IssueDetails.css";
 
 function Sidebar({ userData, navigate, logout }) {
@@ -1081,17 +1080,19 @@ export default function IssueDetails() {
                   className="issue-comment-form"
                   onSubmit={sendMessage}
                 >
-                  <textarea
-                    value={newMessage}
-                    onChange={(event) => setNewMessage(event.target.value)}
-                    maxLength={1000}
-                    placeholder={
-                      userData?.isAdmin
-                        ? "Send a message to provide an update, request information, or discuss this issue with the issue reporter."
-                        : "Send a message to ask a question, provide an update, or share additional information about your issue."
-                    }
-                    aria-label="New issue message"
-                  />
+                  <div className="issue-message-input">
+                    <textarea
+                      value={newMessage}
+                      onChange={(event) => setNewMessage(event.target.value)}
+                      maxLength={1000}
+                      placeholder="Write a message..."
+                    />
+
+                    <span className="report-char-count">
+                      {newMessage.length || " "}
+                      /1000
+                    </span>
+                  </div>
 
                   <button
                     type="submit"
@@ -1199,16 +1200,23 @@ export default function IssueDetails() {
                     className="issue-comment-form"
                     onSubmit={addComment}
                   >
-                    <textarea
-                      value={newComment}
-                      onChange={(event) =>
-                        setNewComment(event.target.value)
-                      }
-                      maxLength={300}
-                      placeholder="Add a progress or resolution comment"
-                      aria-label="New admin comment"
-                    />
+                    <div className="issue-message-input">
+                      <textarea
+                        value={newComment}
+                        onChange={(event) =>
+                          setNewComment(event.target.value)
+                        }
+                        maxLength={300}
+                        placeholder="Add a progress or resolution comment"
+                        aria-label="New admin comment"
+                      />
 
+                      <span className="report-char-count">
+                        {newComment.length || " "}
+                        /300
+                      </span>
+                    </div>
+                    
                     {/* Selected attachments */}
                     {commentAttachments.length > 0 && (
                       <div className="issue-comment-selected-files">
