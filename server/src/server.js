@@ -471,6 +471,70 @@ app.delete('/api/admin/users/:userId', async (req, res) => {
   }
 });
 
+/**
+ * This route allows a user to submit a request to have their
+ * personal information de-identified.
+ */
+app.post('/api/privacy/request', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { firebaseUid } = req.body;
+
+    if (!firebaseUid) {
+      return res.status(400).json({
+        error: "firebaseUid is required"
+      });
+    }
+
+    // Find the user submitting the request
+    const user = await db.collection("User").findOne({
+      firebaseUid
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found"
+      });
+    }
+
+    // Check whether the user already has a pending request
+    const existingRequest = await db.collection("PrivacyRequest").findOne({
+      userId: user._id,
+      requestType: "DE_IDENTIFICATION",
+      status: "Pending"
+    });
+
+    if (existingRequest) {
+      return res.status(409).json({
+        error: "You already have a pending data de-identification request."
+      });
+    }
+
+    const privacyRequest = {
+      userId: user._id,
+      firebaseUid: user.firebaseUid,
+      requestType: "DE_IDENTIFICATION",
+      status: "Pending",
+      requestedAt: new Date()
+    };
+
+    const result = await db
+      .collection("PrivacyRequest")
+      .insertOne(privacyRequest);
+
+    res.status(201).json({
+      message: "Privacy request submitted successfully.",
+      requestId: result.insertedId
+    });
+
+  } catch (err) {
+    console.error("Failed to submit privacy request:", err);
+
+    res.status(500).json({
+      error: "Failed to submit privacy request"
+    });
+  }
+});
 
 // --------------------- ISSUE ROUTES --------------------------------------
 
@@ -1520,13 +1584,13 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
         title: "Issue status updated",
         notificationText: `Issue status changed from ${issue.status || "unknown"} to ${updateFields.status}.`,
       });
-    
+
       // Send an email notification to the user who originally reported the issue.
       try {
         const reportingUser = await db.collection("User").findOne({
           _id: result.reportedBy,
         });
-    
+
         if (reportingUser?.email) {
           await sendStatusChangeEmail({
             recipientEmail: reportingUser.email,

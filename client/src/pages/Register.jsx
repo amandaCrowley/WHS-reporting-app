@@ -28,6 +28,8 @@ export default function RegisterPage() {
     const [role, setRole] = useState("Student");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [privacyConsent, setPrivacyConsent] = useState(false);
+    const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
 
     const navigate = useNavigate();
     const auth = getAuth();
@@ -39,6 +41,12 @@ export default function RegisterPage() {
 
         if (!firstName || !lastName || !email || !password) {
             setError("All fields are required.");
+            setLoading(false);
+            return;
+        }
+
+        if (!privacyConsent) {
+            setError("You must provide consent before creating an account.");
             setLoading(false);
             return;
         }
@@ -78,7 +86,12 @@ export default function RegisterPage() {
         }
 
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+
             const uid = userCredential.user.uid;
 
             const response = await fetch("http://localhost:8000/api/user", {
@@ -91,36 +104,55 @@ export default function RegisterPage() {
                     email: email.trim(),
                     role,
                     isAdmin: false,
+                    privacyConsent: true,
+                    privacyConsentDate: new Date(),
                 }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || "Failed to create user in database");
+                throw new Error(
+                    data.error || "Failed to create user in database"
+                );
             }
 
-            navigate("/login", { state: { message: "Account created successfully. Please log in." } });
+            navigate("/login", {
+                state: {
+                    message: "Account created successfully. Please log in."
+                }
+            });
+
         } catch (err) {
             switch (err.code) {
                 case 'auth/email-already-in-use':
-                    setError('This email is already registered. Please log in or use a different email.');
+                    setError(
+                        'This email is already registered. Please log in or use a different email.'
+                    );
                     break;
 
                 case 'auth/weak-password':
-                    setError('Password is too weak. Please use at least 6 characters.');
+                    setError(
+                        'Password is too weak. Please use at least 6 characters.'
+                    );
                     break;
 
                 case 'auth/invalid-email':
-                    setError('Please enter a valid email address.');
+                    setError(
+                        'Please enter a valid email address.'
+                    );
                     break;
 
                 case 'auth/network-request-failed':
-                    setError('Network error. Please check your internet connection and try again.');
+                    setError(
+                        'Network error. Please check your internet connection and try again.'
+                    );
                     break;
 
                 default:
-                    setError('Unable to create your account. Please try again later.');
+                    setError(
+                        'Unable to create your account. Please try again later.'
+                    );
             }
         } finally {
             setLoading(false);
@@ -281,7 +313,29 @@ export default function RegisterPage() {
                             <option value="Contractor">Contractor</option>
                         </select>
                     </div>
+                    <div className="privacy-consent">
+                        <input
+                            type="checkbox"
+                            id="privacyConsent"
+                            checked={privacyConsent}
+                            onChange={(e) => setPrivacyConsent(e.target.checked)}
+                        />
 
+                        <div className="privacy-consent-content">
+                            <label htmlFor="privacyConsent">
+                                I consent to the collection and use of my personal information
+                                for WHS reporting and incident management purposes.
+                            </label>
+
+                            <button
+                                type="button"
+                                className="privacy-info-button"
+                                onClick={() => setShowPrivacyInfo(true)}
+                            >
+                                More information about privacy
+                            </button>
+                        </div>
+                    </div>
                     <button
                         type="submit"
                         className="register-button"
@@ -290,6 +344,98 @@ export default function RegisterPage() {
                         {loading ? "Registering..." : "Create Account"}
                     </button>
                 </form>
+
+                {showPrivacyInfo && (
+                    <div
+                        className="privacy-modal-overlay"
+                        onClick={() => setShowPrivacyInfo(false)}
+                    >
+                        <div
+                            className="privacy-modal"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="privacy-modal-title"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="privacy-modal-header">
+                                <h2 id="privacy-modal-title">
+                                    Privacy Information
+                                </h2>
+
+                                <button
+                                    type="button"
+                                    className="privacy-modal-close"
+                                    onClick={() => setShowPrivacyInfo(false)}
+                                    aria-label="Close privacy information"
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            {/* Privacy information content opens in modal box */}
+                            <div className="privacy-modal-content">
+                                <p>
+                                    The WHS reporting application collects personal
+                                    information to support the reporting and management
+                                    of workplace health and safety issues.
+                                </p>
+
+                                <h3>What information is collected?</h3>
+                                <p>
+                                    When you register, the application collects information
+                                    such as your name, email address and user role. WHS
+                                    reports may also contain information such as issue
+                                    descriptions, campus locations, dates and times,
+                                    witness names and uploaded images.
+                                </p>
+
+                                <h3>Why is this information collected?</h3>
+                                <p>
+                                    Information is collected to allow WHS issues to be
+                                    reported, managed and followed up by authorised WHS
+                                    administrators.
+                                </p>
+
+                                <h3>Who can access my information?</h3>
+                                <p>
+                                    Personal information and submitted reports are restricted
+                                    to authorised users who require access for WHS reporting
+                                    and incident management purposes.
+                                </p>
+
+                                <h3>How is my information protected?</h3>
+                                <p>
+                                    Appropriate security measures are used to help protect personal information from unauthorised access, use, alteration or disclosure.
+                                    Access to WHS reports is restricted to authorised users, and secure communication protocols are used where applicable.
+                                </p>
+
+                                <h3>Managing your information</h3>
+                                <p>
+                                    You may request to opt out of using the system and have your personal
+                                    information de-identified where applicable. Requests can be made through
+                                    the Privacy & Data section of your Profile page.
+                                </p>
+
+                                <p className="privacy-modal-note">
+                                    By selecting the consent checkbox, you acknowledge that
+                                    you have read this information and consent to the
+                                    collection and use of your personal information for WHS
+                                    reporting and incident management purposes.
+                                </p>
+                            </div>
+
+                            <div className="privacy-modal-footer">
+                                <button
+                                    type="button"
+                                    className="privacy-modal-ok"
+                                    onClick={() => setShowPrivacyInfo(false)}
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <p className="login-link">
                     Already have an account?{" "}

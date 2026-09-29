@@ -78,6 +78,7 @@
     border-color: #1e3a8a;
     box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.15);
 }
+
 .form-group input:focus,
 .form-group select:focus {
     border-color: #1e40af;
@@ -121,6 +122,224 @@
 
 .login-link a:hover {
     text-decoration: underline;
+}
+
+/* Privacy consent */
+
+.privacy-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: left;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.privacy-consent input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.privacy-consent-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.privacy-consent-content label {
+    cursor: pointer;
+    text-align: left;
+}
+
+.privacy-info-button {
+    align-self: flex-start;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #0056a6;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.privacy-info-button:hover {
+    color: #003f7d;
+}
+
+.privacy-info-button:focus-visible {
+    outline: 2px solid #0056a6;
+    outline-offset: 3px;
+}
+
+
+/* Privacy information modal */
+
+.privacy-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+    box-sizing: border-box;
+}
+
+.privacy-modal {
+    width: 100%;
+    max-width: 650px;
+    max-height: 85vh;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+
+/* Modal header */
+
+.privacy-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #ddd;
+}
+
+.privacy-modal-header h2 {
+    margin: 0;
+    color: #222;
+    font-size: 22px;
+}
+
+.privacy-modal-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: #555;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.privacy-modal-close:hover {
+    background: #f2f2f2;
+    color: #222;
+}
+
+.privacy-modal-close:focus-visible {
+    outline: 2px solid #0056a6;
+    outline-offset: 2px;
+}
+
+
+/* Modal content */
+
+.privacy-modal-content {
+    padding: 20px 24px;
+    overflow-y: auto;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.privacy-modal-content h3 {
+    margin: 18px 0 6px;
+    color: #222;
+    font-size: 16px;
+}
+
+.privacy-modal-content h3:first-of-type {
+    margin-top: 4px;
+}
+
+.privacy-modal-content p {
+    margin: 0 0 12px;
+}
+
+
+/* Additional privacy note */
+
+.privacy-modal-note {
+    margin-top: 20px !important;
+    padding: 12px 14px;
+    background: #f5f7f9;
+    border-left: 4px solid #0056a6;
+    font-size: 13px;
+}
+
+
+/* Modal footer */
+
+.privacy-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px;
+    border-top: 1px solid #ddd;
+}
+
+.privacy-modal-ok {
+    min-width: 90px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    background: #0056a6;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.privacy-modal-ok:hover {
+    background: #003f7d;
+}
+
+.privacy-modal-ok:focus-visible {
+    outline: 2px solid #0056a6;
+    outline-offset: 3px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+    .privacy-modal-overlay {
+        padding: 10px;
+    }
+
+    .privacy-modal {
+        max-height: 90vh;
+    }
+
+    .privacy-modal-header {
+        padding: 16px 18px;
+    }
+
+    .privacy-modal-content {
+        padding: 16px 18px;
+    }
+
+    .privacy-modal-footer {
+        padding: 12px 18px;
+    }
+
+    .privacy-consent {
+        font-size: 13px;
+    }
 }
 
 @media (max-width: 480px) {

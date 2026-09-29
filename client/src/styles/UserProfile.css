@@ -86,7 +86,7 @@
     color: #07132f;
 }
 
-.user-dashboard-header-user > span {
+.user-dashboard-header-user>span {
     color: #07132f;
 
     font-size: 15px;
@@ -127,32 +127,20 @@
 
 .profile-content {
     width: 100%;
-
     padding: 31px clamp(20px, 3vw, 44px) 40px;
-
     display: grid;
-
     grid-template-columns:
-        minmax(0, 1fr)
-        minmax(0, 1fr);
-
+        minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
         "account password"
         "personal password";
-
     gap: 12px;
-
     align-items: stretch;
-
     background:
-        linear-gradient(
-            135deg,
+        linear-gradient(135deg,
             #f8f9fc 0%,
-            #f3f6fb 100%
-        );
-
+            #f3f6fb 100%);
     color: var(--profile-text);
-
     font-family:
         Arial,
         Helvetica,
@@ -186,7 +174,7 @@
     margin: 14px 24px 12px;
 }
 
-.profile-password-section .form-group + .form-group {
+.profile-password-section .form-group+.form-group {
     margin-top: 0;
 }
 
@@ -194,13 +182,10 @@
     margin-bottom: 5px;
 }
 
-.profile-password-section .btn-primary {
-    margin-top: auto;
-}
-
 .profile-personal-section .btn-primary {
     margin-top: 12px;
 }
+
 /* =========================
    PROFILE CARDS
 ========================= */
@@ -239,11 +224,9 @@
     align-items: center;
 
     background:
-        linear-gradient(
-            180deg,
+        linear-gradient(180deg,
             #f3f5f8 0%,
-            #eef1f5 100%
-        );
+            #eef1f5 100%);
 
     border-bottom: 1px solid #e4e8ef;
 
@@ -312,7 +295,7 @@
         14px 24px 16px;
 }
 
-.profile-section .form-group + .form-group {
+.profile-section .form-group+.form-group {
     margin-top: 0;
 }
 
@@ -382,7 +365,7 @@
     margin: 24px 24px 16px;
 }
 
-.profile-password-section .form-group + .form-group {
+.profile-password-section .form-group+.form-group {
     margin-top: 0;
 }
 
@@ -694,6 +677,70 @@
 }
 
 /* =========================
+   PRIVACY & DATA
+========================= */
+
+.profile-privacy-button {
+    flex-shrink: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.profile-privacy-row {
+    min-height: 55px;
+}
+
+.profile-privacy-button {
+    height: 32px;
+    min-width: 0;
+    padding: 0 12px;
+    margin: 0;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.privacy-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(17, 28, 54, 0.45);
+}
+
+.privacy-modal {
+    width: min(100%, 500px);
+    padding: 28px;
+    background: #ffffff;
+    border: 1px solid #e1e6ef;
+    border-radius: 10px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+.privacy-modal h2 {
+    margin: 0 0 18px;
+    color: #111c36;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.privacy-modal p {
+    margin: 0 0 14px;
+    color: #59667e;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.privacy-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+/* =========================
    RESPONSIVE
 ========================= */
 
@@ -704,7 +751,7 @@
             0 20px;
     }
 
-    .user-dashboard-header-user > span {
+    .user-dashboard-header-user>span {
         display: none;
     }
 
@@ -781,6 +828,16 @@
 
         margin-left: 16px;
         margin-right: 16px;
+    }
+
+    .profile-privacy-row {
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .profile-privacy-button {
+        align-self: flex-start;
+        margin-top: 4px;
     }
 }
 

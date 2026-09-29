@@ -55,6 +55,9 @@ export default function UserProfile() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState(""); // "success" or "error"
 
+  // Privacy request state
+  const [privacyRequest, setPrivacyRequest] = useState(false);
+
   const logout = userLogout();
 
   // Load user information from userData
@@ -76,9 +79,44 @@ export default function UserProfile() {
   if (error) return <p className="profile-status">{error} Redirecting to login...</p>;
   if (!userData) return <p className="profile-status">No user data found.</p>;
 
-  // Build initials for avatar
-  const initials =
-    `${userData.firstName?.[0] ?? ""}${userData.lastName?.[0] ?? ""}`.toUpperCase();
+
+  const handlePrivacyRequest = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/privacy/request",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firebaseUid: userData.firebaseUid,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Failed to submit privacy request."
+        );
+      }
+
+      setPrivacyRequest(false);
+
+      showMessage(
+        "Your data de-identification request has been submitted successfully.",
+        "success"
+      );
+
+    } catch (err) {
+      showMessage(
+        err.message || "Failed to submit privacy request.",
+        "error"
+      );
+    }
+  };
 
   const displayName = userData.firstName || "User";
 
@@ -277,6 +315,20 @@ export default function UserProfile() {
                   {userData.isAdmin ? "Administrator" : "Standard User"}
                 </span>
               </div>
+
+              <div className="profile-info-row profile-privacy-row">
+                <span className="profile-info-label">Privacy & Data</span>
+
+                <div className="profile-privacy-action">
+                  <button
+                    type="button"
+                    className="btn-secondary profile-privacy-button"
+                    onClick={() => setPrivacyRequest(true)}
+                  >
+                    Request Data De-identification
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -400,6 +452,56 @@ export default function UserProfile() {
               {pwLoading ? "Updating..." : "Update Password"}
             </button>
           </div>
+
+          {/* Privacy request modal popup */}
+          {privacyRequest && (
+            <div
+              className="privacy-modal-overlay"
+              onClick={() => setPrivacyRequest(false)}
+            >
+              <div
+                className="privacy-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="privacy-modal-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <h2 id="privacy-modal-title">
+                  Request Data De-identification
+                </h2>
+
+                <p>
+                  You can request to stop using the system and have your
+                  personal information de-identified where applicable.
+                </p>
+
+                <p>
+                  Your request will be reviewed by an authorised WHS
+                  administrator. Your WHS reports may be retained in a
+                  de-identified form where required for WHS reporting and
+                  incident management.
+                </p>
+
+                <div className="privacy-modal-actions">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setPrivacyRequest(false)}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handlePrivacyRequest}
+                  >
+                    Submit Request
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ── Feedback message ── */}
           {message && (
