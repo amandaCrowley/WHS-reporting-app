@@ -735,9 +735,14 @@
 
 .privacy-modal-actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 10px;
     margin-top: 24px;
+}
+
+.privacy-modal-actions .btn-secondary,
+.privacy-modal-actions .btn-primary {
+    margin: 0;
 }
 
 /* =========================

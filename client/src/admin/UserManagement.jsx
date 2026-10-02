@@ -415,8 +415,8 @@ export default function UserManagement() {
                     </tr>
                   </thead>
 
+                  {/* Render each visible user as a table row */}
                   <tbody>
-                    {/* Render each visible user as a table row */}
                     {visibleUsers.map((user) => (
                       <tr key={user._id}>
                         <td data-label="First name">
@@ -424,56 +424,38 @@ export default function UserManagement() {
                         </td>
 
                         <td data-label="Last name">
-                          {user.lastName}
+                          {user.accountStatus === "Deactivated"
+                            ? "-"
+                            : user.lastName}
                         </td>
 
                         <td data-label="Email">
-                          {user.email}
+                          {user.accountStatus === "Deactivated"
+                            ? "-"
+                            : user.email}
                         </td>
 
                         <td data-label="Role">
                           <select
                             aria-label={`Role for ${user.firstName} ${user.lastName}`}
                             className="user-management-role-select"
-                            value={
-                              user.role ||
-                              "Student"
-                            }
-                            disabled={
-                              updatingUserId ===
-                              user._id
-                            }
+                            value={user.role || "Student"}
+                            disabled={updatingUserId === user._id}
                             onChange={(event) =>
                               requestUserUpdate(
                                 user._id,
                                 {
-                                  role:
-                                    event.target
-                                      .value,
+                                  role: event.target.value,
                                 },
-                                `change the role from ${user.role ||
-                                "Student"
-                                } to ${event.target
-                                  .value
-                                }`
+                                `change the role from ${user.role || "Student"
+                                } to ${event.target.value}`
                               )
                             }
                           >
-                            <option value="Student">
-                              Student
-                            </option>
-
-                            <option value="Staff">
-                              Staff
-                            </option>
-
-                            <option value="Visitor">
-                              Visitor
-                            </option>
-
-                            <option value="Contractor">
-                              Contractor
-                            </option>
+                            <option value="Student">Student</option>
+                            <option value="Staff">Staff</option>
+                            <option value="Visitor">Visitor</option>
+                            <option value="Contractor">Contractor</option>
                           </select>
                         </td>
 

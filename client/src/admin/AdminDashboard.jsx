@@ -51,6 +51,7 @@ export default function AdminDashboard() {
 
   const [assignedIssues, setAssignedIssues] = useState([]);
   const [recentIssues, setRecentIssues] = useState([]);
+  const [pendingPrivacyRequests, setPendingPrivacyRequests] = useState([]);
 
   const [dashboardStats, setDashboardStats] = useState({
     total: 0,
@@ -93,6 +94,13 @@ export default function AdminDashboard() {
             ? dashboardData.recentIssues
             : []
         );
+
+        setPendingPrivacyRequests(
+          Array.isArray(dashboardData.pendingPrivacyRequests)
+            ? dashboardData.pendingPrivacyRequests
+            : []
+        );
+
       } catch (err) {
         console.error(err);
 
@@ -365,6 +373,101 @@ export default function AdminDashboard() {
           </section>
 
           {/* =========================
+    PENDING PRIVACY REQUESTS
+========================== */}
+          <section className="admin-dashboard-issues-panel admin-dashboard-pending-panel">
+            <div className="admin-dashboard-panel-header">
+              <div>
+                <h2>Pending Privacy &amp; Data Requests</h2>
+                <p>
+                  Users requesting data de-identification.
+                </p>
+              </div>
+            </div>
+
+            {pendingPrivacyRequests.length === 0 ? (
+              <div className="admin-dashboard-panel-message">
+                No pending privacy requests.
+              </div>
+            ) : (
+              <div className="admin-dashboard-issue-list">
+                {pendingPrivacyRequests.map((request) => (
+                  <div
+                    key={request._id}
+                    className="admin-dashboard-issue-card admin-dashboard-privacy-card"
+                  >
+                    <div className="admin-dashboard-issue-main">
+                      <h3>
+                        {request.user
+                          ? `${request.user.firstName || ""} ${request.user.lastName || ""
+                            }`.trim()
+                          : "User"}
+                      </h3>
+
+                      <p className="admin-dashboard-location">
+                        {request.user?.email || "Email not available"}
+                      </p>
+                    </div>
+
+                    <div className="admin-dashboard-issue-details">
+                      <div>
+                        <span>Request Type</span>
+                        <strong>Data De-identification</strong>
+                      </div>
+
+                      <div>
+                        <span>Requested</span>
+                        <strong>
+                          {request.requestedAt
+                            ? new Date(
+                              request.requestedAt
+                            ).toLocaleString("en-AU", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })
+                            : "Not provided"}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Status</span>
+                        <strong>Pending</strong>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="admin-dashboard-view-button"
+                      onClick={() =>
+                        navigate(`/admin/users/${request.userId}`)
+                      }
+                    >
+                      Review <span>→</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {dashboardStats.pendingPrivacyRequests > 5 && (
+              <div className="admin-dashboard-issues-footer">
+                <span>
+                  Showing 5 of{" "}
+                  {dashboardStats.pendingPrivacyRequests} pending requests
+                </span>
+
+                <button
+                  type="button"
+                  className="admin-dashboard-view-all-button"
+                  onClick={() => navigate("/admin/usermanagement")}
+                >
+                  View All <span>→</span>
+                </button>
+              </div>
+            )}
+          </section>
+
+          {/* =========================
               MY ASSIGNED ISSUES
           ========================== */}
 
@@ -602,6 +705,6 @@ export default function AdminDashboard() {
           </section>
         </main>
       </div>
-    </div>
+    </div >
   );
 }

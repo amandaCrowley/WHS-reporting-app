@@ -16,7 +16,7 @@ import {
   Navigate,
   RouterProvider,
 } from 'react-router-dom'
-import { getAuth, onAuthStateChanged } from 'firebase/auth'
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 
 import './App.css'
 import HomePage from './pages/HomePage'
@@ -60,6 +60,8 @@ function ProtectedRoute({ children, requireAdmin = false }) {
         const data = await response.json()
 
         if (!response.ok) {
+          await signOut(getAuth())
+          setUser(null)
           setUserData(null)
           setCheckingAuth(false)
           return

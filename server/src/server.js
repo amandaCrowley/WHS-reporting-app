@@ -18,6 +18,8 @@ import express from 'express';
 import cors from "cors";
 import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
+import { getFirebaseAdminAuth } from "./firebaseAdmin.js";
+import { createDeidentifiedUid } from "./privacyIdentity.js";
 import upload from "./uploadMiddleware.js"; // Middleware for handling file uploads (using multer with memory storage)
 import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
 import { findUserByIdentity } from "./userIdentity.js";
@@ -177,6 +179,7 @@ app.post('/api/user', async (req, res) => {
       email,
       role: role || "Student",
       isAdmin: isAdmin || false,
+      accountStatus: "Active",
     };
 
     //Insert into MongoDB
@@ -240,6 +243,10 @@ app.get('/api/user/:firebaseUid', async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    if (user.accountStatus === "Deactivated") {
+      return res.status(403).json({ error: "This account has been deactivated" });
+    }
+
     res.json(user);
   } catch (err) {
     console.error(err);
@@ -249,6 +256,7 @@ app.get('/api/user/:firebaseUid', async (req, res) => {
 
 /**
  * This route allows the app to update user's first name and last name - Other profile page fields should stay as they are
+ * This is used on the Profile page to allow users to update their first and last name.
  **/
 app.put('/api/user/:firebaseUid', async (req, res) => {
   try {
@@ -312,7 +320,10 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
   }
 });
 
-// update user role
+/**
+ * This route allows an administrator to update a user's information.
+ * Including first name, last name, email, role, and admin status.
+ */
 app.put('/api/admin/users/:userId', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -419,6 +430,10 @@ app.put('/api/admin/users/:userId', async (req, res) => {
   }
 });
 
+/**
+ * This route allows an administrator to delete a user.
+ * This is used on the Admin User Details page to remove a user from the system.
+ */
 app.delete('/api/admin/users/:userId', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -471,6 +486,46 @@ app.delete('/api/admin/users/:userId', async (req, res) => {
   }
 });
 
+/*
+ * This route allows an administrator to view the issues reported by a specific user.
+ */
+app.get('/api/admin/users/:userId/issues', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { userId } = req.params;
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        error: "Invalid user ID."
+      });
+    }
+
+    const userObjectId = new ObjectId(userId);
+
+    const issues = await db.collection("Issue")
+      .find({
+        reportedBy: userObjectId,
+        isArchived: false
+      })
+      .sort({
+        dateTimeReported: -1
+      })
+      .toArray();
+
+    res.json(issues);
+
+  } catch (error) {
+    console.error(
+      "Error fetching user's reported issues:",
+      error
+    );
+
+    res.status(500).json({
+      error: "Failed to fetch user's reported issues."
+    });
+  }
+});
+
 /**
  * This route allows a user to submit a request to have their
  * personal information de-identified.
@@ -497,11 +552,17 @@ app.post('/api/privacy/request', async (req, res) => {
       });
     }
 
-    // Check whether the user already has a pending request
+    if (user.accountStatus === "Deactivated") {
+      return res.status(409).json({
+        error: "This account has already been deactivated."
+      });
+    }
+
+    // Check whether the user already has an active privacy request
     const existingRequest = await db.collection("PrivacyRequest").findOne({
       userId: user._id,
       requestType: "DE_IDENTIFICATION",
-      status: "Pending"
+      status: { $in: ["Pending", "Processing"] }
     });
 
     if (existingRequest) {
@@ -532,6 +593,255 @@ app.post('/api/privacy/request', async (req, res) => {
 
     res.status(500).json({
       error: "Failed to submit privacy request"
+    });
+  }
+});
+
+/**
+ * Get a user's data de-identification request.
+ *
+ * Returns the most recent privacy request submitted by the user.
+ */
+app.get('/api/admin/users/:userId/privacy-request', async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { userId } = req.params;
+
+    // Check that the user ID is a valid MongoDB ObjectId.
+    let userObjectId;
+
+    try {
+      userObjectId = new ObjectId(userId);
+    } catch {
+      return res.status(400).json({
+        error: "Invalid user ID"
+      });
+    }
+
+    // Find the user's most recent privacy request.
+    const privacyRequest = await db.collection("PrivacyRequest").findOne(
+      {
+        userId: userObjectId,
+        requestType: "DE_IDENTIFICATION"
+      },
+      {
+        sort: { requestedAt: -1 }
+      }
+    );
+
+    // Return null if the user has never submitted a request.
+    res.json({
+      privacyRequest: privacyRequest || null
+    });
+
+  } catch (err) {
+    console.error(
+      "Failed to fetch privacy request:",
+      err
+    );
+
+    res.status(500).json({
+      error: "Failed to fetch privacy request"
+    });
+  }
+});
+
+/**
+ * Process a user's data de-identification request.
+ *
+ * This de-identifies the user's personal information in MongoDB
+ * while retaining the information required for WHS reporting
+ * and incident management.
+ */
+app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
+  let privacyRequestId;
+  let requestClaimed = false;
+
+  try {
+    const db = req.app.locals.db;
+
+    const { requestId } = req.params;
+    const authorization = req.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
+      : null;
+
+    if (!token) {
+      return res.status(401).json({ error: "Firebase ID token is required" });
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = await getFirebaseAdminAuth().verifyIdToken(token);
+    } catch (firebaseError) {
+      console.error("Firebase ID token verification failed:", {
+        code: firebaseError.code,
+        message: firebaseError.message,
+      });
+
+      if (firebaseError.code?.startsWith("app/") || firebaseError.code === "auth/invalid-credential") {
+        return res.status(500).json({
+          error: "Firebase Admin authentication is not configured correctly on the server."
+        });
+      }
+
+      return res.status(401).json({ error: "Invalid Firebase ID token" });
+    }
+
+    // Derive the administrator from the verified token, not client-provided identity data.
+    const adminUser = await db.collection("User").findOne({
+      firebaseUid: decodedToken.uid,
+      isAdmin: true
+    });
+
+    if (!adminUser) {
+      return res.status(403).json({
+        error: "Administrator access required"
+      });
+    }
+
+    // Check that the request ID is a valid MongoDB ObjectId.
+    try {
+      privacyRequestId = new ObjectId(requestId);
+    } catch {
+      return res.status(400).json({
+        error: "Invalid privacy request ID"
+      });
+    }
+
+    // Claim pending or failed requests to prevent concurrent processing.
+    const privacyRequest = await db.collection("PrivacyRequest").findOneAndUpdate(
+      {
+        _id: privacyRequestId,
+        requestType: "DE_IDENTIFICATION",
+        status: { $in: ["Pending", "Failed"] }
+      },
+      {
+        $set: { status: "Processing" },
+        $unset: { failureReason: "" }
+      },
+      { returnDocument: "after" }
+    );
+
+    if (!privacyRequest) {
+      const existingRequest = await db.collection("PrivacyRequest").findOne({
+        _id: privacyRequestId,
+        requestType: "DE_IDENTIFICATION"
+      });
+
+      if (existingRequest?.status === "Processing") {
+        return res.status(409).json({
+          error: "This privacy request is already being processed."
+        });
+      }
+
+      if (existingRequest?.status === "Processed") {
+        return res.status(409).json({
+          error: "This privacy request has already been processed."
+        });
+      }
+
+      return res.status(404).json({
+        error: "Pending or failed privacy request not found"
+      });
+    }
+
+    requestClaimed = true;
+
+    // Find the user associated with the request.
+    const user = await db.collection("User").findOne({
+      _id: privacyRequest.userId
+    });
+
+    if (!user) {
+      throw new Error("User associated with this request was not found");
+    }
+
+    const originalFirebaseUid = privacyRequest.firebaseUid;
+    const processedAt = new Date();
+
+    // Delete the Firebase Authentication account first.
+    // If it has already been deleted during a previous attempt,
+    // treat that as success.
+    try {
+      await getFirebaseAdminAuth().deleteUser(originalFirebaseUid); //Delete user from Firebase Auth
+    } catch (firebaseError) {
+      if (firebaseError.code !== "auth/user-not-found") {
+        throw firebaseError;
+      }
+    }
+
+    // De-identify the MongoDB user.
+    await db.collection("User").updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          accountStatus: "Deactivated",
+          firstName: "De-identified",
+          lastName: "User",
+          email: `deidentified_${user._id}@example.invalid`
+        },
+        $unset: {
+          firebaseUid: ""
+        }
+      }
+    );
+
+    // De-identify the user's name stored on historical issues.
+    await db.collection("Issue").updateMany(
+      { reportedBy: user._id },
+      {
+        $set: {
+          reportedByName: "De-identified User"
+        }
+      }
+    );
+
+    // Mark the request as processed.
+    await db.collection("PrivacyRequest").updateOne(
+      { _id: privacyRequest._id },
+      {
+        $set: {
+          status: "Processed",
+          processedAt,
+          processedBy: adminUser._id
+        },
+        $unset: {
+          firebaseUid: "",
+          failureReason: ""
+        }
+      }
+    );
+
+    res.json({
+      message: "Data de-identification request processed successfully."
+    });
+
+  } catch (err) {
+    console.error(
+      "Failed to process data de-identification request:",
+      err
+    );
+
+    if (requestClaimed && privacyRequestId) {
+      try {
+        const db = req.app.locals.db;
+        await db.collection("PrivacyRequest").updateOne(
+          { _id: privacyRequestId, status: "Processing" },
+          {
+            $set: {
+              status: "Failed",
+              failureReason: err.message?.slice(0, 500) || "Unknown processing failure"
+            }
+          }
+        );
+      } catch (failureUpdateError) {
+        console.error("Failed to record privacy request failure:", failureUpdateError);
+      }
+    }
+
+    res.status(500).json({
+      error: "Failed to process data de-identification request. The request can be retried."
     });
   }
 });
@@ -1186,50 +1496,123 @@ app.get('/api/admin/dashboard/:firebaseUid', async (req, res) => {
     // Get the total number of issues, as well as counts for each status and assignment type,
     // and retrieve the active assigned issues and recent unassigned issues for the dashboard.
 
-    const [total, open, inProgress, closed, unassigned, assignedToMe, assignedIssues, recentIssues] =
-      await Promise.all([
-        issueCollection.countDocuments({ isArchived: false }),
-        issueCollection.countDocuments({ isArchived: false, status: "Open" }),
-        issueCollection.countDocuments({ isArchived: false, status: "In Progress" }),
-        issueCollection.countDocuments({ isArchived: false, status: "Closed" }),
+    const [
+      total,
+      open,
+      inProgress,
+      closed,
+      unassigned,
+      assignedToMe,
+      pendingPrivacyRequestCount,
+      pendingPrivacyRequests,
+      assignedIssues,
+      recentIssues
+    ] = await Promise.all([
+      issueCollection.countDocuments({ isArchived: false }),
 
-        //Only count unassigned issues that are currently active (Open or In Progress)
-        issueCollection.countDocuments({
-          isArchived: false,
-          assignedTo: null,
-          status: { $in: ["Open", "In Progress"] },
-        }),
+      issueCollection.countDocuments({
+        isArchived: false,
+        status: "Open"
+      }),
 
-        // Count only active issues currently assigned to the logged-in admin.
-        issueCollection.countDocuments({
+      issueCollection.countDocuments({
+        isArchived: false,
+        status: "In Progress"
+      }),
+
+      issueCollection.countDocuments({
+        isArchived: false,
+        status: "Closed"
+      }),
+
+      // Only count unassigned issues that are currently active.
+      issueCollection.countDocuments({
+        isArchived: false,
+        assignedTo: null,
+        status: { $in: ["Open", "In Progress"] },
+      }),
+
+      // Count only active issues currently assigned to the logged-in admin.
+      issueCollection.countDocuments({
+        isArchived: false,
+        assignedTo: user._id,
+        status: { $in: ["Open", "In Progress"] },
+      }),
+
+      // Count all pending data de-identification requests.
+      db.collection("PrivacyRequest").countDocuments({
+        status: "Pending",
+        requestType: "DE_IDENTIFICATION",
+      }),
+
+      // Retrieve the 5 oldest pending data de-identification requests.
+      db.collection("PrivacyRequest")
+        .find({
+          status: "Pending",
+          requestType: "DE_IDENTIFICATION",
+        })
+        .sort({ requestedAt: 1 })
+        .limit(5)
+        .toArray(),
+
+      // Retrieve only the 5 most recent active issues assigned to the logged-in admin.
+      getDashboardIssues(
+        {
           isArchived: false,
           assignedTo: user._id,
           status: { $in: ["Open", "In Progress"] },
-        }),
+        },
+        5
+      ),
 
-        // Retrieve only the 5 most recent active issues assigned to the logged-in admin.
-        getDashboardIssues(
-          {
-            isArchived: false,
-            assignedTo: user._id,
-            status: { $in: ["Open", "In Progress"] },
-          },
-          5
-        ),
+      // Get the 5 most recent unassigned issues that are currently active.
+      getDashboardIssues(
+        {
+          isArchived: false,
+          assignedTo: null,
+          status: { $in: ["Open", "In Progress"] },
+        },
+        5
+      ),
+    ]);
 
-        // Get the 5 most recent unassigned issues that are currently active (Open or In Progress) for the dashboard.
-        getDashboardIssues(
+    const enrichedPrivacyRequests = await Promise.all(
+      pendingPrivacyRequests.map(async (request) => {
+        const requestUser = await db.collection("User").findOne(
+          { _id: request.userId },
           {
-            isArchived: false,
-            assignedTo: null,
-            status: { $in: ["Open", "In Progress"] },
-          },
-          5
-        ),
-      ]);
+            projection: {
+              firstName: 1,
+              lastName: 1,
+              email: 1,
+            },
+          }
+        );
+
+        return {
+          ...request,
+          user: requestUser
+            ? {
+              firstName: requestUser.firstName,
+              lastName: requestUser.lastName,
+              email: requestUser.email,
+            }
+            : null,
+        };
+      })
+    );
     //Return the dashboard data as a JSON response
     res.json({
-      stats: { total, open, inProgress, closed, unassigned, assignedToMe },
+      stats: {
+        total,
+        open,
+        inProgress,
+        closed,
+        unassigned,
+        assignedToMe,
+        pendingPrivacyRequests: pendingPrivacyRequestCount,
+      },
+      pendingPrivacyRequests: enrichedPrivacyRequests,
       assignedIssues,
       recentIssues,
     });

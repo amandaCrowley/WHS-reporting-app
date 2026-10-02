@@ -7,7 +7,6 @@
  * Date: 2/4/26
  */
 
-
 /* =========================================================
    GENERAL PAGE STYLING
    ========================================================= */
@@ -15,64 +14,6 @@
 * {
     box-sizing: border-box;
 }
-
-@media (max-width: 760px) {
-    .mobile-page-layout .issues-details-container {
-        min-height: 0;
-        padding: 16px 12px 32px;
-        overflow-wrap: anywhere;
-    }
-
-    .issues-details-container .issue-comment-form textarea,
-    .issues-details-container .issue-meta-row select,
-    .issues-details-container .issue-assignment-search input {
-        font-size: 16px;
-    }
-
-    .issues-details-container .issue-meta-row select {
-        width: 100%;
-        min-height: 44px;
-    }
-
-    .issues-details-container .btn,
-    .issues-details-container .admin-action-button,
-    .issues-details-container .issue-comment-form button,
-    .issues-details-container .issue-assignment-dropdown-button {
-        min-height: 48px;
-        font-size: 16px;
-    }
-
-    .issues-details-container .issue-comment-form button {
-        width: 100%;
-    }
-
-    .issues-details-container .copy-issue-id-button,
-    .issues-details-container .issue-comment-delete-button {
-        width: 44px;
-        height: 44px;
-        flex-shrink: 0;
-    }
-
-    .issues-details-container .issue-message-content {
-        min-height: 44px;
-        padding-right: 52px;
-    }
-
-    .issues-details-container .issue-assignment-dropdown-button span {
-        position: static;
-        transform: none;
-        white-space: normal;
-    }
-
-    .issues-details-container .issue-assignment-option {
-        min-height: 48px;
-    }
-
-    .issues-details-container .witness-pill {
-        max-width: 100%;
-    }
-}
-
 
 /* =========================================================
    MAIN PAGE CONTAINER
@@ -85,7 +26,6 @@
     font-family: Arial, Helvetica, sans-serif;
     color: #0f172a;
 }
-
 
 /* =========================================================
    SUMMARY INFORMATION
@@ -118,7 +58,6 @@
     letter-spacing: 0.04em;
 }
 
-
 /* =========================================================
    MAIN CONTENT LAYOUT
    ========================================================= */
@@ -146,7 +85,6 @@
     flex-direction: column;
     gap: 20px;
 }
-
 
 /* =========================================================
    CARDS
@@ -185,7 +123,6 @@
     min-height: 120px;
 }
 
-
 /* =========================================================
    EMPTY / STATUS MESSAGES
    ========================================================= */
@@ -208,7 +145,6 @@
     color: #64748b !important;
     font-style: italic;
 }
-
 
 /* =========================================================
    ISSUE SNAPSHOT
@@ -234,14 +170,14 @@
     border-bottom: none;
 }
 
-.issue-meta-row>span {
+.issue-meta-row > span {
     flex: 0 0 auto;
     color: #64748b;
     font-size: 13px;
     font-weight: 600;
 }
 
-.issue-meta-row>strong {
+.issue-meta-row > strong {
     min-width: 0;
     color: #334155;
     font-size: 13px;
@@ -266,7 +202,6 @@
     border-color: #4960df;
     box-shadow: 0 0 0 2px rgba(73, 96, 223, 0.12);
 }
-
 
 /* =========================================================
    ISSUE ID / COPY BUTTON
@@ -313,7 +248,6 @@
     outline-offset: 2px;
 }
 
-
 /* =========================================================
    WITNESSES
    ========================================================= */
@@ -335,7 +269,6 @@
     font-size: 12px;
 }
 
-
 /* =========================================================
    EVIDENCE / IMAGES
    ========================================================= */
@@ -356,10 +289,9 @@
     background: #f8fafc;
 }
 
-
-/* =========================
+/* =========================================================
    ISSUE MESSAGE CHAT
-   ========================= */
+   ========================================================= */
 
 .issue-chat {
     display: flex;
@@ -432,7 +364,6 @@
     text-align: right;
 }
 
-
 /* Delete button */
 
 .issue-chat-bubble .issue-comment-delete-button {
@@ -468,7 +399,6 @@
     padding-right: 32px;
 }
 
-
 /* Deleted messages */
 
 .issue-chat-message-deleted {
@@ -490,65 +420,6 @@
 .issue-chat-deleted-bubble p {
     margin: 0;
 }
-
-
-/* =========================
-   CHAT RESPONSIVE DESIGN
-   ========================= */
-
-@media (max-width: 768px) {
-    .issue-chat {
-        max-height: 400px;
-        min-height: 200px;
-        padding: 6px 2px;
-    }
-
-    .issue-chat-bubble,
-    .issue-chat-sender,
-    .issue-chat-timestamp,
-    .issue-chat-deleted-bubble {
-        max-width: 80%;
-    }
-}
-
-@media (max-width: 480px) {
-    .issue-chat {
-        max-height: 380px;
-        min-height: 200px;
-        gap: 12px;
-        padding: 4px 2px;
-    }
-
-    .issue-chat-bubble {
-        max-width: 88%;
-        padding: 10px 13px;
-        border-radius: 14px;
-    }
-
-    .issue-chat-bubble p {
-        font-size: 13px;
-    }
-
-    .issue-chat-sender {
-        max-width: 88%;
-        margin-left: 8px;
-        margin-right: 8px;
-        font-size: 12px;
-    }
-
-    .issue-chat-timestamp {
-        max-width: 88%;
-        margin-left: 8px;
-        margin-right: 8px;
-        font-size: 10px;
-    }
-
-    .issue-chat-deleted-bubble {
-        max-width: 88%;
-        font-size: 12px;
-    }
-}
-
 
 /* =========================================================
    COMMENT / MESSAGE FORM
@@ -624,7 +495,6 @@
     font-size: 12px !important;
 }
 
-
 /* =========================================================
    ADMIN COMMENT ATTACHMENTS
    ========================================================= */
@@ -689,7 +559,6 @@
     background: #f8fbff;
 }
 
-
 /* =========================================================
    ADMIN COMMENT ATTACHMENT UPLOAD
    ========================================================= */
@@ -706,14 +575,13 @@
     align-items: center;
 }
 
-
 /*
  * Keep Add attachments and Add comment exactly
  * the same height, padding and typography.
  */
 
 .issue-comment-actions .issue-comment-upload-label,
-.issue-comment-actions>button {
+.issue-comment-actions > button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -728,7 +596,6 @@
     line-height: 18px;
     white-space: nowrap;
 }
-
 
 /* Add attachments */
 
@@ -753,10 +620,9 @@
     pointer-events: none;
 }
 
-
 /* Add comment */
 
-.issue-comment-actions>button {
+.issue-comment-actions > button {
     border: none;
     background: #4960df;
     color: #ffffff;
@@ -764,15 +630,14 @@
     transition: background 0.15s ease;
 }
 
-.issue-comment-actions>button:hover:not(:disabled) {
+.issue-comment-actions > button:hover:not(:disabled) {
     background: #3f54c7;
 }
 
-.issue-comment-actions>button:disabled {
+.issue-comment-actions > button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
-
 
 /* Attachment help text */
 
@@ -789,7 +654,6 @@
     font-size: 12px;
     line-height: 1.4;
 }
-
 
 /* Selected files before submitting */
 
@@ -840,7 +704,6 @@
     color: #b42318;
 }
 
-
 /* =========================================================
    ASSIGNMENT CARD
    ========================================================= */
@@ -867,7 +730,6 @@
     gap: 8px;
     width: 100%;
 }
-
 
 /* =========================================================
    ADMIN ACTION BUTTONS
@@ -928,7 +790,6 @@
     background: #fef2f2;
     border-color: #dc8d8d;
 }
-
 
 /* =========================================================
    ADMIN ASSIGNMENT DROPDOWN
@@ -1005,7 +866,6 @@
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.15);
 }
 
-
 /* =========================================================
    ADMIN SEARCH
    ========================================================= */
@@ -1019,7 +879,7 @@
     background: #ffffff;
 }
 
-.issue-assignment-search>svg {
+.issue-assignment-search > svg {
     flex: 0 0 auto;
     color: #64748b;
 }
@@ -1040,7 +900,7 @@
     color: #94a3b8;
 }
 
-.issue-assignment-search>button {
+.issue-assignment-search > button {
     flex: 0 0 auto;
     padding: 4px 6px;
     border: none;
@@ -1052,10 +912,9 @@
     cursor: pointer;
 }
 
-.issue-assignment-search>button:hover {
+.issue-assignment-search > button:hover {
     text-decoration: underline;
 }
-
 
 /* =========================================================
    ADMIN ASSIGNMENT OPTIONS
@@ -1096,7 +955,7 @@
     cursor: default;
 }
 
-.issue-assignment-option>span {
+.issue-assignment-option > span {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1132,7 +991,6 @@
     text-align: center;
 }
 
-
 /* =========================================================
    BOTTOM PAGE ACTIONS
    ========================================================= */
@@ -1146,7 +1004,6 @@
     padding-top: 20px;
     border-top: 1px solid #e2e8f0;
 }
-
 
 /* Existing button classes used by IssueDetails.jsx */
 
@@ -1195,7 +1052,6 @@
     cursor: not-allowed;
 }
 
-
 /* =========================================================
    SCROLLBAR FOR ADMIN DROPDOWN
    ========================================================= */
@@ -1239,7 +1095,7 @@
     margin: 0;
     padding: 0;
     color: #667085;
-    font-size:10px;
+    font-size: 10px;
     line-height: 1.4;
     text-align: right;
     pointer-events: none;
@@ -1250,6 +1106,7 @@
    ========================================================= */
 
 @media (max-width: 1000px) {
+
     .issue-details-main-layout {
         grid-template-columns: 1fr;
     }
@@ -1276,8 +1133,8 @@
     }
 }
 
-
 @media (max-width: 768px) {
+
     .issues-details-container {
         padding: 24px 18px 36px;
     }
@@ -1317,7 +1174,7 @@
         gap: 5px;
     }
 
-    .issue-meta-row>strong {
+    .issue-meta-row > strong {
         text-align: left;
     }
 
@@ -1350,10 +1207,72 @@
     .issue-details-actions .btn {
         width: 100%;
     }
+
+    .issue-chat {
+        max-height: 400px;
+        min-height: 200px;
+        padding: 6px 2px;
+    }
+
+    .issue-chat-bubble,
+    .issue-chat-sender,
+    .issue-chat-timestamp,
+    .issue-chat-deleted-bubble {
+        max-width: 80%;
+    }
+
+    .issues-details-container .issue-comment-form textarea,
+    .issues-details-container .issue-meta-row select,
+    .issues-details-container .issue-assignment-search input {
+        font-size: 16px;
+    }
+
+    .issues-details-container .issue-meta-row select {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .issues-details-container .btn,
+    .issues-details-container .admin-action-button,
+    .issues-details-container .issue-comment-form button,
+    .issues-details-container .issue-assignment-dropdown-button {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .issues-details-container .issue-comment-form button {
+        width: 100%;
+    }
+
+    .issues-details-container .copy-issue-id-button,
+    .issues-details-container .issue-comment-delete-button {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+    }
+
+    .issues-details-container .issue-message-content {
+        min-height: 44px;
+        padding-right: 52px;
+    }
+
+    .issues-details-container .issue-assignment-dropdown-button span {
+        position: static;
+        transform: none;
+        white-space: normal;
+    }
+
+    .issues-details-container .issue-assignment-option {
+        min-height: 48px;
+    }
+
+    .issues-details-container .witness-pill {
+        max-width: 100%;
+    }
 }
 
-
 @media (max-width: 480px) {
+
     .issues-details-container {
         padding: 18px 12px 30px;
     }
@@ -1396,6 +1315,7 @@
      * smaller screens while keeping their dimensions
      * consistent with each other.
      */
+
     .issue-comment-actions {
         flex-direction: column;
         align-items: stretch;
@@ -1406,7 +1326,7 @@
     }
 
     .issue-comment-actions .issue-comment-upload-label,
-    .issue-comment-actions>button {
+    .issue-comment-actions > button {
         width: 100%;
     }
 
@@ -1417,40 +1337,53 @@
     .issue-assignment-option small {
         display: none;
     }
+
+    .issue-chat {
+        max-height: 380px;
+        min-height: 200px;
+        gap: 12px;
+        padding: 4px 2px;
+    }
+
+    .issue-chat-bubble {
+        max-width: 88%;
+        padding: 10px 13px;
+        border-radius: 14px;
+    }
+
+    .issue-chat-bubble p {
+        font-size: 13px;
+    }
+
+    .issue-chat-sender {
+        max-width: 88%;
+        margin-left: 8px;
+        margin-right: 8px;
+        font-size: 12px;
+    }
+
+    .issue-chat-timestamp {
+        max-width: 88%;
+        margin-left: 8px;
+        margin-right: 8px;
+        font-size: 10px;
+    }
+
+    .issue-chat-deleted-bubble {
+        max-width: 88%;
+        font-size: 12px;
+    }
 }
 
-@media (max-width: 1000px) {
-    .issue-details-side-column {
-        width: 100%;
-    }
+/* =========================================================
+   SMALL MOBILE PAGE LAYOUT
+   ========================================================= */
 
-    .issue-details-side-column .issue-details-card {
-        width: 100%;
-        max-width: none;
-    }
+@media (max-width: 760px) {
 
-    .issue-assignment-card {
-        width: 100%;
-        max-width: none;
-    }
-
-    .issue-assignment-actions {
-        width: 100%;
-    }
-}
-
-@media (max-width: 768px) {
-    .issue-details-side-column {
-        width: 100%;
-    }
-
-    .issue-details-side-column .issue-details-card,
-    .issue-assignment-card {
-        width: 100%;
-        max-width: none;
-    }
-
-    .issue-assignment-actions {
-        width: 100%;
+    .mobile-page-layout .issues-details-container {
+        min-height: 0;
+        padding: 16px 12px 32px;
+        overflow-wrap: anywhere;
     }
 }

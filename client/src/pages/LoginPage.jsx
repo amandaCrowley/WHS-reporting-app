@@ -16,6 +16,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; //Import firebase authentication functions to allow us to authenticate users using firebase
+import { signOut } from "firebase/auth"; //Import firebase signOut function to allow us to sign out users
 import '../styles/LoginPage.css';
 import { Eye, EyeOff } from 'lucide-react';
 import UONLogo from '../images/UONLogo.png'; // import the logo
@@ -47,37 +48,86 @@ export default function LoginPage() {
         }
 
         try {
-            const userCredential = await signInWithEmailAndPassword(getAuth(), email, password); //Use firebase auth to sign in with the provided email and password. If successful, it returns a userCredential object that contains information about the authenticated user
+            const userCredential = await signInWithEmailAndPassword(
+                getAuth(),
+                email,
+                password
+            );
+
             const uid = userCredential.user.uid;
 
-            const response = await fetch(`http://localhost:8000/api/user/${uid}`);
+            const response = await fetch(
+                `http://localhost:8000/api/user/${uid}`
+            );
+
             const userData = await response.json();
 
             if (!response.ok) {
-                throw new Error(userData.error || 'Failed to load user profile.');
+                await signOut(getAuth());
+
+                if (response.status === 403) {
+                    const error = new Error(
+                        "This account has been deactivated. Please register a new account to continue using the app."
+                    );
+
+                    error.code = "account-deactivated";
+                    throw error;
+                }
+
+                throw new Error(
+                    userData.error || "Failed to load user profile."
+                );
             }
 
-            //If the user is an admin, navigate to the admin dashboard, otherwise navigate to the user dashboard
-            navigate(userData.isAdmin ? '/admin/dashboard' : '/userdashboard');
-        } catch (e) //catch any potential errors in login process
-            {
-            switch (e.code) { //handle different errors in a user-friendly way (ie. not too specific with firebase errors)
-                case 'auth/invalid-credential':
-                case 'auth/invalid-password':
-                case 'auth/user-not-found':
-                    setError('Invalid email or password. Please try again.');
+            // Defence-in-depth check for deactivated accounts
+            if (userData.accountStatus === "Deactivated") {
+                await signOut(getAuth());
+
+                const error = new Error(
+                    "This account has been deactivated. Please register a new account to continue using the app."
+                );
+
+                error.code = "account-deactivated";
+                throw error;
+            }
+
+            navigate(
+                userData.isAdmin
+                    ? "/admin/dashboard"
+                    : "/userdashboard"
+            );
+
+        } catch (e) {
+            if (e.code === "account-deactivated") {
+                setError(e.message);
+                return;
+            }
+
+            switch (e.code) {
+                case "auth/invalid-credential":
+                case "auth/invalid-password":
+                case "auth/user-not-found":
+                    setError(
+                        "Unable to sign in. If your previous account was deactivated, please register a new account."
+                    );
                     break;
 
-                case 'auth/too-many-requests':
-                    setError('Too many failed login attempts. Please try again later.');
+                case "auth/too-many-requests":
+                    setError(
+                        "Too many failed login attempts. Please try again later."
+                    );
                     break;
 
-                case 'auth/network-request-failed':
-                    setError('Network error. Please check your internet connection and try again.');
+                case "auth/network-request-failed":
+                    setError(
+                        "Network error. Please check your internet connection and try again."
+                    );
                     break;
 
-                default: //default error message for other errors not handled above
-                    setError('Unable to login. Please try again later.');
+                default:
+                    setError(
+                        "Unable to login. Please try again later."
+                    );
             }
         }
     }
@@ -122,7 +172,7 @@ export default function LoginPage() {
                 </header>
                 <h1>WHS Login Page</h1>
 
-                <br/>
+                <br />
                 {error && <p className="error-message">{error}</p>}
 
                 <form onSubmit={(e) => { e.preventDefault(); login(); }}> {/*When the user hits the submit button the login function is called */}

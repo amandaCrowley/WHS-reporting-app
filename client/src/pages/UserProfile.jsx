@@ -482,6 +482,11 @@ export default function UserProfile() {
                   incident management.
                 </p>
 
+                <p>
+                  Once your request is processed, you will no longer be able to access your account.
+                  If you wish to report any WHS issues in the future, you will need to create a new account.
+                </p>
+
                 <div className="privacy-modal-actions">
                   <button
                     type="button"
