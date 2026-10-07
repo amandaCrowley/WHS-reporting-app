@@ -787,15 +787,34 @@ app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
       }
     );
 
-    // De-identify the user's name stored on historical issues.
+    // De-identify the user's name stored on historical issues
+    // and disable further messaging on those issues.
+    // Existing messages are retained as part of the WHS record.
     await db.collection("Issue").updateMany(
       { reportedBy: user._id },
       {
         $set: {
-          reportedByName: "De-identified User"
+          reportedByName: "De-identified User",
+          messagingDisabled: true
         }
       }
     );
+
+    // De-identify the user's name stored on historical messages.
+    // Messages are retained as part of the WHS record keeping system.
+    await db.collection("Message").updateMany(
+      { senderId: user._id },
+      {
+        $set: {
+          senderName: "De-identified User"
+        }
+      }
+    );
+
+    //Delete notifications where the de-identified user is the recipient, as they will no longer be able to access them.
+    await db.collection("Notification").deleteMany({
+      recipientId: user._id
+    });
 
     // Mark the request as processed.
     await db.collection("PrivacyRequest").updateOne(
@@ -919,6 +938,7 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
       issueDescription,
       assignedTo: null,
       isArchived: false,
+      messagingDisabled: false,
       dateTimeReported: now,
       dateTimeIssueOccurred: normalizedIncidentDateTime,
       dateTimeIssueClosed: null,
@@ -1078,6 +1098,15 @@ const createParticipantNotifications = async (db, issue, notification) => {
     .map((recipientId) => recipientId.toString());
 
   for (const recipientId of [...new Set(recipientIds)]) {
+    const recipient = await db.collection("User").findOne({
+      _id: new ObjectId(recipientId),
+    });
+
+    // Do not send notifications to de-identified accounts.
+    if (!recipient || recipient.accountStatus === "Deactivated") {
+      continue;
+    }
+
     await createNotification(db, {
       ...notification,
       recipientId: new ObjectId(recipientId),
@@ -1085,6 +1114,9 @@ const createParticipantNotifications = async (db, issue, notification) => {
   }
 };
 
+/** 
+ * Fetch all notifications for a specific user
+ */
 app.get('/api/notifications/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -1105,6 +1137,9 @@ app.get('/api/notifications/:firebaseUid', async (req, res) => {
   }
 });
 
+/** 
+ * Mark a notification as read
+ */
 app.put('/api/notifications/:id/read', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -1132,6 +1167,9 @@ const getMessageSenderRole = (user) => (
     : "Student"
 );
 
+/** 
+ * Fetch all messages for a specific issue
+ */
 app.get('/api/issues/:id/messages', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -1163,27 +1201,57 @@ app.get('/api/issues/:id/messages', async (req, res) => {
   }
 });
 
+/* Create a new issue message
+   If a user's account has been de-identified, they will no longer be able to send messages.
+*/
 app.post('/api/issues/:id/messages', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { id } = req.params;
     const { firebaseUid, messageText } = req.body || {};
+
     const user = await findUserByIdentity(db, firebaseUid);
 
-    if (!ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid issue ID" });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid issue ID" });
+    }
 
-    const trimmedMessage = typeof messageText === "string" ? messageText.trim() : "";
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const trimmedMessage =
+      typeof messageText === "string" ? messageText.trim() : "";
+
     if (!trimmedMessage || trimmedMessage.length > 1000) {
-      return res.status(400).json({ error: "Message must be between 1 and 1000 characters" });
+      return res.status(400).json({
+        error: "Message must be between 1 and 1000 characters"
+      });
     }
 
     const issueId = new ObjectId(id);
     const issue = await db.collection("Issue").findOne({ _id: issueId });
-    if (!issue) return res.status(404).json({ error: "Issue not found" });
-    if (!isIssueParticipant(issue, user)) return res.status(403).json({ error: "Access denied" });
 
-    const senderName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email || "User";
+    if (!issue) {
+      return res.status(404).json({ error: "Issue not found" });
+    }
+
+    if (!isIssueParticipant(issue, user)) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    // Prevent new messages after the reporter has been de-identified.
+    if (issue.messagingDisabled) {
+      return res.status(403).json({
+        error: "Messaging is unavailable for this report."
+      });
+    }
+
+    const senderName =
+      `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+      user.email ||
+      "User";
+
     const message = {
       issueId,
       senderId: user._id,
@@ -1193,6 +1261,7 @@ app.post('/api/issues/:id/messages', async (req, res) => {
       createdAt: new Date(),
       readBy: [user._id],
     };
+
     const result = await db.collection("Message").insertOne(message);
 
     if (user.isAdmin) {
@@ -1236,10 +1305,16 @@ app.post('/api/issues/:id/messages', async (req, res) => {
       }
     }
 
-    res.status(201).json({ ...message, _id: result.insertedId });
+    res.status(201).json({
+      ...message,
+      _id: result.insertedId
+    });
+
   } catch (err) {
     console.error("Failed to add issue message:", err);
-    res.status(500).json({ error: "Failed to add issue message" });
+    res.status(500).json({
+      error: "Failed to add issue message"
+    });
   }
 });
 
@@ -1800,6 +1875,7 @@ app.get('/api/issues/:id', async (req, res) => {
 
 /**
 * This route allows updating an issue (e.g. description, location, etc.)
+* Also sends an email notification to the reporter if the issue status changes
 */
 app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
   try {
@@ -1974,7 +2050,10 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
           _id: result.reportedBy,
         });
 
-        if (reportingUser?.email) {
+        if (
+          reportingUser?.email &&
+          reportingUser.accountStatus !== "Deactivated"
+        ) {
           await sendStatusChangeEmail({
             recipientEmail: reportingUser.email,
             recipientName:

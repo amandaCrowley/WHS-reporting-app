@@ -1076,37 +1076,49 @@ export default function IssueDetails() {
                   </p>
                 )}
 
-                <form
-                  className="issue-comment-form"
-                  onSubmit={sendMessage}
-                >
-                  <div className="issue-message-input">
-                    <textarea
-                      value={newMessage}
-                      onChange={(event) => setNewMessage(event.target.value)}
-                      maxLength={1000}
-                      placeholder="Write a message..."
-                    />
-
-                    <span className="report-char-count">
-                      {newMessage.length || " "}
-                      /1000
-                    </span>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={sendingMessage || !newMessage.trim()}
-                  >
-                    {sendingMessage ? "Sending..." : "Send message"}
-                  </button>
-
-                  {messageError && (
-                    <p className="issue-comment-error">
-                      {messageError}
+                {issue.messagingDisabled ? (
+                  <div className="issue-messaging-disabled">
+                    <p>
+                      <strong>Messaging unavailable</strong>
                     </p>
-                  )}
-                </form>
+                    <p>
+                      Messaging has been disabled because the reporting account
+                      has been de-identified.
+                    </p>
+                  </div>
+                ) : (
+                  <form
+                    className="issue-comment-form"
+                    onSubmit={sendMessage}
+                  >
+                    <div className="issue-message-input">
+                      <textarea
+                        value={newMessage}
+                        onChange={(event) => setNewMessage(event.target.value)}
+                        maxLength={1000}
+                        placeholder="Write a message..."
+                      />
+
+                      <span className="report-char-count">
+                        {newMessage.length || " "}
+                        /1000
+                      </span>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={sendingMessage || !newMessage.trim()}
+                    >
+                      {sendingMessage ? "Sending..." : "Send message"}
+                    </button>
+
+                    {messageError && (
+                      <p className="issue-comment-error">
+                        {messageError}
+                      </p>
+                    )}
+                  </form>
+                )}
               </div>
             </section>
 
@@ -1216,7 +1228,7 @@ export default function IssueDetails() {
                         /300
                       </span>
                     </div>
-                    
+
                     {/* Selected attachments */}
                     {commentAttachments.length > 0 && (
                       <div className="issue-comment-selected-files">
