@@ -20,6 +20,7 @@ import { getUserData } from "../hooks/getUserData";
 import UONLogo from "../images/UONLogo White.png";
 import NotificationBell from "../components/NotificationBell";
 import MobilePageHeading from "../components/MobilePageHeading";
+import IssueMap from "../components/IssueMap";
 
 import {
   LayoutDashboard,
@@ -46,6 +47,7 @@ export default function ReportIssue() {
   const [issueTitle, setIssueTitle] = useState("");
   const [campus, setCampus] = useState("");
   const [location, setLocation] = useState("");
+  const [coordinates, setCoordinates] = useState(null);
   const [issueDescription, setIssueDescription] = useState("");
   const [pendingDeleteDraft, setPendingDeleteDraft] = useState(null);
   const [incidentDateTime, setIncidentDateTime] = useState("");
@@ -238,6 +240,7 @@ export default function ReportIssue() {
             title: issueTitle.trim(),
             campus,
             location: location.trim(),
+            coordinates,
             issueDescription:
               issueDescription.trim(),
             witnessNames: witnessList,
@@ -290,7 +293,8 @@ export default function ReportIssue() {
     if (
       !issueTitle.trim() &&
       !location.trim() &&
-      !issueDescription.trim()
+      !issueDescription.trim() &&
+      !coordinates
     ) {
       setFormError(
         "Nothing to save — fill in at least one field first.",
@@ -305,6 +309,7 @@ export default function ReportIssue() {
       issueTitle,
       campus,
       location,
+      coordinates,
       issueDescription,
       incidentDateTime,
       witnessList,
@@ -347,6 +352,7 @@ export default function ReportIssue() {
   };
 
   const loadDraft = (draft) => {
+    setCoordinates(draft.coordinates || null);
     setIssueTitle(
       draft.issueTitle || "",
     );
@@ -885,12 +891,10 @@ export default function ReportIssue() {
                           }
                           onChange={(
                             e,
-                          ) =>
-                            setCampus(
-                              e
-                                .target
-                                .value,
-                            )
+                          ) => {
+                            setCampus(e.target.value);
+                            setCoordinates(null);
+                          }
                           }
                         >
                           <option value="">
@@ -966,8 +970,7 @@ export default function ReportIssue() {
                         }
                       />
                     </div>
-
-
+                    <IssueMap campus={campus} value={coordinates} onChange={setCoordinates} />
                   </div>
                 </section>
               </div>

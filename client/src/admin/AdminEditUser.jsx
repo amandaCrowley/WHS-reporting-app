@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { validateName } from "../../../shared/validation.js";
 import MobilePageHeading from "../components/MobilePageHeading";
 import useMobileNavigation from "../hooks/useMobileNavigation";
 import { useNavigate, useParams } from "react-router-dom";
@@ -98,6 +99,11 @@ export default function AdminEditUser() {
     }
 
     // use edit profile method adapted for admin facing page
+    const nameError = validateName(formData.firstName, "First name") || validateName(formData.lastName, "Last name");
+    if (nameError) {
+      setError(nameError);
+      return;
+    }
     const trimmedFirstName = formData.firstName.trim();
     const trimmedLastName = formData.lastName.trim();
 

@@ -28,6 +28,7 @@ import "../pages/UserDashboard.css";
 import "../styles/UserProfile.css";
 import NotificationBell from "../components/NotificationBell";
 import MobilePageHeading from "../components/MobilePageHeading";
+import { validateName } from "../../../shared/validation.js";
 
 export default function UserProfile() {
   const navigate = useNavigate();
@@ -124,6 +125,11 @@ export default function UserProfile() {
   const handleUpdateName = async () => {
     const trimmedFirstName = firstName.trim();
     const trimmedLastName = lastName.trim();
+    const nameError = validateName(firstName, "First name") || validateName(lastName, "Last name");
+    if (nameError) {
+      showMessage(nameError, "error");
+      return;
+    }
 
     if (trimmedFirstName === "") {
       showMessage("Please enter a first name.", "error");
@@ -335,6 +341,7 @@ export default function UserProfile() {
           {/* ── Personal Information ── */}
           <div className="profile-section profile-personal-section">
             <h2>Personal Information</h2>
+            <p>Names may contain letters, spaces, hyphens and apostrophes only (2–50 characters).</p>
 
             <div className="form-group">
               <label>First Name</label>

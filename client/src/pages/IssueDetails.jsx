@@ -30,6 +30,8 @@ import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
 import NotificationBell from "../components/NotificationBell";
 import MobilePageHeading from "../components/MobilePageHeading";
+import IssueMap from "../components/IssueMap";
+import { isValidCoordinates } from "../../../shared/validation.js";
 import UONLogo from "../images/UONLogo White.png";
 import "../styles/IssueDetails.css";
 
@@ -941,6 +943,12 @@ export default function IssueDetails() {
 
         <div className="issue-details-main-layout">
           <div className="issue-details-main-column">
+            {isValidCoordinates(issue.coordinates) && (
+              <section className="issue-details-card">
+                <h2>Incident location</h2>
+                <IssueMap campus={issue.campus} value={issue.coordinates} readOnly />
+              </section>
+            )}
             <section className="issue-details-card">
               <div className="issue-details-card-header">
                 Title

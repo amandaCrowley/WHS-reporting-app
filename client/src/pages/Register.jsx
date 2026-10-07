@@ -11,6 +11,7 @@
 
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { validateName } from "../../../shared/validation.js";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { Eye, EyeOff } from 'lucide-react';
 import '../styles/Register.css';
@@ -57,10 +58,6 @@ export default function RegisterPage() {
             return;
         }
 
-        function validateName(name) {
-            return /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(name.trim());
-        }
-
         if (!validatePassword(password)) {
             setError("Password must be at least 6 characters long and contain an uppercase letter, a lowercase letter, number and special character.");
             setLoading(false);
@@ -79,8 +76,9 @@ export default function RegisterPage() {
             return;
         }
 
-        if (!validateName(firstName) || !validateName(lastName)) {
-            setError("First and last name can only contain letters, spaces, hyphens and apostrophes.");
+        const nameError = validateName(firstName, "First name") || validateName(lastName, "Last name");
+        if (nameError) {
+            setError(nameError);
             setLoading(false);
             return;
         }

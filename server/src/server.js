@@ -15,6 +15,7 @@
  */
 
 import express from 'express';
+import { validateName, isValidCoordinates } from "../../shared/validation.js";
 import cors from "cors";
 import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
@@ -144,6 +145,8 @@ app.post('/api/user', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { firebaseUid, firstName, lastName, email, role, isAdmin } = req.body;
+    const nameError = validateName(firstName, "First name") || validateName(lastName, "Last name");
+    if (nameError) return res.status(400).json({ error: nameError });
 
     //Validate required fields
     if (!firebaseUid || !email || !firstName || !lastName) {
@@ -263,6 +266,9 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
     const db = req.app.locals.db;
     const { firebaseUid } = req.params;
     const { firstName, lastName } = req.body;
+    const nameError = (firstName !== undefined && validateName(firstName, "First name"))
+      || (lastName !== undefined && validateName(lastName, "Last name"));
+    if (nameError) return res.status(400).json({ error: nameError });
 
     // Build update object using only the fields users are allowed to change
     const updates = {};
@@ -329,6 +335,9 @@ app.put('/api/admin/users/:userId', async (req, res) => {
     const db = req.app.locals.db;
     const { userId } = req.params;
     const { adminFirebaseUid, firstName, lastName, role, isAdmin } = req.body;
+    const nameError = (firstName !== undefined && validateName(firstName, "First name"))
+      || (lastName !== undefined && validateName(lastName, "Last name"));
+    if (nameError) return res.status(400).json({ error: nameError });
     const validRoles = ["Student", "Staff", "Visitor", "Contractor"];
 
     if (!ObjectId.isValid(userId)) {
@@ -875,6 +884,10 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { campus, title, location, issueDescription, witnessNames, dateTimeIssueOccurred, imageURLs, imageHashes } = req.body;
+    const coordinates = req.body.coordinates ?? null;
+    if (coordinates !== null && !isValidCoordinates(coordinates)) {
+      return res.status(400).json({ error: "Map coordinates must contain a valid latitude and longitude." });
+    }
     const { firebaseUid } = req.params;
 
     if (!firebaseUid) {
@@ -935,6 +948,7 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
       campus,
       title,
       location,
+      coordinates: coordinates === null ? null : { latitude: coordinates.latitude, longitude: coordinates.longitude },
       issueDescription,
       assignedTo: null,
       isArchived: false,
@@ -1920,6 +1934,19 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
 
     // Build update object dynamically (only update provided fields)
     const updateFields = {};
+    if (body.coordinates !== undefined) {
+      let coordinates = body.coordinates;
+      if (typeof coordinates === "string") {
+        try { coordinates = JSON.parse(coordinates); }
+        catch { return res.status(400).json({ error: "Invalid map coordinates." }); }
+      }
+      if (coordinates !== null && !isValidCoordinates(coordinates)) {
+        return res.status(400).json({ error: "Map coordinates must contain a valid latitude and longitude." });
+      }
+      updateFields.coordinates = coordinates === null ? null : { latitude: coordinates.latitude, longitude: coordinates.longitude };
+    } else if (campus !== undefined && campus !== issue?.campus) {
+      updateFields.coordinates = null;
+    }
     if (title !== undefined) updateFields.title = title;
     if (issueDescription !== undefined) updateFields.issueDescription = issueDescription;
     if (location !== undefined) updateFields.location = location;

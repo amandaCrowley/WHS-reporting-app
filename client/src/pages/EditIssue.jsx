@@ -19,6 +19,7 @@ import "../pages/UserDashboard.css";
 import '../styles/EditIssue.css';
 import NotificationBell from "../components/NotificationBell";
 import MobilePageHeading from "../components/MobilePageHeading";
+import IssueMap from "../components/IssueMap";
 
 export default function EditIssue() {
     const { issueId } = useParams(); // Get the issue ID from the URL
@@ -109,6 +110,7 @@ export default function EditIssue() {
         setUpdateError("");
         setFormData(prev => ({
             ...prev,
+            ...(name === "campus" ? { coordinates: null } : {}),
             [name]: value
         }));
     };
@@ -190,6 +192,7 @@ export default function EditIssue() {
             body.append("title", title);
             body.append("issueDescription", description);
             body.append("location", issueLocation);
+            body.append("coordinates", JSON.stringify(formData.coordinates || null));
             body.append("campus", formData.campus || "");
             body.append("dateTimeIssueOccurred", formData.dateTimeIssueOccurred || "");
             if (userData?.isAdmin) {
@@ -452,6 +455,10 @@ export default function EditIssue() {
                             </div>
 
                             <div className="edit-right-column">
+                                <div className="form-section">
+                                    <div className="edit-section-title">Incident map</div>
+                                    <IssueMap campus={formData.campus} value={formData.coordinates} onChange={(coordinates) => setFormData(prev => ({ ...prev, coordinates }))} />
+                                </div>
                                 <div className="form-section edit-witness-section">
                                     <div className="edit-section-title">Witnesses</div>
 
