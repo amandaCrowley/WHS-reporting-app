@@ -22,6 +22,7 @@ import './App.css'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
+import ResetPassword from './pages/ResetPassword.jsx'
 import ErrorPage from './pages/ErrorPage.jsx'
 import UserDashboard from './pages/UserDashboard.jsx'
 import IssueDetails from './pages/IssueDetails.jsx'
@@ -109,6 +110,9 @@ const routes = [{
     }, {
       path: '/register',
       element: <Register />
+    }, {
+      path: '/reset-password',
+      element: <ResetPassword />
     }, {
       path: '/userdashboard',
       element: protectedElement(<UserDashboard />)
