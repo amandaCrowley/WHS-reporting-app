@@ -341,7 +341,6 @@ export default function UserProfile() {
           {/* ── Personal Information ── */}
           <div className="profile-section profile-personal-section">
             <h2>Personal Information</h2>
-            <p>Names may contain letters, spaces, hyphens and apostrophes only (2–50 characters).</p>
 
             <div className="form-group">
               <label>First Name</label>

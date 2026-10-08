@@ -15,9 +15,19 @@
 import { useEffect, useState } from "react";
 import MobilePageHeading from "../components/MobilePageHeading";
 import useMobileNavigation from "../hooks/useMobileNavigation";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { userLogout } from "../hooks/userLogout";
-import { LayoutDashboard, ClipboardList, Users, LogOut, BarChart3 } from "lucide-react";
+import {
+  LayoutDashboard,
+  ClipboardList,
+  Users,
+  LogOut,
+  BarChart3,
+  ClipboardCheck,
+  Check,
+  Clock3,
+  CircleAlert,
+} from "lucide-react";
 import { getUserData } from "../hooks/getUserData";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
@@ -180,9 +190,9 @@ export default function AdminAssignedIssues() {
 
             <section>
               <h2>{administrator
-                  ? `${administrator.firstName|| " "}'s Issue Summary`
-                  : "Issue Summary"}
-                  </h2>
+                ? `${administrator.firstName || " "}'s Issue Summary`
+                : "Issue Summary"}
+              </h2>
               {loading && <p role="status">Loading administrator and assigned issues...</p>}
               {error && <p role="alert">{error}</p>}
               {!loading && !error && administrator && (
@@ -192,10 +202,45 @@ export default function AdminAssignedIssues() {
                     <p><strong>Email:</strong> {administrator.email || "Not provided"}</p>
                   </div>
                   <dl className="assigned-issue-stats">
-                    <div><dt>Total assigned issues</dt><dd>{issues.length}</dd></div>
-                    <div><dt>Open issues</dt><dd>{summary.open}</dd></div>
-                    <div><dt>In progress issues</dt><dd>{summary.inProgress}</dd></div>
-                    <div><dt>Closed issues</dt><dd>{summary.closed}</dd></div>
+                    <div className="assigned-stat-card assigned-stat-total">
+                      <div className="assigned-stat-icon">
+                        <ClipboardCheck />
+                      </div>
+                      <div className="assigned-stat-content">
+                        <dt>Total assigned issues</dt>
+                        <dd>{issues.length}</dd>
+                      </div>
+                    </div>
+
+                    <div className="assigned-stat-card assigned-stat-open">
+                      <div className="assigned-stat-icon">
+                        <CircleAlert />
+                      </div>
+                      <div className="assigned-stat-content">
+                        <dt>Open issues</dt>
+                        <dd>{summary.open}</dd>
+                      </div>
+                    </div>
+
+                    <div className="assigned-stat-card assigned-stat-progress">
+                      <div className="assigned-stat-icon">
+                        <Clock3 />
+                      </div>
+                      <div className="assigned-stat-content">
+                        <dt>In progress issues</dt>
+                        <dd>{summary.inProgress}</dd>
+                      </div>
+                    </div>
+
+                    <div className="assigned-stat-card assigned-stat-closed">
+                      <div className="assigned-stat-icon">
+                       <Check />
+                      </div>
+                      <div className="assigned-stat-content">
+                        <dt>Closed issues</dt>
+                        <dd>{summary.closed}</dd>
+                      </div>
+                    </div>
                   </dl>
                 </div>
               )}
@@ -213,7 +258,7 @@ export default function AdminAssignedIssues() {
               ) : (
                 <ul className="assigned-issues-list">
                   {issues.map((issue) => (
-              <li key={issue._id} className="assigned-issue-card">
+                    <li key={issue._id} className="assigned-issue-card">
                       <h3>{issue.title || "Untitled issue"}</h3>
                       <p><strong>Status:</strong> {issue.status || "Not provided"}</p>
                       <p><strong>Priority:</strong> {issue.priority || "Not set"}</p>
@@ -231,7 +276,7 @@ export default function AdminAssignedIssues() {
                           })
                           : "Not provided"}
                       </p>
-                                            <button
+                      <button
                         type="button"
                         onClick={() => navigate(`/issue/${issue._id}`)}
                       >

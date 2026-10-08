@@ -452,13 +452,6 @@ export default function EditIssue() {
                                         </select>
                                     </div>
                                 )}
-                            </div>
-
-                            <div className="edit-right-column">
-                                <div className="form-section">
-                                    <div className="edit-section-title">Incident map</div>
-                                    <IssueMap campus={formData.campus} value={formData.coordinates} onChange={(coordinates) => setFormData(prev => ({ ...prev, coordinates }))} />
-                                </div>
                                 <div className="form-section edit-witness-section">
                                     <div className="edit-section-title">Witnesses</div>
 
@@ -501,6 +494,14 @@ export default function EditIssue() {
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="edit-right-column">
+                                <div className="form-section">
+                                    <div className="edit-section-title">Incident map</div>
+                                    <IssueMap campus={formData.campus} value={formData.coordinates} onChange={(coordinates) => setFormData(prev => ({ ...prev, coordinates }))} />
+                                </div>
+
 
                                 <div className="form-section edit-images-section">
                                     <div className="edit-section-title">Issue images</div>

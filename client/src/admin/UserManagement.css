@@ -212,6 +212,9 @@
 /* =========================================================
    TABLE
    ========================================================= */
+/* =========================================================
+   TABLE
+   ========================================================= */
 
 .user-management-table-wrapper {
   width: 100%;
@@ -220,8 +223,17 @@
 
 .user-management-table {
   width: 100%;
+  min-width: 1100px;
   border-collapse: collapse;
   border-spacing: 0;
+}
+
+/* Keep headings and body cells aligned to the same columns */
+.user-management-table th,
+.user-management-table td {
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .user-management-table thead {
@@ -235,7 +247,6 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1px;
-  text-align: left;
   white-space: nowrap;
 }
 
@@ -244,8 +255,53 @@
   border-bottom: 1px solid #e7eaf0;
   color: #475467;
   font-size: 14px;
-  vertical-align: middle;
 }
+
+.user-management-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-wrap: nowrap;
+}
+
+/* =========================================================
+   COLUMN WIDTHS
+   ========================================================= */
+
+.user-management-table th:nth-child(1),
+.user-management-table td:nth-child(1) {
+  width: 13%;
+}
+
+.user-management-table th:nth-child(2),
+.user-management-table td:nth-child(2) {
+  width: 13%;
+}
+
+.user-management-table th:nth-child(3),
+.user-management-table td:nth-child(3) {
+  width: 22%;
+}
+
+.user-management-table th:nth-child(4),
+.user-management-table td:nth-child(4) {
+  width: 12%;
+}
+
+.user-management-table th:nth-child(5),
+.user-management-table td:nth-child(5) {
+  width: 12%;
+}
+
+.user-management-table th:nth-child(6),
+.user-management-table td:nth-child(6) {
+  width: 28%;
+}
+
+/* =========================================================
+   TABLE ROWS
+   ========================================================= */
 
 .user-management-table tbody tr {
   background: #ffffff;
@@ -259,15 +315,6 @@
 .user-management-table tbody tr:last-child td {
   border-bottom: none;
 }
-
-.user-management-table td:nth-child(3) {
-  min-width: 190px;
-}
-
-.user-management-table td:last-child {
-  min-width: 430px;
-}
-
 
 /* =========================================================
    ROLE SELECT
@@ -483,9 +530,7 @@
   font-weight: 700;
 }
 
-.user-management-confirmation-dialog > p:not(
-    .user-management-confirmation-eyebrow
-  ) {
+.user-management-confirmation-dialog>p:not(.user-management-confirmation-eyebrow) {
   margin: 0;
   color: #667085;
   font-size: 14px;
@@ -516,15 +561,13 @@
   background: #f8fafc;
 }
 
-.user-management-confirmation-actions
-  .user-management-confirmation-confirm {
+.user-management-confirmation-actions .user-management-confirmation-confirm {
   background: #0057e7;
   border-color: #0057e7;
   color: #ffffff;
 }
 
-.user-management-confirmation-actions
-  .user-management-confirmation-confirm:hover {
+.user-management-confirmation-actions .user-management-confirmation-confirm:hover {
   background: #0046bd;
   border-color: #0046bd;
 }

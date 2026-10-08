@@ -40,7 +40,6 @@ import UONLogo from "../images/UONLogo White.png";
 
 import "../pages/UserDashboard.css";
 import "./ManageIssues.css";
-import "../styles/MobileAdminTables.css";
 
 export default function ManageIssues() {
   const mobileNavigation = useMobileNavigation();
@@ -82,7 +81,7 @@ export default function ManageIssues() {
 
       const response = await fetch(
         `http://localhost:8000/api/issues${query}`
-      ); // get all issues from the backend
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch system issues");
@@ -111,8 +110,7 @@ export default function ManageIssues() {
     localStorage.setItem("manageIssuesArchiveTab", archiveTab);
   }, [archiveTab]);
 
-  // Filter and sort issues whenever the issues, search, statusFilter,
-  // assignmentFilter, priorityFilter, userData, or sortBy state changes
+  // Filter and sort issues whenever the relevant state changes.
   useEffect(() => {
     let temp = [...issues];
 
@@ -123,7 +121,6 @@ export default function ManageIssues() {
     }
 
     // Filter by status
-    // Active includes both Open and In Progress issues.
     if (statusFilter === "Active") {
       temp = temp.filter(
         (issue) =>
@@ -167,7 +164,7 @@ export default function ManageIssues() {
       );
     }
 
-    // Filter by search term on title, description, campus, location, or reporter
+    // Filter by search term
     if (search.trim()) {
       const lowerSearch = search.toLowerCase();
 
@@ -207,7 +204,7 @@ export default function ManageIssues() {
     sortBy,
   ]);
 
-  // Pagination logic
+  // Pagination
   const totalPages = Math.ceil(
     filteredIssues.length / issuesPerPage
   );
@@ -217,8 +214,7 @@ export default function ManageIssues() {
     currentPage * issuesPerPage
   );
 
-  // Helper method to assign an issue to the current user.
-  // This updates the assignedTo field in MongoDB to the current user's id.
+  // Assign issue to current user.
   const assignIssueToMe = async (issueId) => {
     if (!userData?.firebaseUid) return;
 
@@ -248,8 +244,6 @@ export default function ManageIssues() {
         );
       }
 
-      // Update the issues state with the updated issue data returned
-      // from the server.
       const updatedIssue = await response.json();
 
       setIssues((currentIssues) =>
@@ -266,8 +260,7 @@ export default function ManageIssues() {
     }
   };
 
-  // Helper method to unassign an issue from the current user.
-  // This clears the assignedTo field in MongoDB.
+  // Unassign issue.
   const unassignIssue = async (issueId) => {
     try {
       setAssigningIssueId(issueId);
@@ -289,8 +282,6 @@ export default function ManageIssues() {
         );
       }
 
-      // Update the issues state with the updated issue data returned
-      // from the server.
       const updatedIssue = await response.json();
 
       setIssues((currentIssues) =>
@@ -307,10 +298,12 @@ export default function ManageIssues() {
     }
   };
 
+  // Archive or restore issue.
   const toggleArchiveIssue = async (issueId, isArchived) => {
     if (!userData?.firebaseUid) return;
 
     const issue = issues.find((item) => item._id === issueId);
+
     if (!issue) return;
 
     if (!isArchived && issue.status !== "Closed") {
@@ -338,7 +331,9 @@ export default function ManageIssues() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update archive state");
+        throw new Error(
+          data.error || "Failed to update archive state"
+        );
       }
 
       setIssues((currentIssues) =>
@@ -348,6 +343,7 @@ export default function ManageIssues() {
       );
     } catch (err) {
       console.error(err);
+
       alert(err.message || "Could not update archive state");
     } finally {
       setArchivingIssueId(null);
@@ -430,13 +426,18 @@ export default function ManageIssues() {
   }
 
   return (
-    <div className={`user-dashboard manage-issues-page ${mobileNavigation.layoutClassName}`} onKeyDown={mobileNavigation.onKeyDown}>
-
+    <div
+      className={`user-dashboard manage-issues-page ${mobileNavigation.layoutClassName}`}
+      onKeyDown={mobileNavigation.onKeyDown}
+    >
       {/* =========================
           LEFT SIDEBAR
       ========================== */}
 
-      <aside className="user-dashboard-sidebar" {...mobileNavigation.sidebarProps}>
+      <aside
+        className="user-dashboard-sidebar"
+        {...mobileNavigation.sidebarProps}
+      >
         <div className="user-dashboard-logo">
           <img
             src={UONLogo}
@@ -474,12 +475,11 @@ export default function ManageIssues() {
             <Users />
             <span>User Management</span>
           </button>
+
           <button
             type="button"
             className="user-dashboard-nav-item"
-            onClick={() =>
-              navigate("/admin/reporting")
-            }
+            onClick={() => navigate("/admin/reporting")}
           >
             <BarChart3 />
             <span>Reporting & Analytics</span>
@@ -504,12 +504,13 @@ export default function ManageIssues() {
 
       <div className="user-dashboard-main">
 
-        {/* =========================
-            HEADER
-        ========================== */}
+        {/* HEADER */}
 
         <header className="user-dashboard-header">
-          <MobilePageHeading title="Manage issues" {...mobileNavigation.headingProps} />
+          <MobilePageHeading
+            title="Manage issues"
+            {...mobileNavigation.headingProps}
+          />
 
           <div className="user-dashboard-header-user">
             <span>
@@ -522,17 +523,18 @@ export default function ManageIssues() {
           </div>
         </header>
 
-        {/* =========================
-            PAGE CONTENT
-        ========================== */}
+        {/* PAGE CONTENT */}
 
         <main className="user-dashboard-content manage-issues-content">
+
           {/* =========================
               SEARCH AND FILTER PANEL
           ========================== */}
 
           <section className="user-dashboard-issues-panel manage-filter-panel">
+
             <div className="manage-panel-heading">
+
               <div className="manage-panel-heading-icon">
                 <SlidersHorizontal />
               </div>
@@ -545,6 +547,7 @@ export default function ManageIssues() {
                   assignment, priority or reported date.
                 </p>
               </div>
+
               <div className="manage-issues-result-count">
                 <strong>
                   {loading ? "..." : filteredIssues.length}
@@ -556,11 +559,12 @@ export default function ManageIssues() {
                     : "Issues found"}
                 </span>
               </div>
+
             </div>
 
             <div className="manage-filter-body">
 
-              {/* Search */}
+              {/* SEARCH */}
 
               <div className="manage-search-group">
                 <label htmlFor="manage-search">
@@ -580,9 +584,10 @@ export default function ManageIssues() {
                 </div>
               </div>
 
-              {/* Filters */}
+              {/* FILTERS */}
 
               <div className="manage-filter-grid">
+
                 <div className="manage-filter-field">
                   <label htmlFor="status-filter">
                     Status
@@ -595,25 +600,11 @@ export default function ManageIssues() {
                       setStatusFilter(e.target.value)
                     }
                   >
-                    <option value="All">
-                      All statuses
-                    </option>
-
-                    <option value="Active">
-                      Active
-                    </option>
-
-                    <option value="Open">
-                      Open
-                    </option>
-
-                    <option value="In Progress">
-                      In Progress
-                    </option>
-
-                    <option value="Closed">
-                      Closed
-                    </option>
+                    <option value="All">All statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Open">Open</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Closed">Closed</option>
                   </select>
                 </div>
 
@@ -629,18 +620,11 @@ export default function ManageIssues() {
                       setAssignmentFilter(e.target.value)
                     }
                   >
-                    <option value="All">
-                      All assignments
-                    </option>
-
-                    <option value="Unassigned">
-                      Unassigned
-                    </option>
-
+                    <option value="All">All assignments</option>
+                    <option value="Unassigned">Unassigned</option>
                     <option value="Assigned to me">
                       Assigned to me
                     </option>
-
                     <option value="Assigned to others">
                       Assigned to others
                     </option>
@@ -659,25 +643,11 @@ export default function ManageIssues() {
                       setPriorityFilter(e.target.value)
                     }
                   >
-                    <option value="All">
-                      All priorities
-                    </option>
-
-                    <option value="Low">
-                      Low
-                    </option>
-
-                    <option value="Medium">
-                      Medium
-                    </option>
-
-                    <option value="High">
-                      High
-                    </option>
-
-                    <option value="Critical">
-                      Critical
-                    </option>
+                    <option value="All">All priorities</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
                   </select>
                 </div>
 
@@ -693,15 +663,11 @@ export default function ManageIssues() {
                       setSortBy(e.target.value)
                     }
                   >
-                    <option value="Newest">
-                      Newest first
-                    </option>
-
-                    <option value="Oldest">
-                      Oldest first
-                    </option>
+                    <option value="Newest">Newest first</option>
+                    <option value="Oldest">Oldest first</option>
                   </select>
                 </div>
+
               </div>
             </div>
           </section>
@@ -711,6 +677,7 @@ export default function ManageIssues() {
           ========================== */}
 
           <section className="user-dashboard-issues-panel manage-issues-panel">
+
             <div className="manage-issues-panel-header">
               <div>
                 <h2>All reported issues</h2>
@@ -722,10 +689,19 @@ export default function ManageIssues() {
               </div>
             </div>
 
-            <div className="manage-archive-tabs" aria-label="Issue archive tabs">
+            {/* ARCHIVE TABS */}
+
+            <div
+              className="manage-archive-tabs"
+              aria-label="Issue archive tabs"
+            >
               <button
                 type="button"
-                className={archiveTab === "active" ? "manage-archive-tab active" : "manage-archive-tab"}
+                className={
+                  archiveTab === "active"
+                    ? "manage-archive-tab active"
+                    : "manage-archive-tab"
+                }
                 onClick={() => setArchiveTab("active")}
               >
                 Active
@@ -733,21 +709,25 @@ export default function ManageIssues() {
 
               <button
                 type="button"
-                className={archiveTab === "archived" ? "manage-archive-tab active" : "manage-archive-tab"}
+                className={
+                  archiveTab === "archived"
+                    ? "manage-archive-tab active"
+                    : "manage-archive-tab"
+                }
                 onClick={() => setArchiveTab("archived")}
               >
                 Archived
               </button>
             </div>
 
-            {/* Loading */}
+            {/* LOADING */}
 
             {loading ? (
               <div className="manage-issues-message">
                 Loading issues...
               </div>
 
-              /* No results */
+              /* NO RESULTS */
 
             ) : filteredIssues.length === 0 ? (
               <div className="manage-empty-state">
@@ -766,234 +746,260 @@ export default function ManageIssues() {
                 </p>
               </div>
 
-              /* Issues table */
+              /* GRID ISSUE LIST */
 
             ) : (
-              <div className="user-dashboard-table-container manage-table-container">
-                <table className="user-dashboard-table manage-issues-table mobile-admin-table" role="table">
-                  <thead>
-                    <tr>
-                      <th>Issue</th>
-                      <th>Location</th>
-                      <th>Status</th>
-                      <th>Priority</th>
-                      <th>Reported by</th>
-                      <th>Reported</th>
-                      <th>Assigned to</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
+              <div className="manage-issues-list">
 
-                  <tbody>
-                    {visibleIssues.map((issue) => {
-                      const isAssignedToMe =
-                        userData &&
-                        issue.assignedTo &&
-                        String(issue.assignedTo) ===
-                        String(userData._id);
+                {/* GRID HEADER */}
 
-                      return (
-                        <tr key={issue._id}>
+                <div
+                  className="manage-issues-grid-header"
+                  aria-hidden="true"
+                >
+                  <div>Issue</div>
+                  <div>Location</div>
+                  <div>Status</div>
+                  <div>Priority</div>
+                  <div>Reported by</div>
+                  <div>Reported</div>
+                  <div>Assigned to</div>
+                  <div>Actions</div>
+                </div>
 
-                          {/* Issue */}
+                {/* ISSUE ROWS */}
 
-                          <td data-label="Issue" className="manage-wrap-cell manage-title-cell">
-                            <strong>
-                              {issue.title || "-"}
-                            </strong>
+                {visibleIssues.map((issue) => {
+                  const isAssignedToMe =
+                    userData &&
+                    issue.assignedTo &&
+                    String(issue.assignedTo) ===
+                    String(userData._id);
 
-                            <span>
-                              {issue.issueDescription ||
-                                "No description provided"}
-                            </span>
-                          </td>
+                  return (
+                    <article
+                      key={issue._id}
+                      className="manage-issue-card"
+                      onClick={() =>
+                        navigate(`/issue/${issue._id}`, {
+                          state: {
+                            from: "manage-issues",
+                          },
+                        })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
 
-                          {/* Location */}
+                          navigate(`/issue/${issue._id}`, {
+                            state: {
+                              from: "manage-issues",
+                            },
+                          });
+                        }
+                      }}
+                      tabIndex={0}
+                      role="link"
+                    >
 
-                          <td data-label="Location" className="manage-wrap-cell">
-                            <strong>
-                              {issue.campus || "-"}
-                            </strong>
+                      {/* ISSUE */}
 
-                            <span>
-                              {issue.location || "-"}
-                            </span>
-                          </td>
+                      <div className="manage-issue-main manage-wrap-cell">
+                        <strong>
+                          {issue.title || "-"}
+                        </strong>
 
-                          {/* Status */}
+                        <span>
+                          {issue.issueDescription ||
+                            "No description provided"}
+                        </span>
+                      </div>
 
-                          <td data-label="Status">
-                            <span
-                              className={`manage-status-badge ${getStatusClass(
-                                issue.status
-                              )}`}
-                            >
-                              {issue.status || "-"}
-                            </span>
-                            {issue.isArchived && (
-                              <div className="manage-archive-tag">Archived</div>
-                            )}
-                          </td>
+                      {/* LOCATION */}
 
-                          {/* Priority */}
+                      <div className="manage-issue-location manage-wrap-cell">
+                        <strong>
+                          {issue.campus || "-"}
+                        </strong>
 
-                          <td data-label="Priority">
-                            <span
-                              className={`manage-priority-badge ${getPriorityClass(
-                                issue.priority
-                              )}`}
-                            >
-                              {issue.priority || "Not set"}
-                            </span>
-                          </td>
+                        <span>
+                          {issue.location || "-"}
+                        </span>
+                      </div>
 
-                          {/* Reporter */}
+                      {/* STATUS */}
 
-                          <td data-label="Reported by" className="manage-wrap-cell">
-                            {issue.reportedByName || "Unknown"}
-                          </td>
+                      <div className="manage-issue-status">
+                        <span
+                          className={`manage-status-badge ${getStatusClass(
+                            issue.status
+                          )}`}
+                        >
+                          {issue.status || "-"}
+                        </span>
 
-                          {/* Reported date */}
+                        {issue.isArchived && (
+                          <div className="manage-archive-tag">
+                            Archived
+                          </div>
+                        )}
+                      </div>
 
-                          <td data-label="Reported" className="manage-date-cell">
-                            {formatReportedDate(
-                              issue.dateTimeReported
-                            )}
-                          </td>
+                      {/* PRIORITY */}
 
-                          {/* Assignment */}
+                      <div className="manage-issue-priority">
+                        <span
+                          className={`manage-priority-badge ${getPriorityClass(
+                            issue.priority
+                          )}`}
+                        >
+                          {issue.priority || "Not set"}
+                        </span>
+                      </div>
 
-                          <td data-label="Assigned to" className="manage-wrap-cell">
-                            {isAssignedToMe ? (
-                              <span className="manage-assigned-me">
-                                Assigned to you
-                              </span>
-                            ) : issue.assignedTo ? (
-                              issue.assignedToName || "Assigned"
-                            ) : (
-                              <span className="manage-unassigned">
-                                Unassigned
-                              </span>
-                            )}
-                          </td>
+                      {/* REPORTER */}
 
-                          {/* Actions */}
+                      <div className="manage-issue-reporter manage-wrap-cell">
+                        <span>
+                          {issue.reportedByName || "Unknown"}
+                        </span>
+                      </div>
 
-                          <td data-label="Actions">
-                            <div className="manage-action-buttons">
-                              <button
-                                type="button"
-                                className="manage-action-button manage-view-button"
-                                onClick={() =>
-                                  navigate(
-                                    `/issue/${issue._id}`,
-                                    {
-                                      state: {
-                                        from: "manage-issues",
-                                      },
-                                    }
-                                  )
-                                }
-                              >
-                                <Eye />
-                                <span>View</span>
-                              </button>
+                      {/* REPORTED */}
 
-                              {!issue.assignedTo ||
-                                isAssignedToMe ? (
-                                <button
-                                  type="button"
-                                  className="manage-action-button manage-assign-button"
-                                  onClick={() =>
-                                    assignIssueToMe(
-                                      issue._id
-                                    )
-                                  }
-                                  disabled={
-                                    assigningIssueId ===
-                                    issue._id ||
-                                    isAssignedToMe ||
-                                    issue.status ===
-                                    "Closed"
-                                  }
-                                >
-                                  <UserCheck />
+                      <div className="manage-issue-date manage-date-cell">
+                        {formatReportedDate(
+                          issue.dateTimeReported
+                        )}
+                      </div>
 
-                                  <span>
-                                    {isAssignedToMe
-                                      ? "Assigned"
-                                      : "Assign"}
-                                  </span>
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="manage-action-button manage-assign-button"
-                                  disabled
-                                  title="This issue is already assigned to another user"
-                                >
-                                  <UserCheck />
-                                  <span>Assign</span>
-                                </button>
-                              )}
+                      {/* ASSIGNED TO */}
 
-                              {issue.assignedTo && (
-                                <button
-                                  type="button"
-                                  className="manage-action-button manage-clear-button"
-                                  onClick={() =>
-                                    unassignIssue(
-                                      issue._id
-                                    )
-                                  }
-                                  disabled={
-                                    assigningIssueId ===
-                                    issue._id ||
-                                    issue.status ===
-                                    "Closed"
-                                  }
-                                >
-                                  <UserMinus />
-                                  <span>Clear</span>
-                                </button>
-                              )}
+                      <div className="manage-issue-assignment manage-wrap-cell">
+                        {isAssignedToMe ? (
+                          <span className="manage-assigned-me">
+                            Assigned to you
+                          </span>
+                        ) : issue.assignedTo ? (
+                          issue.assignedToName || "Assigned"
+                        ) : (
+                          <span className="manage-unassigned">
+                            Unassigned
+                          </span>
+                        )}
+                      </div>
 
-                              <button
-                                type="button"
-                                className={`manage-action-button ${issue.isArchived ? "manage-restore-button" : "manage-archive-button"}`}
-                                onClick={() => toggleArchiveIssue(issue._id, issue.isArchived)}
-                                disabled={
-                                  archivingIssueId === issue._id ||
-                                  (!issue.isArchived && issue.status !== "Closed")
-                                }
-                                title={
-                                  !issue.isArchived && issue.status !== "Closed"
-                                    ? "Archive unavailable: only closed issues can be archived"
-                                    : issue.isArchived
-                                      ? "Restore this issue"
-                                      : "Archive this issue"
-                                }
-                              >
-                                <span>{issue.isArchived ? "Restore" : "Archive"}</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      {/* ACTIONS */}
+
+                      <div className="manage-issue-actions">
+
+                        <button
+                          type="button"
+                          className="manage-action-button manage-view-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+
+                            navigate(`/issue/${issue._id}`, {
+                              state: {
+                                from: "manage-issues",
+                              },
+                            });
+                          }}
+                        >
+                          <Eye />
+                          <span>View</span>
+                        </button>
+
+                        {!issue.assignedTo && (
+                          <button
+                            type="button"
+                            className="manage-action-button manage-assign-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              assignIssueToMe(issue._id);
+                            }}
+                            disabled={
+                              assigningIssueId === issue._id ||
+                              issue.status === "Closed"
+                            }
+                          >
+                            <UserCheck />
+                            <span>Assign</span>
+                          </button>
+                        )}
+
+                        {issue.assignedTo && (
+                          <button
+                            type="button"
+                            className="manage-action-button manage-clear-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              unassignIssue(issue._id);
+                            }}
+                            disabled={
+                              assigningIssueId === issue._id ||
+                              issue.status === "Closed"
+                            }
+                            title={
+                              issue.status === "Closed"
+                                ? "This issue is closed, so its assignment cannot be changed"
+                                : "Clear assignment"
+                            }
+                          >
+                            <UserMinus />
+                            <span>Clear</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          className={`manage-action-button ${issue.isArchived
+                            ? "manage-restore-button"
+                            : "manage-archive-button"
+                            }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+
+                            toggleArchiveIssue(
+                              issue._id,
+                              issue.isArchived
+                            );
+                          }}
+                          disabled={
+                            archivingIssueId === issue._id ||
+                            (!issue.isArchived &&
+                              issue.status !== "Closed")
+                          }
+                          title={
+                            !issue.isArchived &&
+                              issue.status !== "Closed"
+                              ? "Archive unavailable: only closed issues can be archived"
+                              : issue.isArchived
+                                ? "Restore this issue"
+                                : "Archive this issue"
+                          }
+                        >
+                          <span>
+                            {issue.isArchived
+                              ? "Restore"
+                              : "Archive"}
+                          </span>
+                        </button>
+
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
 
-            {/* =========================
-                PAGINATION
-            ========================== */}
+            {/* PAGINATION */}
 
             {!loading &&
               filteredIssues.length > 0 &&
               totalPages > 1 && (
                 <div className="manage-pagination">
+
                   <div className="manage-pagination-info">
                     Showing{" "}
                     <strong>
@@ -1004,8 +1010,7 @@ export default function ManageIssues() {
                     {" - "}
                     <strong>
                       {Math.min(
-                        currentPage *
-                        issuesPerPage,
+                        currentPage * issuesPerPage,
                         filteredIssues.length
                       )}
                     </strong>
@@ -1017,6 +1022,7 @@ export default function ManageIssues() {
                   </div>
 
                   <div className="manage-pagination-controls">
+
                     <button
                       type="button"
                       onClick={() =>
@@ -1055,9 +1061,11 @@ export default function ManageIssues() {
                       <span>Next</span>
                       <ChevronRight />
                     </button>
+
                   </div>
                 </div>
               )}
+
           </section>
         </main>
       </div>

@@ -42,11 +42,9 @@
   display: flex;
 
   background:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       #f8f9fc 0%,
-      #f3f6fb 100%
-    );
+      #f3f6fb 100%);
 
   color: var(--report-text);
 
@@ -107,7 +105,7 @@
   color: var(--text-primary);
 }
 
-.report-issue-user > span {
+.report-issue-user>span {
   font-size: 15px;
   font-weight: 600;
 }
@@ -151,7 +149,7 @@
   font-weight: 600;
 }
 
-.report-issue-user > svg {
+.report-issue-user>svg {
   width: 18px;
   height: 18px;
 
@@ -214,8 +212,7 @@
   display: grid;
 
   grid-template-columns:
-    minmax(0, 1fr)
-    minmax(410px, 1fr);
+    minmax(0, 1fr) minmax(410px, 1fr);
 
   gap: 12px;
 
@@ -231,16 +228,17 @@
 
   gap: 12px;
 }
+
 .report-issue-left {
-    min-height: 100%;
+  min-height: 100%;
 }
 
 .report-issue-left .report-section-card {
-    flex: 1;
+  flex: 1;
 }
 
 .report-issue-left .report-section-body {
-    padding-bottom: 28px;
+  padding-bottom: 28px;
 }
 
 /* =========================
@@ -269,11 +267,9 @@
   align-items: center;
 
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       #f3f5f8 0%,
-      #eef1f5 100%
-    );
+      #eef1f5 100%);
 
   border-bottom: 1px solid #e4e8ef;
 
@@ -381,6 +377,90 @@
 
   box-shadow:
     0 0 0 2px rgba(10, 104, 240, 0.08);
+}
+
+/* =========================
+   DELETE DRAFT CONFIRMATION
+========================= */
+
+/* =========================
+   DELETE DRAFT CONFIRMATION
+========================= */
+
+.admin-confirmation-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 28, 54, 0.45);
+}
+
+.admin-confirmation-dialog {
+  width: min(100%, 500px);
+  padding: 28px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e1e6ef;
+  border-radius: 10px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+.admin-confirmation-eyebrow {
+  margin: 0 0 8px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-confirmation-dialog h2 {
+  margin: 0 0 18px;
+  color: #111c36;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-confirmation-dialog>p:not(.admin-confirmation-eyebrow) {
+  margin: 0 0 14px;
+  color: #59667e;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.admin-confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.admin-confirmation-actions button {
+  margin: 0;
+  padding: 0 12px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-confirmation-actions button:first-child {
+  background: #f2f4f7;
+  color: #344054;
+}
+
+.admin-confirmation-confirm {
+  background: #0867f2;
+  color: #ffffff;
+}
+
+.admin-confirmation-actions button:hover {
+  opacity: 0.9;
 }
 
 /* =========================
@@ -643,10 +723,8 @@
   display: grid;
 
   grid-template-columns:
-    repeat(
-      3,
-      minmax(0, 1fr)
-    );
+    repeat(3,
+      minmax(0, 1fr));
 
   gap: 10px;
 }
@@ -694,12 +772,10 @@
   border-radius: 50%;
 
   background:
-    rgba(
+    rgba(255,
       255,
       255,
-      255,
-      0.94
-    );
+      0.94);
 
   color: #253048;
 
@@ -844,53 +920,54 @@
 }
 
 .report-textarea-wrap textarea {
-    width: 100%;
-    min-height: 200px;
-    padding: 14px 16px;
-    border: 1px solid #cfd8e3;
-    border-radius: 10px;
-    background-color: #ffffff;
-    font-size: 12px;
-    color: #0f172a;
-    resize: vertical;
-    box-sizing: border-box;
-    outline: none;
+  width: 100%;
+  min-height: 200px;
+  padding: 14px 16px;
+  border: 1px solid #cfd8e3;
+  border-radius: 10px;
+  background-color: #ffffff;
+  font-size: 12px;
+  color: #0f172a;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
 }
 
 .report-draft-item {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid #dbe3ec;
-    border-radius: 10px;
-    background-color: #ffffff;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #dbe3ec;
+  border-radius: 10px;
+  background-color: #ffffff;
 }
 
 .report-draft-icon {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 .report-draft-info {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .report-draft-actions {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #edf1f5;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #edf1f5;
 }
 
 .report-draft-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
+
 /* =========================
    ERROR / SUCCESS
 ========================= */
@@ -1018,8 +1095,8 @@
       23px 20px 35px;
   }
 
-  .report-issue-user > span,
-  .report-issue-user > svg {
+  .report-issue-user>span,
+  .report-issue-user>svg {
     display: none;
   }
 }
@@ -1199,10 +1276,8 @@
 
   .report-image-grid {
     grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
+      repeat(2,
+        minmax(0, 1fr));
   }
 
   .report-image-preview {

@@ -518,7 +518,7 @@ body {
    ========================= */
 
 .user-dashboard-issues-panel {
-  min-height: 375px;
+  min-height: 0px;
   margin-top: 20px;
   background: #fff;
   border: 1px solid var(--card-border);

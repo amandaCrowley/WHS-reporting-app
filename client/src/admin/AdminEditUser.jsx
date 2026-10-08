@@ -40,6 +40,7 @@ export default function AdminEditUser() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -157,15 +158,22 @@ export default function AdminEditUser() {
     }
   };
 
+  const openDeleteConfirmation = () => {
+    setShowDeleteConfirmation(true);
+  };
+
+  const cancelDelete = () => {
+    if (!deleting) {
+      setShowDeleteConfirmation(false);
+    }
+  };
+
   //delete user from database 
   const handleDelete = async () => {
     if (!userData?.firebaseUid) {
       setError("Admin details are not available. Please refresh and try again.");
       return;
     }
-
-    const confirmed = window.confirm(`Remove ${user?.firstName || "this user"} ${user?.lastName || ""} from the database? This cannot be undone.`);
-    if (!confirmed) return;
 
     setError("");
     setDeleting(true);
@@ -344,10 +352,10 @@ export default function AdminEditUser() {
                 <div className="admin-delete-user-action">
                   <button
                     type="button"
-                    onClick={handleDelete}
+                    onClick={openDeleteConfirmation}
                     disabled={deleting || user.firebaseUid === userData?.firebaseUid}
                   >
-                    {deleting ? "Deleting..." : "Remove user from database"}
+                    Remove user from database
                   </button>
                 </div>
               </>
@@ -355,6 +363,55 @@ export default function AdminEditUser() {
           </section>
         </main>
       </div>
+      {showDeleteConfirmation && (
+        <div
+          className="admin-confirmation-backdrop"
+          onClick={cancelDelete}
+        >
+          <div
+            className="admin-confirmation-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-user-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="delete-user-title">
+              Remove user?
+            </h3>
+
+            <p>
+              Are you sure you want to remove{" "}
+              <strong>
+                {user?.firstName} {user?.lastName}
+              </strong>{" "}
+              from the database?
+            </p>
+
+            <p>
+              This action cannot be undone.
+            </p>
+
+            <div className="admin-confirmation-actions">
+              <button
+                type="button"
+                onClick={cancelDelete}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="admin-confirmation-delete"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Removing..." : "Remove user"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

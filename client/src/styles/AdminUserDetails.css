@@ -123,14 +123,37 @@
 
 .reported-issue button {
   align-self: center;
-  background: #0057e7;
-  border-color: #0057e7;
-  color: #ffffff;
+
+  min-width: 76px;
+  height: 34px;
+  padding: 0 11px;
+
+  border: 1px solid #1762db;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #0758d7;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .reported-issue button:hover {
-  background: #0046bd;
-  border-color: #0046bd;
+  background-color: #f1f6fd;
+  border-color: #0758d7;
+  transform: translateY(-1px);
 }
 
 .admin-user-details [role="alert"] {
