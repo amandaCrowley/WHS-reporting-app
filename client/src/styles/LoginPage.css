@@ -190,3 +190,101 @@
     }
 }
 
+
+/* Forgot Password */
+.forgot-password-button {
+    display: block;
+    margin: -8px 0 8px auto;
+    padding: 4px 0;
+    background: none;
+    border: none;
+    color: #172554;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.forgot-password-button:hover {
+    text-decoration: underline;
+    color: #1e3a8a;
+}
+
+/* Password Reset Confirmation Popup */
+.password-reset-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.password-reset-popup {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
+    text-align: center;
+}
+
+.password-reset-popup h2 {
+    color: #1e3a8a;
+    margin: 0 0 12px;
+    font-size: 1.6rem;
+}
+
+.password-reset-popup p {
+    color: #334155;
+    line-height: 1.5;
+}
+
+.password-reset-popup .resend-countdown {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-top: 18px;
+}
+
+.resend-reset-button,
+.close-reset-popup {
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.resend-reset-button {
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    margin-top: 12px;
+}
+
+.resend-reset-button:hover {
+    background-color: #1e40af;
+}
+
+.close-reset-popup {
+    background: white;
+    color: #1e3a8a;
+    border: 2px solid #1e3a8a;
+    margin-top: 12px;
+}
+
+.close-reset-popup:hover {
+    background: #f0f4f8;
+}
+
+@media (max-width: 480px) {
+    .password-reset-popup {
+        padding: 24px 20px;
+    }
+}

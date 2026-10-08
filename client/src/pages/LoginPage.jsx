@@ -14,8 +14,8 @@
  * Date: 1/4/26
  */
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; //Import firebase authentication functions to allow us to authenticate users using firebase
+import { useState, useEffect } from 'react';
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"; //Import firebase authentication functions to allow us to authenticate users using firebase
 import { signOut } from "firebase/auth"; //Import firebase signOut function to allow us to sign out users
 import '../styles/LoginPage.css';
 import { Eye, EyeOff } from 'lucide-react';
@@ -35,7 +35,64 @@ export default function LoginPage() {
     const [error, setError] = useState(''); //Store any error messages that occur during login
     const [showPassword, setShowPassword] = useState(false); //manage wether password shown or not
 
+    // Password recovery state
+    const [resetEmailSent, setResetEmailSent] = useState(false);
+    const [resetMessage, setResetMessage] = useState('');
+    const [resendCountdown, setResendCountdown] = useState(0);
+
     const navigate = useNavigate(); //useNavigate is a hook from react-router-dom that allows us to programmatically navigate to different pages in the app (e.g. after successful login, we can navigate to the user's dashboard)
+
+
+    // Countdown used to prevent repeated password reset email requests.
+    useEffect(() => {
+        if (resendCountdown <= 0) {
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setResendCountdown((previous) => previous - 1);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [resendCountdown]);
+
+
+    // Sends a password reset email to the address entered on the login page.
+    async function forgotPassword() {
+        setError('');
+        setResetMessage('');
+
+        if (!validateEmail(email)) {
+            setError("Please enter a valid email address before resetting your password.");
+            return;
+        }
+
+        // Prevent another request while the resend cooldown is active.
+        if (resendCountdown > 0) {
+            return;
+        }
+
+        try {
+            await sendPasswordResetEmail(getAuth(), email.trim());
+
+            setResetEmailSent(true);
+            setResetMessage("Reset link sent to your email address. Please check your email.");
+            setResendCountdown(60);
+        } catch (e) {
+            switch (e.code) {
+                case "auth/too-many-requests":
+                    setError("Too many password reset requests. Please try again later.");
+                    break;
+
+                case "auth/network-request-failed":
+                    setError("Network error. Please check your internet connection and try again.");
+                    break;
+
+                default:
+                    setError("Unable to send password reset email. Please try again.");
+            }
+        }
+    }
 
 
     //This function is called when the user clicks the login button. 
@@ -207,10 +264,50 @@ export default function LoginPage() {
                             </button>
                         </div>
                     </div>
+                    <button
+                        type="button"
+                        className="forgot-password-button"
+                        onClick={forgotPassword}
+                    >
+                        Forgot password?
+                    </button>
+
                     <button type="submit" className="login-button">Login</button>
                 </form>
 
                 <p>Don't have an account? <Link to="/register">Register here</Link></p>
+
+                {resetEmailSent && (
+                    <div className="password-reset-overlay">
+                        <div className="password-reset-popup">
+                            <h2>Reset link sent</h2>
+
+                            <p>{resetMessage}</p>
+
+                            {resendCountdown > 0 ? (
+                                <p className="resend-countdown">
+                                    Resend available in {resendCountdown} seconds
+                                </p>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="resend-reset-button"
+                                    onClick={forgotPassword}
+                                >
+                                    Resend reset email
+                                </button>
+                            )}
+
+                            <button
+                                type="button"
+                                className="close-reset-popup"
+                                onClick={() => setResetEmailSent(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
