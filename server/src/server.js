@@ -25,6 +25,7 @@ import upload from "./uploadMiddleware.js"; // Middleware for handling file uplo
 import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
 import { findUserByIdentity } from "./userIdentity.js";
 import { sendStatusChangeEmail } from "./emailService.js";
+import { moderateText } from "./aiModerationService.js";
 import adminAnalyticsRoutes from "./analyticsAPI.js";
 import {
   normalizeAndValidateIssueArchiveState,
@@ -880,6 +881,38 @@ app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
 * Add a new issue to the MongoDB database using the logged in user's userID - We may change this later to enable adding an issue without being logged in
 * userID is a URL parameter
 */
+// -------------------------- AI Text Moderation --------------------------
+
+app.post('/api/moderate-text', async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (typeof text !== "string" || !text.trim()) {
+      return res.status(400).json({
+        error: "Text is required for moderation",
+      });
+    }
+
+    if (text.trim().length > 300) {
+      return res.status(400).json({
+        error: "Text must be 300 characters or fewer",
+      });
+    }
+
+    const result = await moderateText(text);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("AI moderation error:", error.message);
+
+    return res.status(500).json({
+      error: "Unable to moderate text at this time",
+    });
+  }
+});
+
+// ------------------------------------------------------------------------
+
 app.post('/api/issue/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;

@@ -43,6 +43,7 @@ export default function ReportIssue() {
 
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
+  const [moderationSuggestion, setModerationSuggestion] = useState(null);
 
   const [issueTitle, setIssueTitle] = useState("");
   const [campus, setCampus] = useState("");
@@ -189,6 +190,40 @@ export default function ReportIssue() {
     }
 
     try {
+      const moderationResponse = await fetch(
+        "http://localhost:8000/api/moderate-text",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: issueDescription.trim(),
+          }),
+        },
+      );
+
+      const moderationData =
+        await moderationResponse.json();
+
+      if (!moderationResponse.ok) {
+        throw new Error(
+          moderationData.error ||
+            "Unable to check the issue description.",
+        );
+      }
+
+      if (moderationData.flagged) {
+        setModerationSuggestion(
+          moderationData.suggestion ||
+            "Please revise the wording before submitting.",
+        );
+        setFormLoading(false);
+        return;
+      }
+
+      setModerationSuggestion(null);
+
       let imageURLs = [];
       let imageHashes = [];
 
@@ -1301,6 +1336,60 @@ export default function ReportIssue() {
           </form>
         </section>
       </main>
+      {moderationSuggestion && (
+        <div
+          className="admin-confirmation-backdrop"
+          role="presentation"
+        >
+          <div
+            className="admin-confirmation-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="moderation-title"
+          >
+            <p className="admin-confirmation-eyebrow">
+              AI wording review
+            </p>
+
+            <h2 id="moderation-title">
+              Review your wording
+            </h2>
+
+            <p>
+              This description may contain inappropriate or
+              disrespectful language. You can modify it yourself
+              or use the suggested wording below.
+            </p>
+
+            <div className="moderation-suggestion">
+              <strong>Suggested wording</strong>
+              <p>{moderationSuggestion}</p>
+            </div>
+
+            <div className="admin-confirmation-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setModerationSuggestion(null);
+                }}
+              >
+                Modify myself
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIssueDescription(moderationSuggestion);
+                  setModerationSuggestion(null);
+                }}
+              >
+                Use suggested wording
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {pendingDeleteDraft && (
         <div
           className="admin-confirmation-backdrop"
