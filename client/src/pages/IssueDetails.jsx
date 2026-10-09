@@ -193,6 +193,7 @@ export default function IssueDetails() {
   const [newMessage, setNewMessage] = useState("");
   const [messageError, setMessageError] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [messageModerationSuggestion, setMessageModerationSuggestion] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
   const [statusError, setStatusError] = useState("");
   const assignmentDropdownRef = useRef(null);
@@ -275,6 +276,36 @@ export default function IssueDetails() {
     try {
       setSendingMessage(true);
       setMessageError("");
+
+      const moderationResponse = await fetch(
+        "http://localhost:8000/api/moderate-text",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: messageText,
+          }),
+        }
+      );
+
+      const moderationData = await moderationResponse.json();
+
+      if (!moderationResponse.ok) {
+        throw new Error(
+          moderationData.error ||
+          "Unable to check the message."
+        );
+      }
+
+      if (moderationData.flagged) {
+        setMessageModerationSuggestion(
+          moderationData.suggestion ||
+          "Please revise the wording before sending."
+        );
+        return;
+      }
+
+      setMessageModerationSuggestion(null);
 
       const response = await fetch(
         `http://localhost:8000/api/issues/${issueId}/messages`,
@@ -1762,6 +1793,60 @@ export default function IssueDetails() {
           )}
         </div>
       </div >
+
+      {messageModerationSuggestion && (
+        <div
+          className="admin-confirmation-backdrop"
+          role="presentation"
+        >
+          <div
+            className="admin-confirmation-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="message-moderation-title"
+          >
+            <p className="admin-confirmation-eyebrow">
+              AI wording review
+            </p>
+
+            <h2 id="message-moderation-title">
+              Review your wording
+            </h2>
+
+            <p>
+              This message may contain inappropriate or
+              disrespectful language. You can modify it yourself
+              or use the suggested wording below.
+            </p>
+
+            <div className="moderation-suggestion">
+              <strong>Suggested wording</strong>
+              <p>{messageModerationSuggestion}</p>
+            </div>
+
+            <div className="admin-confirmation-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  setMessageModerationSuggestion(null)
+                }
+              >
+                Modify myself
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setNewMessage(messageModerationSuggestion);
+                  setMessageModerationSuggestion(null);
+                }}
+              >
+                Use suggested wording
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout >
   );
 }
