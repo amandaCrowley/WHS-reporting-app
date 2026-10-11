@@ -14,7 +14,7 @@
  * - View My Issues
  * - Edit Profile
  *
- * Author/s: Grish Gautam
+ * Author/s: Grish Gautam & Amanda Foxley
  */
 
 /**
@@ -51,6 +51,7 @@ import { userLogout } from "../hooks/userLogout";
 import { useNotifications } from "../hooks/useNotifications";
 import NotificationBell from "../components/NotificationBell";
 import UONLogo from "../images/UONLogo White.png";
+import { getAuth } from "firebase/auth";
 
 import "./UserDashboard.css";
 
@@ -63,6 +64,15 @@ export default function UserDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuButtonRef = useRef(null);
   const navigationRef = useRef(null);
+
+  // Admin access request state
+  const [adminRequestStatus, setAdminRequestStatus] = useState("None");
+  const [adminRequestReason, setAdminRequestReason] = useState("");
+  const [adminRequestLoading, setAdminRequestLoading] = useState(false);
+  const [adminRequestSubmitting, setAdminRequestSubmitting] = useState(false);
+  const [adminRequestError, setAdminRequestError] = useState("");
+  const [adminRequestMessage, setAdminRequestMessage] = useState("");
+  const [adminRequestIsAdmin, setAdminRequestIsAdmin] = useState(false);
 
   /* Mobile menu focus management: When the mobile menu is opened, focus should be set to the first navigation button.*/
   const closeMobileMenu = () => {
@@ -80,6 +90,70 @@ export default function UserDashboard() {
   const logout = userLogout();
   const { notifications, unreadCount } = useNotifications(userData?.firebaseUid);
 
+  /**
+ * Fetch the logged-in staff member's admin access request.
+ */
+  useEffect(() => {
+    if (!userData || userData.role !== "Staff" || userData.isAdmin) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchAdminAccessRequest = async () => {
+      try {
+        setAdminRequestLoading(true);
+        setAdminRequestError("");
+
+        const currentUser = getAuth().currentUser;
+
+        if (!currentUser) {
+          throw new Error("You must be logged in to view your request.");
+        }
+
+        const token = await currentUser.getIdToken();
+
+        const response = await fetch(
+          "http://localhost:8000/api/admin-access/request",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || "Failed to load admin access request."
+          );
+        }
+
+        if (cancelled) return;
+
+        setAdminRequestStatus(data.status || "None");
+        setAdminRequestReason(data.reason || "");
+        setAdminRequestIsAdmin(data.isAdmin === true);
+      } catch (err) {
+        if (!cancelled) {
+          setAdminRequestError(
+            err.message || "Failed to load admin access request."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setAdminRequestLoading(false);
+        }
+      }
+    };
+
+    fetchAdminAccessRequest();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userData]);
   /**
    * Fetch all issues submitted by the logged-in user.
    */
@@ -195,6 +269,65 @@ export default function UserDashboard() {
     }
 
     return "user-dashboard-status-default";
+  };
+
+  /**
+ * Submit an admin access request.
+ */
+  const submitAdminAccessRequest = async (event) => {
+    event.preventDefault();
+
+    const reason = adminRequestReason.trim();
+
+    if (reason.length < 10 || reason.length > 1000) {
+      setAdminRequestError(
+        "Please enter a reason between 10 and 1000 characters."
+      );
+      return;
+    }
+
+    try {
+      setAdminRequestSubmitting(true);
+      setAdminRequestError("");
+      setAdminRequestMessage("");
+
+      const currentUser = getAuth().currentUser;
+
+      if (!currentUser) {
+        throw new Error("You must be logged in to submit a request.");
+      }
+
+      const token = await currentUser.getIdToken();
+
+      const response = await fetch(
+        "http://localhost:8000/api/admin-access/request",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ reason }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit request.");
+      }
+
+      setAdminRequestStatus("Pending");
+      setAdminRequestMessage(
+        "Your admin access request has been submitted successfully."
+      );
+    } catch (err) {
+      setAdminRequestError(
+        err.message || "Failed to submit admin access request."
+      );
+    } finally {
+      setAdminRequestSubmitting(false);
+    }
   };
 
   return (
@@ -391,12 +524,19 @@ export default function UserDashboard() {
               </div>
             </article>
           </section>
-
           {/* =========================
               ISSUES AREA
           ========================== */}
 
           <section className="user-dashboard-issues-panel">
+            <div className="admin-dashboard-panel-header">
+              <div>
+                <h2>My reported issues</h2>
+                <p>
+                  View the WHS issues you have reported and check their current status.
+                </p>
+              </div>
+            </div>
             {issuesLoading ? (
               <div className="user-dashboard-panel-message">
                 Loading issues...
@@ -518,9 +658,9 @@ export default function UserDashboard() {
                       >
                         View <span aria-hidden="true">→</span>
                       </button>
-                  </div>
-                );
-              })}
+                    </div>
+                  );
+                })}
 
                 {sortedIssues.length > 5 && (
                   <div className="user-dashboard-issues-footer">
@@ -541,6 +681,131 @@ export default function UserDashboard() {
               </div>
             )}
           </section>
+
+          {/* =========================
+            STAFF ADMIN ACCESS REQUEST
+          ========================== */}
+
+          {userData.role === "Staff" &&
+            !userData.isAdmin &&
+            !adminRequestIsAdmin && (
+              <section
+                className="admin-access-request-panel"
+                aria-labelledby="admin-access-request-heading"
+              >
+                <div className="admin-access-request-header">
+                  <div>
+                    <h2 id="admin-access-request-heading">
+                      Administrator Access
+                    </h2>
+
+                    <p>
+                      Need access to WHS management features? Request administrator privileges here.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="admin-access-content">
+                  {adminRequestLoading ? (
+                    <p className="admin-access-request-message">
+                      Loading your request status...
+                    </p>
+                  ) : adminRequestStatus === "Pending" ? (
+                    <div
+                      className="admin-access-request-status pending"
+                      role="status"
+                    >
+                      <Clock3 aria-hidden="true" />
+
+                      <div>
+                        <h3>Request Pending</h3>
+                        <p>
+                          Your request has been submitted and is awaiting
+                          administrator review.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {adminRequestStatus === "Rejected" && (
+                        <div
+                          className="admin-access-request-status rejected"
+                          role="status"
+                        >
+                          <CircleAlert aria-hidden="true" />
+
+                          <div>
+                            <h3>Request Not Approved</h3>
+                            <p>
+                              Your previous request was not approved. You may
+                              submit a new request with additional information.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {adminRequestMessage && (
+                        <p
+                          className="admin-access-request-success"
+                          role="status"
+                        >
+                          {adminRequestMessage}
+                        </p>
+                      )}
+
+                      <form onSubmit={submitAdminAccessRequest}>
+                        <textarea
+                          id="admin-access-request-reason"
+                          value={adminRequestReason}
+                          onChange={(event) => {
+                            setAdminRequestReason(event.target.value);
+                            setAdminRequestError("");
+                            setAdminRequestMessage("");
+                          }}
+                          placeholder="Explain your responsibilities and why you need access. A WHS administrator will review your request and contact you if more information is necessary."
+                          rows={4}
+                          minLength={10}
+                          maxLength={1000}
+                          required
+                          disabled={adminRequestSubmitting}
+                        />
+
+                        <p className="admin-access-request-hint">
+                          {adminRequestReason.trim().length}/1000 characters
+                          (minimum 10).
+                        </p>
+
+                        {adminRequestError && (
+                          <p
+                            className="admin-access-request-error"
+                            role="alert"
+                          >
+                            {adminRequestError}
+                          </p>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="admin-access-request-button"
+                          disabled={
+                            adminRequestSubmitting ||
+                            adminRequestReason.trim().length < 10 ||
+                            adminRequestReason.trim().length > 1000
+                          }
+                        >
+                          {adminRequestSubmitting
+                            ? "Submitting..."
+                            : adminRequestStatus === "Rejected"
+                              ? "Resubmit Request"
+                              : "Request Admin Access"}
+                        </button>
+                      </form>
+
+                    </>
+                  )}
+                </div>
+              </section>
+            )}
         </main>
       </div>
     </div>

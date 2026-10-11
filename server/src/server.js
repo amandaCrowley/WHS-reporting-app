@@ -25,6 +25,7 @@ import upload from "./uploadMiddleware.js"; // Middleware for handling file uplo
 import cloudinary from "./cloudinary.js";   // Cloudinary configuration for image storage and management
 import { findUserByIdentity } from "./userIdentity.js";
 import { sendStatusChangeEmail } from "./emailService.js";
+import { moderateText } from "./aiModerationService.js";
 import adminAnalyticsRoutes from "./analyticsAPI.js";
 import {
   normalizeAndValidateIssueArchiveState,
@@ -181,8 +182,13 @@ app.post('/api/user', async (req, res) => {
       lastName,
       email,
       role: role || "Student",
-      isAdmin: isAdmin || false,
+      isAdmin: false,
       accountStatus: "Active",
+
+      // Admin access request fields
+      adminAccessRequestStatus: "None",
+      adminAccessRequestReason: "",
+      adminAccessRequestedAt: null,
     };
 
     //Insert into MongoDB
@@ -211,6 +217,9 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+/**
+ * This route retrieves a single user by their ID for admin purposes
+ */
 app.get('/api/admin/users/:userId', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -325,6 +334,379 @@ app.put('/api/user/:firebaseUid', async (req, res) => {
     });
   }
 });
+
+
+/**
+ * Get the logged-in user's admin access request status.
+ */
+app.get("/api/admin-access/request", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const authorization = req.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
+      : null;
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Firebase ID token is required",
+      });
+    }
+
+    let decodedToken;
+
+    try {
+      decodedToken = await getFirebaseAdminAuth().verifyIdToken(token);
+    } catch {
+      return res.status(401).json({
+        error: "Invalid Firebase ID token",
+      });
+    }
+
+    const user = await db.collection("User").findOne({
+      firebaseUid: decodedToken.uid,
+    });
+
+    if (!user || user.accountStatus !== "Active") {
+      return res.status(403).json({
+        error: "Active user account required",
+      });
+    }
+
+    if (user.role !== "Staff") {
+      return res.status(403).json({
+        error: "Only staff members can request admin access",
+      });
+    }
+
+    res.json({
+      isAdmin: user.isAdmin,
+      status: user.adminAccessRequestStatus || "None",
+      reason: user.adminAccessRequestReason || "",
+      requestedAt: user.adminAccessRequestedAt || null,
+    });
+  } catch (err) {
+    console.error("Failed to fetch admin access request:", err);
+
+    res.status(500).json({
+      error: "Failed to fetch admin access request",
+    });
+  }
+});
+
+/**
+ * Submit a request for administrator access.
+ *
+ * Only active Staff users who are not already administrators can submit a request.
+ * Used on the user dashboard to allow staff members to request admin access.
+ */
+app.post("/api/admin-access/request", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+
+    // Verify the Firebase ID token.
+    const authorization = req.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
+      : null;
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Firebase ID token is required",
+      });
+    }
+
+    let decodedToken;
+
+    try {
+      decodedToken = await getFirebaseAdminAuth().verifyIdToken(token);
+    } catch {
+      return res.status(401).json({
+        error: "Invalid Firebase ID token",
+      });
+    }
+
+    // Accept either field name to accommodate the frontend payload.
+    const reason =
+      typeof req.body?.reason === "string"
+        ? req.body.reason
+        : req.body?.adminAccessRequestReason;
+
+    if (typeof reason !== "string") {
+      return res.status(400).json({
+        error: "A reason for requesting administrator access is required.",
+      });
+    }
+
+    const trimmedReason = reason.trim();
+
+    if (trimmedReason.length < 10 || trimmedReason.length > 1000) {
+      return res.status(400).json({
+        error: "The reason must be between 10 and 1000 characters.",
+      });
+    }
+
+    // Identify the requester using the verified Firebase UID.
+    const user = await db.collection("User").findOne({
+      firebaseUid: decodedToken.uid,
+    });
+
+    if (!user || user.accountStatus !== "Active") {
+      return res.status(403).json({
+        error: "An active user account is required.",
+      });
+    }
+
+    if (user.role !== "Staff") {
+      return res.status(403).json({
+        error: "Only Staff members can request administrator access.",
+      });
+    }
+
+    if (user.isAdmin) {
+      return res.status(409).json({
+        error: "You already have administrator access.",
+      });
+    }
+
+    if (user.adminAccessRequestStatus === "Pending") {
+      return res.status(409).json({
+        error: "You already have a pending administrator access request.",
+      });
+    }
+
+    // Allow a new request if this is the first request or the previous
+    // request was rejected. The filter also prevents duplicate submissions.
+    const result = await db.collection("User").updateOne(
+      {
+        _id: user._id,
+        isAdmin: false,
+        accountStatus: "Active",
+        role: "Staff",
+        $or: [
+          { adminAccessRequestStatus: "None" },
+          { adminAccessRequestStatus: "Rejected" },
+          { adminAccessRequestStatus: "Approved" },
+          { adminAccessRequestStatus: { $exists: false } },
+        ],
+
+      },
+      {
+        $set: {
+          adminAccessRequestStatus: "Pending",
+          adminAccessRequestReason: trimmedReason,
+          adminAccessRequestedAt: new Date(),
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(409).json({
+        error:
+          "Your request could not be submitted. It may already have been submitted or your account may no longer be eligible.",
+      });
+    }
+
+    return res.status(201).json({
+      message: "Administrator access request submitted successfully.",
+      status: "Pending",
+    });
+  } catch (err) {
+    console.error("Failed to submit admin access request:", err);
+
+    return res.status(500).json({
+      error: "Failed to submit administrator access request.",
+    });
+  }
+});
+
+/**
+ * Get all pending admin access requests.
+ * Only active administrators can view these requests. Used on the admin dashboard to review requests from staff members.
+ */
+app.get("/api/admin-access/requests", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const authorization = req.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
+      : null;
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Firebase ID token is required",
+      });
+    }
+
+    let decodedToken;
+
+    try {
+      decodedToken = await getFirebaseAdminAuth().verifyIdToken(token);
+    } catch {
+      return res.status(401).json({
+        error: "Invalid Firebase ID token",
+      });
+    }
+
+    // Confirm the logged-in user is an active administrator.
+    const admin = await db.collection("User").findOne({
+      firebaseUid: decodedToken.uid,
+      isAdmin: true,
+      accountStatus: "Active",
+    });
+
+    if (!admin) {
+      return res.status(403).json({
+        error: "Active administrator access required",
+      });
+    }
+
+    // Return only the information needed to review requests.
+    const requests = await db.collection("User")
+      .find({
+        role: "Staff",
+        isAdmin: false,
+        accountStatus: "Active",
+        adminAccessRequestStatus: "Pending",
+      })
+      .project({
+        firstName: 1,
+        lastName: 1,
+        email: 1,
+        adminAccessRequestReason: 1,
+        adminAccessRequestedAt: 1,
+      })
+      .sort({ adminAccessRequestedAt: 1 })
+      .toArray();
+
+    res.json(requests);
+  } catch (err) {
+    console.error("Failed to fetch admin access requests:", err);
+
+    res.status(500).json({
+      error: "Failed to fetch admin access requests",
+    });
+  }
+});
+
+
+/**
+ * Approve or reject a pending admin access request.
+ *
+ * Approval grants administrator privileges automatically.
+ * Rejection leaves administrator privileges disabled.
+ */
+app.put("/api/admin-access/requests/:userId", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const { userId } = req.params;
+    const { action } = req.body;
+
+    const authorization = req.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
+      : null;
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Firebase ID token is required",
+      });
+    }
+
+    let decodedToken;
+
+    try {
+      decodedToken = await getFirebaseAdminAuth().verifyIdToken(token);
+    } catch {
+      return res.status(401).json({
+        error: "Invalid Firebase ID token",
+      });
+    }
+
+    // Confirm the logged-in user is an active administrator.
+    const admin = await db.collection("User").findOne({
+      firebaseUid: decodedToken.uid,
+      isAdmin: true,
+      accountStatus: "Active",
+    });
+
+    if (!admin) {
+      return res.status(403).json({
+        error: "Active administrator access required",
+      });
+    }
+
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        error: "Invalid user ID",
+      });
+    }
+
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json({
+        error: 'Action must be either "approve" or "reject"',
+      });
+    }
+
+    const approved = action === "approve";
+
+    // Atomically review only an eligible pending request.
+    // This prevents the same request being processed twice.
+    const result = await db.collection("User").updateOne(
+      {
+        _id: new ObjectId(userId),
+        role: "Staff",
+        isAdmin: false,
+        accountStatus: "Active",
+        adminAccessRequestStatus: "Pending",
+      },
+      {
+        $set: {
+          isAdmin: approved,
+          adminAccessRequestStatus: approved
+            ? "Approved"
+            : "Rejected",
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(409).json({
+        error:
+          "This user has no eligible pending request. The request may already have been reviewed or the account may no longer be eligible.",
+      });
+    }
+
+    // Return the updated request status to the frontend.
+    const updatedUser = await db.collection("User").findOne(
+      { _id: new ObjectId(userId) },
+      {
+        projection: {
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+          isAdmin: 1,
+          adminAccessRequestStatus: 1,
+        },
+      }
+    );
+
+    res.json({
+      message: approved
+        ? "Admin access request approved successfully"
+        : "Admin access request rejected successfully",
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error("Failed to review admin access request:", err);
+
+    res.status(500).json({
+      error: "Failed to review admin access request",
+    });
+  }
+});
+
+
 
 /**
  * This route allows an administrator to update a user's information.
@@ -880,6 +1262,38 @@ app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
 * Add a new issue to the MongoDB database using the logged in user's userID - We may change this later to enable adding an issue without being logged in
 * userID is a URL parameter
 */
+// -------------------------- AI Text Moderation --------------------------
+
+app.post('/api/moderate-text', async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (typeof text !== "string" || !text.trim()) {
+      return res.status(400).json({
+        error: "Text is required for moderation",
+      });
+    }
+
+    if (text.trim().length > 300) {
+      return res.status(400).json({
+        error: "Text must be 300 characters or fewer",
+      });
+    }
+
+    const result = await moderateText(text);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("AI moderation error:", error.message);
+
+    return res.status(500).json({
+      error: "Unable to moderate text at this time",
+    });
+  }
+});
+
+// ------------------------------------------------------------------------
+
 app.post('/api/issue/:firebaseUid', async (req, res) => {
   try {
     const db = req.app.locals.db;
@@ -1438,6 +1852,7 @@ app.post('/api/issues/:id/comments', upload.array("attachments", 5), async (req,
     });
   }
 });
+
 // This function uploads admin comment attachments to Cloudinary.
 // Images are stored as image resources and PDFs are stored as raw resources.
 const uploadCommentAttachmentsToCloudinary = (files = [], issueId) =>
