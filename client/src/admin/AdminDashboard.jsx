@@ -6,9 +6,6 @@
  * It displays a list of issues assigned to the admin user, as well as a summary
  * of recent unassigned issues in the system.
  *
- * Existing admin logic remains unchanged.
- * UI updated to match the User Dashboard.
- *
  * Author/s: Dinh Dinh, Grish Gautam and Amanda Foxley
  * Date: 27/8/26
  */
@@ -32,11 +29,11 @@ import {
 
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
+import { getAuth } from "firebase/auth";
 import { useNotifications } from "../hooks/useNotifications";
 import NotificationBell from "../components/NotificationBell";
 import MobilePageHeading from "../components/MobilePageHeading";
 import useMobileNavigation from "../hooks/useMobileNavigation";
-
 import UONLogo from "../images/UONLogo White.png";
 
 import "./AdminDashboard.css";
@@ -52,6 +49,14 @@ export default function AdminDashboard() {
   const [assignedIssues, setAssignedIssues] = useState([]);
   const [recentIssues, setRecentIssues] = useState([]);
   const [pendingPrivacyRequests, setPendingPrivacyRequests] = useState([]);
+  const [pendingAdminAccessRequests, setPendingAdminAccessRequests] = useState([]);
+  const [requestActionLoading, setRequestActionLoading] = useState("");
+  const [requestActionError, setRequestActionError] = useState("");
+  const [selectedAdminRequest, setSelectedAdminRequest] = useState(null);
+
+  const totalPendingRequests =
+    pendingPrivacyRequests.length +
+    pendingAdminAccessRequests.length;
 
   const [dashboardStats, setDashboardStats] = useState({
     total: 0,
@@ -64,55 +69,139 @@ export default function AdminDashboard() {
 
   const [issuesLoading, setIssuesLoading] = useState(true);
 
+
   useEffect(() => {
-    if (!userData?.firebaseUid) return;
+    if (!userData?.firebaseUid) {
+      return;
+    }
 
     const fetchDashboardData = async () => {
+      // 1. Fetch main dashboard data
       try {
-        setIssuesLoading(true);
-
-        const dashboardResponse = await fetch(
+        const response = await fetch(
           `http://localhost:8000/api/admin/dashboard/${userData.firebaseUid}`
         );
 
-        if (!dashboardResponse.ok) {
-          throw new Error("Failed to fetch admin dashboard data");
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard data.");
         }
 
-        const dashboardData = await dashboardResponse.json();
+        const data = await response.json();
 
-        setDashboardStats(dashboardData.stats || {});
+        // Update the existing dashboard state
+        if (data.stats) {
+          setDashboardStats(data.stats);
+        }
 
-        setAssignedIssues(
-          Array.isArray(dashboardData.assignedIssues)
-            ? dashboardData.assignedIssues
-            : []
-        );
+        setAssignedIssues(data.assignedIssues || []);
+        setRecentIssues(data.recentIssues || []);
+        setPendingPrivacyRequests(data.pendingPrivacyRequests || []);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
 
-        setRecentIssues(
-          Array.isArray(dashboardData.recentIssues)
-            ? dashboardData.recentIssues
-            : []
-        );
-
-        setPendingPrivacyRequests(
-          Array.isArray(dashboardData.pendingPrivacyRequests)
-            ? dashboardData.pendingPrivacyRequests
-            : []
-        );
-
-      } catch (err) {
-        console.error(err);
-
-        setAssignedIssues([]);
-        setRecentIssues([]);
+        // Preserve previously loaded data if the refresh fails.
       } finally {
         setIssuesLoading(false);
+      }
+
+      // 2. Fetch administrator access requests independently
+      try {
+        const currentUser = getAuth().currentUser;
+
+        if (!currentUser) {
+          throw new Error("No authenticated user found.");
+        }
+
+        const token = await currentUser.getIdToken();
+
+        const response = await fetch(
+          "http://localhost:8000/api/admin-access/requests",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to fetch administrator access requests."
+          );
+        }
+
+        const data = await response.json();
+        setPendingAdminAccessRequests(data);
+      } catch (error) {
+        console.error(
+          "Error fetching administrator access requests:",
+          error
+        );
+
+        // Preserve previously loaded requests if the refresh fails.
       }
     };
 
     fetchDashboardData();
-  }, [userData]);
+  }, [userData?.firebaseUid]);
+
+
+  const reviewAdminAccessRequest = async (userId, action) => {
+    try {
+      setRequestActionLoading(`${userId}-${action}`);
+      setRequestActionError("");
+
+      const currentUser = getAuth().currentUser;
+
+      if (!currentUser) {
+        throw new Error("You must be logged in to review requests.");
+      }
+
+      const token = await currentUser.getIdToken();
+
+      const response = await fetch(
+        `http://localhost:8000/api/admin-access/requests/${userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to review request.");
+      }
+
+      setPendingAdminAccessRequests((previousRequests) =>
+        previousRequests.filter((request) => request._id !== userId)
+      );
+      setSelectedAdminRequest(null);
+    } catch (err) {
+      setRequestActionError(err.message);
+    } finally {
+      setRequestActionLoading("");
+    }
+  };
+
+  const getStatusClass = (status) => {
+    if (status === "Open") {
+      return "admin-dashboard-status-open";
+    }
+
+    if (status === "In Progress") {
+      return "admin-dashboard-status-progress";
+    }
+
+    if (status === "Closed") {
+      return "admin-dashboard-status-closed";
+    }
+
+    return "admin-dashboard-status-default";
+  };
 
   if (loading) {
     return (
@@ -139,22 +228,6 @@ export default function AdminDashboard() {
       </p>
     );
   }
-
-  const getStatusClass = (status) => {
-    if (status === "Open") {
-      return "admin-dashboard-status-open";
-    }
-
-    if (status === "In Progress") {
-      return "admin-dashboard-status-progress";
-    }
-
-    if (status === "Closed") {
-      return "admin-dashboard-status-closed";
-    }
-
-    return "admin-dashboard-status-default";
-  };
 
   return (
     <div className={`user-dashboard admin-dashboard ${mobileNavigation.layoutClassName}`} onKeyDown={mobileNavigation.onKeyDown}>
@@ -373,99 +446,311 @@ export default function AdminDashboard() {
           </section>
 
           {/* =========================
-    PENDING PRIVACY REQUESTS
-========================== */}
+              PENDING REQUESTS SECTION
+          ========================== */}
+
           <section className="admin-dashboard-issues-panel admin-dashboard-pending-panel">
             <div className="admin-dashboard-panel-header">
               <div>
-                <h2>Pending Privacy &amp; Data Requests</h2>
+                <h2>Pending Requests ({totalPendingRequests})</h2>
                 <p>
-                  Users requesting data de-identification.
+                  {totalPendingRequests === 0
+                    ? "There are no requests awaiting review."
+                    : `${totalPendingRequests} request${totalPendingRequests === 1 ? "" : "s"
+                    } awaiting administrator review and action.`}
                 </p>
               </div>
             </div>
 
-            {pendingPrivacyRequests.length === 0 ? (
-              <div className="admin-dashboard-panel-message">
-                No pending privacy requests.
+            {requestActionError && (
+              <div className="admin-dashboard-panel-message" role="alert">
+                {requestActionError}
               </div>
-            ) : (
-              <div className="admin-dashboard-issue-list">
-                {pendingPrivacyRequests.map((request) => (
-                  <div
-                    key={request._id}
-                    className="admin-dashboard-issue-card admin-dashboard-privacy-card"
-                  >
-                    <div className="admin-dashboard-issue-main">
-                      <h3>
-                        {request.user
-                          ? `${request.user.firstName || ""} ${request.user.lastName || ""
-                            }`.trim()
-                          : "User"}
-                      </h3>
+            )}
 
-                      <p className="admin-dashboard-location">
-                        {request.user?.email || "Email not available"}
-                      </p>
+            {/* Administrator access requests */}
+            {pendingAdminAccessRequests.map((request) => {
+              const fullName =
+                `${request.firstName || ""} ${request.lastName || ""}`.trim();
+
+              return (
+                <div
+                  key={request._id}
+                  className="admin-dashboard-issue-card admin-dashboard-privacy-card admin-dashboard-clickable-request"
+                  onClick={() => setSelectedAdminRequest(request)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setSelectedAdminRequest(request);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View administrator access request from ${fullName || "Staff member"}`}
+                >
+                  <div className="admin-dashboard-issue-main">
+                    <h3>{fullName || "Staff member"}</h3>
+                    <p className="admin-dashboard-location">
+                      {request.email || "Email not available"}
+                    </p>
+                  </div>
+
+                  <div className="admin-dashboard-issue-details">
+                    <div>
+                      <span>Request Type</span>
+                      <strong>Administrator Access</strong>
                     </div>
 
-                    <div className="admin-dashboard-issue-details">
-                      <div>
-                        <span>Request Type</span>
-                        <strong>Data De-identification</strong>
-                      </div>
-
-                      <div>
-                        <span>Requested</span>
-                        <strong>
-                          {request.requestedAt
-                            ? new Date(
-                              request.requestedAt
-                            ).toLocaleString("en-AU", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                            })
-                            : "Not provided"}
-                        </strong>
-                      </div>
-
-                      <div>
-                        <span>Status</span>
-                        <strong>Pending</strong>
-                      </div>
+                    <div>
+                      <span>Requested</span>
+                      <strong>
+                        {request.adminAccessRequestedAt
+                          ? new Date(request.adminAccessRequestedAt).toLocaleString(
+                            "en-AU",
+                            { dateStyle: "short", timeStyle: "short" }
+                          )
+                          : "Not provided"}
+                      </strong>
                     </div>
 
+                    <div className="admin-dashboard-request-reason">
+                      <span>Reason</span>
+                      <strong>
+                        {request.adminAccessRequestReason || "No reason provided"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="admin-dashboard-request-actions">
                     <button
                       type="button"
                       className="admin-dashboard-view-button"
-                      onClick={() =>
-                        navigate(`/admin/users/${request.userId}`)
-                      }
+                      disabled={Boolean(requestActionLoading)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        reviewAdminAccessRequest(request._id, "approve");
+                      }}
                     >
-                      Review <span>→</span>
+                      {requestActionLoading === `${request._id}-approve`
+                        ? "Approving..."
+                        : "Approve"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="admin-dashboard-view-button admin-dashboard-reject-button"
+                      disabled={Boolean(requestActionLoading)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        reviewAdminAccessRequest(request._id, "reject");
+                      }}
+                    >
+                      {requestActionLoading === `${request._id}-reject`
+                        ? "Rejecting..."
+                        : "Reject"}
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              );
+            })}
 
-            {dashboardStats.pendingPrivacyRequests > 5 && (
-              <div className="admin-dashboard-issues-footer">
-                <span>
-                  Showing 5 of{" "}
-                  {dashboardStats.pendingPrivacyRequests} pending requests
-                </span>
+            {/* Existing privacy and data requests */}
+            {pendingPrivacyRequests.map((request) => (
+              <div
+                key={request._id}
+                className="admin-dashboard-issue-card admin-dashboard-privacy-card"
+              >
+                <div className="admin-dashboard-issue-main">
+                  <h3>
+                    {request.user
+                      ? `${request.user.firstName || ""} ${request.user.lastName || ""
+                        }`.trim()
+                      : "User"}
+                  </h3>
+
+                  <p className="admin-dashboard-location">
+                    {request.user?.email || "Email not available"}
+                  </p>
+                </div>
+
+                <div className="admin-dashboard-issue-details">
+                  <div>
+                    <span>Request Type</span>
+                    <strong>Data De-identification</strong>
+                  </div>
+
+                  <div>
+                    <span>Requested</span>
+                    <strong>
+                      {request.requestedAt
+                        ? new Date(request.requestedAt).toLocaleString("en-AU", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })
+                        : "Not provided"}
+                    </strong>
+                  </div>
+
+                  <div>
+                    <span>Status</span>
+                    <strong>Pending</strong>
+                  </div>
+                </div>
 
                 <button
                   type="button"
-                  className="admin-dashboard-view-all-button"
-                  onClick={() => navigate("/admin/usermanagement")}
+                  className="admin-dashboard-view-button"
+                  onClick={() => navigate(`/admin/users/${request.userId}`)}
                 >
-                  View All <span>→</span>
+                  Review <span>→</span>
                 </button>
               </div>
-            )}
+            ))}
+
+            {pendingAdminAccessRequests.length === 0 &&
+              pendingPrivacyRequests.length === 0 && (
+                <div className="admin-dashboard-panel-message">
+                  No pending requests.
+                </div>
+              )}
           </section>
+
+
+          {/* =========================
+    ADMIN ACCESS REQUEST MODAL
+========================== */}
+
+          {selectedAdminRequest && (
+            <div
+              className="admin-request-modal-backdrop"
+              onClick={() => setSelectedAdminRequest(null)}
+            >
+              <section
+                className="admin-request-modal"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="admin-request-modal-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="admin-request-modal-header">
+                  <div>
+                    <span className="admin-request-modal-eyebrow">
+                      Pending review
+                    </span>
+                    <h2 id="admin-request-modal-title">
+                      Administrator Access Request
+                    </h2>
+                    <p>Review the request details before taking action.</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="admin-request-modal-close"
+                    aria-label="Close request details"
+                    onClick={() => setSelectedAdminRequest(null)}
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                <div className="admin-request-modal-body">
+                  <div className="admin-request-modal-field">
+                    <span>Requester</span>
+                    <strong>
+                      {`${selectedAdminRequest.firstName || ""} ${selectedAdminRequest.lastName || ""
+                        }`.trim() || "Staff member"}
+                    </strong>
+                  </div>
+
+                  <div className="admin-request-modal-field">
+                    <span>Email address</span>
+                    <strong>{selectedAdminRequest.email || "Not available"}</strong>
+                  </div>
+
+                  <div className="admin-request-modal-field">
+                    <span>Request type</span>
+                    <strong>Administrator Access</strong>
+                  </div>
+
+                  <div className="admin-request-modal-field">
+                    <span>Date requested</span>
+                    <strong>
+                      {selectedAdminRequest.adminAccessRequestedAt
+                        ? new Date(
+                          selectedAdminRequest.adminAccessRequestedAt
+                        ).toLocaleString("en-AU", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })
+                        : "Not provided"}
+                    </strong>
+                  </div>
+
+                  <div className="admin-request-modal-field admin-request-modal-reason">
+                    <span>Reason for requesting access</span>
+                    <p>
+                      {selectedAdminRequest.adminAccessRequestReason ||
+                        "No reason provided."}
+                    </p>
+                  </div>
+                </div>
+
+                {requestActionError && (
+                  <p className="admin-request-modal-error" role="alert">
+                    {requestActionError}
+                  </p>
+                )}
+
+                <div className="admin-request-modal-actions">
+                  <button
+                    type="button"
+                    className="admin-request-modal-secondary"
+                    disabled={Boolean(requestActionLoading)}
+                    onClick={() => setSelectedAdminRequest(null)}
+                  >
+                    Close
+                  </button>
+
+                  <button
+                    type="button"
+                    className="admin-dashboard-view-button admin-dashboard-reject-button"
+                    disabled={Boolean(requestActionLoading)}
+                    onClick={() =>
+                      reviewAdminAccessRequest(
+                        selectedAdminRequest._id,
+                        "reject"
+                      )
+                    }
+                  >
+                    {requestActionLoading ===
+                      `${selectedAdminRequest._id}-reject`
+                      ? "Rejecting..."
+                      : "Reject"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="admin-request-modal-approve"
+                    disabled={Boolean(requestActionLoading)}
+                    onClick={() =>
+                      reviewAdminAccessRequest(
+                        selectedAdminRequest._id,
+                        "approve"
+                      )
+                    }
+                  >
+                    {requestActionLoading ===
+                      `${selectedAdminRequest._id}-approve`
+                      ? "Approving..."
+                      : "Approve"}
+                  </button>
+                </div>
+              </section>
+            </div>
+          )}
 
           {/* =========================
               MY ASSIGNED ISSUES

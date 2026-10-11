@@ -558,6 +558,206 @@ body {
 }
 
 /* =========================
+   STAFF ADMIN ACCESS REQUEST
+========================== */
+
+/* =========================
+   STAFF ADMIN ACCESS REQUEST
+========================== */
+
+.admin-access-request-panel {
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid var(--card-border);
+  border-radius: 9px;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.035);
+}
+
+.admin-access-request-header {
+  margin-bottom: 12px;
+}
+
+.admin-access-request-header h2 {
+  margin: 0 0 12px;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.admin-access-request-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 20px;
+}
+
+.admin-access-request-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.admin-access-request-panel label {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-access-request-panel textarea {
+  width: 100%;
+  min-height: 76px;
+  padding: 9px 11px;
+  border: 1px solid #d5dce7;
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-access-request-panel textarea::placeholder {
+  color: #98a2b3;
+}
+
+.admin-access-request-panel textarea:focus {
+  outline: none;
+  border-color: #0867f2;
+  box-shadow: 0 0 0 2px rgba(8, 103, 242, 0.1);
+}
+
+.admin-access-request-hint {
+  margin: 0;
+  color: #667085;
+  font-size: 11px;
+}
+
+.admin-access-content {
+  text-align: center;
+}
+
+.admin-access-content textarea {
+  text-align: center;
+}
+
+.admin-access-request-button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 16px;
+  border: 1px solid #0867f2;
+  border-radius: 6px;
+  background: #0867f2;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.admin-access-request-button:hover:not(:disabled) {
+  background: #005bdc;
+}
+
+.admin-access-request-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.admin-access-request-button:focus-visible {
+  outline: 3px solid #80b9e0;
+  outline-offset: 2px;
+}
+
+.admin-access-request-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-access-request-status {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 16px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+}
+
+.admin-access-request-status>svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+.admin-access-request-status h3 {
+  margin: 0 0 3px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-access-request-status p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-access-request-status.pending {
+  background: #fff8e6;
+  border-color: #f5dfaa;
+  color: #895b00;
+}
+
+.admin-access-request-status.rejected {
+  background: #fff1f0;
+  border-color: #f5c6c2;
+  color: #b42318;
+}
+
+.admin-access-request-message,
+.admin-access-request-error,
+.admin-access-request-success {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-access-request-message {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.admin-access-request-error {
+  margin: 3px 0;
+  color: #b42318;
+}
+
+.admin-access-request-success {
+  margin: 0 0 10px;
+  color: #067647;
+}
+
+@media (max-width: 760px) {
+  .admin-access-request-panel {
+    margin-top: 14px;
+    padding: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-access-request-button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+  }
+}
+
+/* =========================
      EMPTY STATE
    ========================= */
 
@@ -691,7 +891,7 @@ body {
   color: var(--text-primary);
 }
 
-.user-dashboard-empty > p {
+.user-dashboard-empty>p {
   margin: 0 0 26px;
   color: #3e4f68;
   font-size: 16px;
@@ -759,7 +959,7 @@ body {
   background: #fff;
 }
 
-.user-dashboard-issues-footer > span {
+.user-dashboard-issues-footer>span {
   color: var(--text-secondary);
   font-size: 13px;
 }
@@ -845,9 +1045,7 @@ body {
   padding: 24px;
   display: grid;
   grid-template-columns:
-    minmax(220px, 1.4fr)
-    minmax(360px, 2fr)
-    auto;
+    minmax(220px, 1.4fr) minmax(360px, 2fr) auto;
   align-items: center;
   gap: 24px;
   border-bottom: 1px solid #e7eaf0;
@@ -907,7 +1105,7 @@ body {
   min-width: 0;
 }
 
-.user-dashboard-issue-details > div {
+.user-dashboard-issue-details>div {
   min-width: 0;
 }
 
@@ -1008,6 +1206,7 @@ body {
   background-color: #f1f5f9;
   border-color: #cbd5e1;
 }
+
 /* =========================
      RESPONSIVE ISSUE LIST
    ========================= */
@@ -1042,6 +1241,7 @@ body {
     width: 100%;
   }
 }
+
 /* =========================
      RESPONSIVE
    ========================= */
@@ -1098,7 +1298,7 @@ body {
     font-size: 29px;
   }
 
-  .user-dashboard-header-user > span {
+  .user-dashboard-header-user>span {
     display: none;
   }
 
