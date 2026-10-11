@@ -1,0 +1,202 @@
+/* Shared visual rules, loaded after page styles so every route uses the same palette. */
+:root {
+  --brand-navy: #002b5c;
+  --brand-primary: #0057d9;
+  --brand-primary-hover: #0044aa;
+  --surface-page: #f5f7fb;
+  --surface-card: #ffffff;
+  --surface-subtle: #eef3f9;
+  --surface-border: #dce3ed;
+  --ink: #07142f;
+  --ink-muted: #59667e;
+  --uon-navy: var(--brand-navy);
+  --uon-blue: var(--brand-primary);
+  --page-bg: var(--surface-page);
+  --profile-bg: var(--surface-page);
+  --report-bg: var(--surface-page);
+  --profile-blue: var(--brand-primary);
+  --text: var(--ink-muted);
+  --text-h: var(--ink);
+  --bg: var(--surface-page);
+  --accent: var(--brand-primary);
+  --accent-bg: var(--surface-subtle);
+  --border: var(--surface-border);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--surface-page);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* Neutral surfaces keep colour focused on navigation, actions and status. */
+#root :is(.home-page, .login-page, .register-page, .reset-password-page,
+  .form-page, .user-dashboard, .report-issue-page, .profile-content,
+  .user-my-issues-page, .edit-issue-page, .edit-issue-shell) {
+  background: var(--surface-page);
+}
+
+#root :is(.login-container, .register-container, .reset-password-container, .form-card) {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 8px 24px rgb(7 20 47 / 7%);
+  text-align: left;
+}
+
+#root .user-dashboard-sidebar {
+  background: var(--brand-navy);
+}
+
+#root .user-dashboard-nav-item.active {
+  background: var(--brand-primary);
+}
+
+#root .user-dashboard-total-card {
+  background: var(--brand-navy);
+}
+
+#root :is(.profile-section h2, .report-section-title, .issue-details-card-header) {
+  background: var(--surface-subtle);
+  color: var(--ink);
+}
+
+/* Align section titles with the content below rather than the middle of the panel. */
+#root :is(.user-dashboard-issues-header, .admin-dashboard-panel-header,
+  .manage-issues-panel-header, .admin-reporting-panel-header) {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+#root .admin-reporting-section-header {
+  align-items: flex-start;
+  text-align: left;
+}
+
+#root :is(.form-title, .login-page h1, .login-page p,
+  .register-container h1, .reset-password-container h1,
+  .reset-password-container > p, .form-group, .error-message) {
+  text-align: left;
+}
+
+#root :is(.login-page h1, .register-container h1, .reset-password-container h1) {
+  color: var(--brand-navy);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  line-height: 1.2;
+  margin-top: 0;
+}
+
+#root .reset-password-logo {
+  margin-left: 0;
+}
+
+#root .home-page {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: clamp(24px, 5vw, 72px);
+  text-align: left;
+}
+
+#root .hero-section {
+  max-width: 760px;
+}
+
+#root .home-page .actions {
+  justify-content: flex-start;
+}
+
+/* Shared action hierarchy; status and destructive controls retain their meaning. */
+#root :is(.btn-primary, .primary-btn, .login-button, .register-button,
+  .save-password-button, .resend-reset-button, .form-button,
+  .report-submit-button, .user-dashboard-report-button,
+  .admin-reporting-apply-button, .admin-reporting-export button,
+  .admin-action-primary, .user-management-action-primary) {
+  background: var(--brand-primary);
+  color: #fff;
+  border: 1px solid var(--brand-primary);
+  border-radius: 8px;
+  box-shadow: none;
+  min-height: 44px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+#root :is(.btn-primary, .primary-btn, .login-button, .register-button,
+  .save-password-button, .resend-reset-button, .form-button,
+  .report-submit-button, .user-dashboard-report-button,
+  .admin-reporting-apply-button, .admin-reporting-export button,
+  .admin-action-primary, .user-management-action-primary):hover:not(:disabled) {
+  background: var(--brand-primary-hover);
+  border-color: var(--brand-primary-hover);
+  color: #fff;
+  transform: none;
+  filter: none;
+}
+
+#root :is(.btn-secondary, .secondary-btn, .form-button.secondary,
+  .report-save-button, .close-reset-popup, .admin-action-secondary,
+  .user-management-action-secondary, .admin-reporting-secondary-button,
+  .user-dashboard-view-button, .user-dashboard-view-all-button,
+  .admin-dashboard-view-button, .admin-dashboard-view-all-button,
+  .admin-reporting-view-button, .assigned-issue-card button, .manage-view-button) {
+  background: var(--surface-card);
+  color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+  border-radius: 8px;
+  box-shadow: none;
+  min-height: 40px;
+  font-weight: 600;
+}
+
+#root :is(.btn-secondary, .secondary-btn, .form-button.secondary,
+  .report-save-button, .close-reset-popup, .admin-action-secondary,
+  .user-management-action-secondary, .admin-reporting-secondary-button,
+  .user-dashboard-view-button, .user-dashboard-view-all-button,
+  .admin-dashboard-view-button, .admin-dashboard-view-all-button,
+  .admin-reporting-view-button, .assigned-issue-card button, .manage-view-button):hover:not(:disabled) {
+  background: var(--surface-subtle);
+  color: var(--brand-primary-hover);
+  border-color: var(--brand-primary-hover);
+  transform: none;
+}
+
+#root :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 3px;
+}
+
+#root button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+#root .user-dashboard-status-content :is(h3, p) {
+  white-space: normal;
+}
+
+/* Use the same left edge for desktop headers and page content. */
+@media (min-width: 761px) {
+  #root :is(.user-dashboard-header, .report-issue-topbar, .user-my-issues-header) {
+    padding-inline: clamp(20px, 3vw, 44px);
+  }
+}
+
+@media (max-width: 600px) {
+  #root :is(.login-page, .register-page, .reset-password-page) {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 24px 16px;
+  }
+
+  #root :is(.login-container, .register-container, .reset-password-container) {
+    max-width: 100%;
+    padding: 24px;
+  }
+}
