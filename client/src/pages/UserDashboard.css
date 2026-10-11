@@ -954,26 +954,30 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 20px;
+  padding: 14px 18px;
   border-top: 1px solid #edf0f4;
   background: #fff;
+  gap: 16px;
 }
 
 .user-dashboard-issues-footer>span {
-  color: var(--text-secondary);
+  color: #667085;
   font-size: 13px;
 }
 
 .user-dashboard-view-all-button {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 5px;
   padding: 8px 13px;
-  border: 1px solid #d5e0ed;
-  border-radius: 7px;
-  background: #fff;
-  color: #0758d7;
-  font-size: 13px;
+  min-height: 40px;
+  white-space: nowrap;
+  border: 1px solid var(--brand-primary);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--brand-primary);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -989,12 +993,26 @@ body {
 }
 
 .user-dashboard-view-all-button:hover {
-  background: #f1f6fd;
-  border-color: #b9cde5;
+  background: var(--surface-subtle);
+  border-color: var(--brand-primary-hover);
+  color: var(--brand-primary-hover);
 }
 
 .user-dashboard-view-all-button:hover span {
   transform: translateX(2px);
+}
+
+@media (max-width: 760px) {
+  .user-dashboard-issues-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-dashboard-view-all-button {
+    min-height: 44px;
+    white-space: normal;
+    text-align: left;
+  }
 }
 
 .user-dashboard-view-button {

@@ -143,8 +143,8 @@ button, input, select, textarea {
 #root :is(.btn-secondary, .secondary-btn, .form-button.secondary,
   .report-save-button, .close-reset-popup, .admin-action-secondary,
   .user-management-action-secondary, .admin-reporting-secondary-button,
-  .user-dashboard-view-button, .user-dashboard-view-all-button,
-  .admin-dashboard-view-button, .admin-dashboard-view-all-button,
+  .user-dashboard-view-button,
+  .admin-dashboard-view-button,
   .admin-reporting-view-button, .assigned-issue-card button, .manage-view-button) {
   background: var(--surface-card);
   color: var(--brand-primary);
@@ -158,8 +158,8 @@ button, input, select, textarea {
 #root :is(.btn-secondary, .secondary-btn, .form-button.secondary,
   .report-save-button, .close-reset-popup, .admin-action-secondary,
   .user-management-action-secondary, .admin-reporting-secondary-button,
-  .user-dashboard-view-button, .user-dashboard-view-all-button,
-  .admin-dashboard-view-button, .admin-dashboard-view-all-button,
+  .user-dashboard-view-button,
+  .admin-dashboard-view-button,
   .admin-reporting-view-button, .assigned-issue-card button, .manage-view-button):hover:not(:disabled) {
   background: var(--surface-subtle);
   color: var(--brand-primary-hover);

@@ -917,10 +917,12 @@
 }
 
 .admin-dashboard-view-all-button {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #0758d7;
+  padding: 8px 13px;
+  min-height: 40px;
+  border: 1px solid var(--brand-primary);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--brand-primary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -932,7 +934,9 @@
 }
 
 .admin-dashboard-view-all-button:hover {
-  color: #0047b3;
+  background: var(--surface-subtle);
+  border-color: var(--brand-primary-hover);
+  color: var(--brand-primary-hover);
 }
 
 .admin-dashboard-view-all-button span {
