@@ -23,9 +23,10 @@ import {
   Users,
   LogOut,
   Search,
-  UserRound,
   BarChart3,
   ShieldCheck,
+  Check,
+  X,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
@@ -392,6 +393,12 @@ export default function UserManagement() {
             {/* =========================
                 USER TABLE
             ========================== */}
+            <div className="user-management-table-header">
+              <div>
+                <h2>All registered WHS users</h2>
+                <p>View and manage user information and account permissions.</p>
+              </div>
+            </div>
 
             {loading ? (
               <div className="user-management-state">
@@ -469,10 +476,18 @@ export default function UserManagement() {
                               ? "is-admin"
                               : ""
                               }`}
+                            aria-label={
+                              user.isAdmin
+                                ? "Administrator access enabled"
+                                : "Administrator access disabled"
+                            }
+                            title={
+                              user.isAdmin
+                                ? "Administrator access enabled"
+                                : "Administrator access disabled"
+                            }
                           >
-                            {user.isAdmin
-                              ? "Yes"
-                              : "No"}
+                            {user.isAdmin ? <Check aria-hidden="true" /> : <X aria-hidden="true" />}
                           </span>
                         </td>
 
@@ -500,7 +515,7 @@ export default function UserManagement() {
                                 )
                               }
                             >
-                              Edit user
+                              Edit User
                             </button>
 
                             <button
