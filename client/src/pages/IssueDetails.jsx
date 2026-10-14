@@ -25,6 +25,7 @@ import {
   Search,
   ChevronDown,
   BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 import { userLogout } from "../hooks/userLogout";
 import { getUserData } from "../hooks/getUserData";
@@ -119,6 +120,14 @@ function Sidebar({ userData, navigate, logout }) {
             >
               <BarChart3 />
               <span>Reporting & Analytics</span>
+            </button>
+            <button
+              type="button"
+              className="user-dashboard-nav-item"
+              onClick={() => navigate("/admin/audit-log")}
+            >
+              <ShieldCheck />
+              <span>Audit Log</span>
             </button>
           </>
         )}
@@ -579,6 +588,12 @@ export default function IssueDetails() {
         `http://localhost:8000/api/issues/${issue._id}/unassign`,
         {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firebaseUid: userData?.firebaseUid,
+          }),
         }
       );
 

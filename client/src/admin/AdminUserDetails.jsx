@@ -302,6 +302,14 @@ export default function AdminUserDetails() {
             <BarChart3 />
             <span>Reporting & Analytics</span>
           </button>
+          <button
+            type="button"
+            className="user-dashboard-nav-item"
+            onClick={() => navigate("/admin/audit-log")}
+          >
+            <ShieldCheck />
+            <span>Audit Log</span>
+          </button>
         </nav>
 
         <div className="user-dashboard-logout-section">

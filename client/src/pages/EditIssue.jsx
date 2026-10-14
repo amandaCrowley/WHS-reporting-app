@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserData } from "../hooks/getUserData";
 import { userLogout } from "../hooks/userLogout";
-import { CircleAlert, CloudUpload, FilePlus2, LayoutDashboard, LogOut, UserRound, Users, Wrench } from "lucide-react";
+import { BarChart3, CircleAlert, CloudUpload, FilePlus2, LayoutDashboard, LogOut, ShieldCheck, UserRound, Users, Wrench } from "lucide-react";
 import UONLogo from "../images/UONLogo White.png";
 import "../pages/UserDashboard.css";
 import '../styles/EditIssue.css';
@@ -44,6 +44,7 @@ export default function EditIssue() {
     });
 
     const [updateError, setUpdateError] = useState("");
+    const [isUpdating, setIsUpdating] = useState(false);
     const [moderationSuggestion, setModerationSuggestion] = useState(null);
     const [witnessInput, setWitnessInput] = useState("");
     const [commentInput, setCommentInput] = useState("");
@@ -118,7 +119,9 @@ export default function EditIssue() {
 
     // Update issue in backend/server
     const updateIssue = async () => {
+        if (isUpdating) return;
         setUpdateError("");
+        setIsUpdating(true);
 
         const title = (formData.title || "").trim();
         const description = (formData.issueDescription || "").trim();
@@ -136,51 +139,61 @@ export default function EditIssue() {
         // validation logic
         if (!title) {
             setUpdateError("Please enter an issue title.");
+            setIsUpdating(false);
             return;
         }
 
         if (!description) {
             setUpdateError("Please enter an issue description.");
+            setIsUpdating(false);
             return;
         }
 
         if (!issueLocation) {
             setUpdateError("Please enter a location.");
+            setIsUpdating(false);
             return;
         }
 
         if (!formData.campus) {
             setUpdateError("Please select a campus.");
+            setIsUpdating(false);
             return;
         }
 
         if (title.length < 5 || title.length > 50) {
             setUpdateError("Issue title must be between 5 and 50 characters.");
+            setIsUpdating(false);
             return;
         }
 
         if (issueLocation.length < 3 || issueLocation.length > 100) {
             setUpdateError("Location must be between 3 and 100 characters.");
+            setIsUpdating(false);
             return;
         }
 
         if (description.length < 10 || description.length > 300) {
             setUpdateError("Issue description must be between 10 and 300 characters.");
+            setIsUpdating(false);
             return;
         }
 
         if (!validCampuses.includes(formData.campus)) {
             setUpdateError("Please select a valid campus.");
+            setIsUpdating(false);
             return;
         }
 
         if ((formData.imageURLs?.length || 0) + images.length > 5) {
             setUpdateError("Maximum 5 images allowed.");
+            setIsUpdating(false);
             return;
         }
 
         if (!formData.dateTimeIssueOccurred) {
             setUpdateError("Please enter the date and time the incident occurred.");
+            setIsUpdating(false);
             return;
         }
 
@@ -189,40 +202,46 @@ export default function EditIssue() {
                 throw new Error("Incident date and time cannot be in the future.");
             }
 
-            const moderationResponse = await fetch(
-                "http://localhost:8000/api/moderate-text",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        text: description
-                    })
+            const originalDescription = (issue?.issueDescription || "").trim();
+            const descriptionChanged = description !== originalDescription;
+
+            if (descriptionChanged) {
+                const moderationResponse = await fetch(
+                    "http://localhost:8000/api/moderate-text",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            text: description
+                        })
+                    }
+                );
+
+                const moderationData = await moderationResponse.json();
+
+                if (!moderationResponse.ok) {
+                    throw new Error(
+                        moderationData.error ||
+                        "Unable to check the issue description."
+                    );
                 }
-            );
 
-            const moderationData = await moderationResponse.json();
-
-            if (!moderationResponse.ok) {
-                throw new Error(
-                    moderationData.error ||
-                    "Unable to check the issue description."
-                );
-            }
-
-            if (moderationData.flagged) {
-                setModerationSuggestion(
-                    moderationData.suggestion ||
-                    "Please revise the wording before updating the issue."
-                );
-                return;
+                if (moderationData.flagged) {
+                    setModerationSuggestion(
+                        moderationData.suggestion ||
+                        "Please revise the wording before updating the issue."
+                    );
+                    return;
+                }
             }
 
             setModerationSuggestion(null);
 
             const body = new FormData();
             body.append("title", title);
+            body.append("firebaseUid", userData?.firebaseUid || "");
             body.append("issueDescription", description);
             body.append("location", issueLocation);
             body.append("coordinates", JSON.stringify(formData.coordinates || null));
@@ -266,7 +285,9 @@ export default function EditIssue() {
             navigate(`/issue/${issueId}`);
 
         } catch (err) {
-            setUpdateError(err.message);
+            setUpdateError(err.message || "Failed to update issue.");
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -361,6 +382,14 @@ export default function EditIssue() {
                             <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/usermanagement")}>
                                 <Users />
                                 <span>User Management</span>
+                            </button>
+                            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/reporting")}>
+                                <BarChart3 />
+                                <span>Reporting &amp; Analytics</span>
+                            </button>
+                            <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/audit-log")}>
+                                <ShieldCheck />
+                                <span>Audit Log</span>
                             </button>
                         </>
                     )}
@@ -680,8 +709,8 @@ export default function EditIssue() {
                             </div>
 
                             <div className="edit-actions-panel">
-                                <button type="submit" className="btn primary-btn">
-                                    Update Issue
+                                <button type="submit" className="btn primary-btn" disabled={isUpdating}>
+                                    {isUpdating ? "Updating..." : "Update Issue"}
                                 </button>
                                 <button
                                     type="button"

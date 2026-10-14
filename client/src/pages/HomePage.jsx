@@ -10,7 +10,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import '../styles/HomePage.css';   
+import '../styles/HomePage.css';
 import UONLogo from '../images/UONLogo.png'; // import the logo
 
 export default function HomePage() {
@@ -22,7 +22,6 @@ export default function HomePage() {
 
       <div className="hero-section">
         <h1>Welcome to the WHS Reporting System</h1>
-        <br/>
         <p>Report hazards, incidents, or safety concerns here</p>
       </div>
 

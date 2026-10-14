@@ -18,6 +18,7 @@ import express from 'express';
 import { validateName, isValidCoordinates } from "../../shared/validation.js";
 import cors from "cors";
 import { MongoClient, ServerApiVersion, ObjectId } from 'mongodb';
+import PDFDocument from "pdfkit";
 import dotenv from 'dotenv';
 import { getFirebaseAdminAuth } from "./firebaseAdmin.js";
 import { createDeidentifiedUid } from "./privacyIdentity.js";
@@ -103,6 +104,530 @@ const DBclient = new MongoClient(uri, {
 
 //---------------------------Admin Analytics Route--------------------------------
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
+
+const AUDIT_ACTIONS = [
+  "ADMIN_PROMOTED",
+  "ADMIN_DEMOTED",
+  "ADMIN_ACCESS_APPROVED",
+  "ADMIN_ACCESS_REJECTED",
+  "USER_DEIDENTIFICATION_REQUESTED",
+  "USER_DEIDENTIFICATION_FAILED",
+  "USER_DEIDENTIFIED",
+  "ISSUE_CREATED",
+  "ISSUE_UPDATED",
+  "ISSUE_ASSIGNED",
+  "ISSUE_UNASSIGNED",
+  "ISSUE_STATUS_CHANGED",
+  "ISSUE_PRIORITY_CHANGED",
+  "ISSUE_ARCHIVED",
+  "ISSUE_RESTORED",
+  "MESSAGE_CREATED",
+  "MESSAGE_DELETED",
+  "COMMENT_CREATED",
+  "USER_CREATED",
+  "USER_DELETED",
+];
+
+const recordAuditLog = async (db, {
+  performedBy = null,
+  actorType = "User",
+  action,
+  targetType,
+  targetId = null,
+  outcome,
+  reason = null,
+  details = {},
+}) => {
+  try {
+    let actorName = null;
+    if (performedBy) {
+      try {
+        const actor = await db.collection("User").findOne(
+          { _id: performedBy },
+          { projection: { firstName: 1, lastName: 1 } }
+        );
+        actorName = `${actor?.firstName || ""} ${actor?.lastName || ""}`.trim() || null;
+      } catch (actorLookupError) {
+        console.error("Failed to resolve audit actor name:", actorLookupError);
+      }
+    }
+
+    const auditDetails = {
+      ...(details && typeof details === "object" ? details : {}),
+      ...(actorName ? { actorName } : {}),
+    };
+
+    await db.collection("AuditLog").insertOne({
+      performedBy,
+      actorType,
+      action,
+      targetType,
+      targetId,
+      performedAt: new Date(),
+      outcome,
+      reason: typeof reason === "string" ? reason.slice(0, 500) : null,
+      details: auditDetails,
+    });
+  } catch (error) {
+    console.error("Failed to record audit log:", error);
+  }
+};
+
+const buildAuditLogQuery = (params) => {
+  const { action, actorType, outcome, from, to, search } = params;
+  const query = {};
+
+  if (action) {
+    if (!AUDIT_ACTIONS.includes(action)) return { error: "Invalid audit action" };
+    query.action = action;
+  }
+  if (actorType) {
+    if (!["User", "Admin"].includes(actorType)) return { error: "Invalid actor type" };
+    query.actorType = actorType;
+  }
+  if (outcome) {
+    if (!["Success", "Failure"].includes(outcome)) return { error: "Invalid audit outcome" };
+    query.outcome = outcome;
+  }
+
+  if (from || to) {
+    query.performedAt = {};
+    if (from) {
+      const fromDate = new Date(`${from}T00:00:00.000Z`);
+      if (Number.isNaN(fromDate.getTime())) return { error: "Invalid start date" };
+      query.performedAt.$gte = fromDate;
+    }
+    if (to) {
+      const toDate = new Date(`${to}T00:00:00.000Z`);
+      if (Number.isNaN(toDate.getTime())) return { error: "Invalid end date" };
+      toDate.setUTCDate(toDate.getUTCDate() + 1);
+      query.performedAt.$lt = toDate;
+    }
+  }
+
+  if (search?.trim()) {
+    const searchTerm = search.trim();
+    const searchMatches = [
+      { action: { $regex: searchTerm, $options: "i" } },
+      { reason: { $regex: searchTerm, $options: "i" } },
+      { "details.issueId": { $regex: searchTerm, $options: "i" } },
+      { "details.privacyRequestId": { $regex: searchTerm, $options: "i" } },
+      { "details.targetName": { $regex: searchTerm, $options: "i" } },
+      {
+        $expr: {
+          $anyElementTrue: {
+            $map: {
+              input: { $objectToArray: { $ifNull: ["$details", {}] } },
+              as: "detail",
+              in: {
+                $regexMatch: {
+                  input: {
+                    $cond: [
+                      { $isArray: "$$detail.v" },
+                      {
+                        $reduce: {
+                          input: "$$detail.v",
+                          initialValue: "",
+                          in: {
+                            $concat: [
+                              "$$value",
+                              " ",
+                              {
+                                $convert: {
+                                  input: "$$this",
+                                  to: "string",
+                                  onError: "",
+                                  onNull: "",
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      },
+                      {
+                        $convert: {
+                          input: "$$detail.v",
+                          to: "string",
+                          onError: "",
+                          onNull: "",
+                        },
+                      },
+                    ],
+                  },
+                  regex: searchTerm,
+                  options: "i",
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    if (ObjectId.isValid(searchTerm)) {
+      searchMatches.push({ targetId: new ObjectId(searchTerm) });
+    }
+
+    query.$or = searchMatches;
+  }
+
+  return { query };
+};
+
+/**
+ * Fetch the administrator audit trail.
+ *
+ * The caller must identify an active administrator. Filters are intentionally
+ * limited to the values accepted by the AuditLog validation schema.
+ */
+app.get("/api/admin/audit-logs", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const authorization = req.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
+      : null;
+    if (!token) return res.status(401).json({ error: "Firebase ID token is required" });
+
+    let decodedToken;
+    try {
+      decodedToken = await getFirebaseAdminAuth().verifyIdToken(token);
+    } catch {
+      return res.status(401).json({ error: "Invalid Firebase ID token" });
+    }
+
+    const admin = await db.collection("User").findOne({
+      firebaseUid: decodedToken.uid,
+      isAdmin: true,
+      accountStatus: "Active",
+    });
+
+    if (!admin) {
+      return res.status(403).json({ error: "Active administrator access required" });
+    }
+
+    const { query, error: filterError } = buildAuditLogQuery(req.query);
+    if (filterError) return res.status(400).json({ error: filterError });
+
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 100, 1), 250);
+    const logs = await db.collection("AuditLog").aggregate([
+      { $match: query },
+      { $sort: { performedAt: -1 } },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: "User",
+          localField: "performedBy",
+          foreignField: "_id",
+          as: "actor",
+        },
+      },
+      {
+        $set: {
+          actor: { $arrayElemAt: ["$actor", 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: "Issue",
+          localField: "targetId",
+          foreignField: "_id",
+          as: "targetIssue",
+        },
+      },
+      {
+        $set: {
+          targetIssue: { $arrayElemAt: ["$targetIssue", 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: "User",
+          localField: "targetId",
+          foreignField: "_id",
+          as: "targetUser",
+        },
+      },
+      {
+        $set: {
+          targetUser: { $arrayElemAt: ["$targetUser", 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: "Message",
+          localField: "targetId",
+          foreignField: "_id",
+          as: "targetMessage",
+        },
+      },
+      {
+        $set: {
+          targetMessage: { $arrayElemAt: ["$targetMessage", 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: "IssueComments",
+          localField: "targetId",
+          foreignField: "_id",
+          as: "targetComment",
+        },
+      },
+      {
+        $set: {
+          targetComment: { $arrayElemAt: ["$targetComment", 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: "Issue",
+          localField: "targetMessage.issueId",
+          foreignField: "_id",
+          as: "targetMessageIssue",
+        },
+      },
+      {
+        $set: {
+          targetMessageIssue: { $arrayElemAt: ["$targetMessageIssue", 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: "Issue",
+          localField: "targetComment.issueId",
+          foreignField: "_id",
+          as: "targetCommentIssue",
+        },
+      },
+      {
+        $set: {
+          targetCommentIssue: { $arrayElemAt: ["$targetCommentIssue", 0] },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          performedBy: 1,
+          actorType: 1,
+          action: 1,
+          targetType: 1,
+          targetId: 1,
+          performedAt: 1,
+          outcome: 1,
+          reason: 1,
+          details: 1,
+          actorName: {
+            $trim: {
+              input: {
+                $concat: [
+                  { $ifNull: ["$actor.firstName", ""] },
+                  " ",
+                  { $ifNull: ["$actor.lastName", ""] },
+                ],
+              },
+            },
+          },
+          actorEmail: "$actor.email",
+          targetName: {
+            $cond: [
+              { $eq: ["$targetType", "Issue"] },
+              "$targetIssue.title",
+              {
+                $cond: [
+                  { $eq: ["$targetType", "User"] },
+                  {
+                    $trim: {
+                      input: {
+                        $cond: [
+                          { $ne: [{ $ifNull: ["$targetUser", null] }, null] },
+                          {
+                            $concat: [
+                              { $ifNull: ["$targetUser.firstName", ""] },
+                              " ",
+                              { $ifNull: ["$targetUser.lastName", ""] },
+                            ],
+                          },
+                          { $ifNull: ["$details.targetName", "Deleted user"] },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    $cond: [
+                      { $eq: ["$targetType", "Message"] },
+                      "$targetMessageIssue.title",
+                      {
+                        $cond: [
+                          { $eq: ["$targetType", "Comment"] },
+                          "$targetCommentIssue.title",
+                          null,
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    ]).toArray();
+
+    res.json({ logs });
+  } catch (error) {
+    console.error("Failed to fetch audit logs:", error);
+    res.status(500).json({ error: "Failed to fetch audit logs" });
+  }
+});
+
+app.get("/api/admin/audit-logs/export/pdf", async (req, res) => {
+  try {
+    const db = req.app.locals.db;
+    const authorization = req.headers.authorization || "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length)
+      : null;
+    if (!token) return res.status(401).json({ error: "Firebase ID token is required" });
+
+    let decodedToken;
+    try {
+      decodedToken = await getFirebaseAdminAuth().verifyIdToken(token);
+    } catch {
+      return res.status(401).json({ error: "Invalid Firebase ID token" });
+    }
+
+    const admin = await db.collection("User").findOne({
+      firebaseUid: decodedToken.uid,
+      isAdmin: true,
+      accountStatus: "Active",
+    });
+    if (!admin) return res.status(403).json({ error: "Active administrator access required" });
+
+    const { query, error: filterError } = buildAuditLogQuery(req.query);
+    if (filterError) return res.status(400).json({ error: filterError });
+
+    const logs = await db.collection("AuditLog").aggregate([
+      { $match: query },
+      { $sort: { performedAt: -1 } },
+      { $limit: 1000 },
+      { $lookup: { from: "User", localField: "performedBy", foreignField: "_id", as: "actor" } },
+      { $lookup: { from: "Issue", localField: "targetId", foreignField: "_id", as: "targetIssue" } },
+      { $lookup: { from: "User", localField: "targetId", foreignField: "_id", as: "targetUser" } },
+      { $lookup: { from: "Message", localField: "targetId", foreignField: "_id", as: "targetMessage" } },
+      { $lookup: { from: "IssueComments", localField: "targetId", foreignField: "_id", as: "targetComment" } },
+      {
+        $lookup: {
+          from: "Issue",
+          localField: "targetMessage.issueId",
+          foreignField: "_id",
+          as: "targetMessageIssue",
+        },
+      },
+      {
+        $lookup: {
+          from: "Issue",
+          localField: "targetComment.issueId",
+          foreignField: "_id",
+          as: "targetCommentIssue",
+        },
+      },
+    ]).toArray();
+
+    const nameForUser = (user) => `${user?.firstName || ""} ${user?.lastName || ""}`.trim();
+    const detailsForPdf = (details) => {
+      if (!details || typeof details !== "object") return "";
+      return Object.entries(details)
+        .filter(([key]) => !["actorName", "targetName"].includes(key))
+        .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : typeof value === "object" ? JSON.stringify(value) : value}`)
+        .join(" · ");
+    };
+
+    const rows = logs.map((log) => {
+      const actor = log.actor?.[0];
+      const targetUser = log.targetUser?.[0];
+      const targetIssue = log.targetIssue?.[0];
+      const targetMessageIssue = log.targetMessageIssue?.[0];
+      const targetCommentIssue = log.targetCommentIssue?.[0];
+      let targetName = "";
+      if (log.targetType === "Issue") targetName = targetIssue?.title || "";
+      if (log.targetType === "User") targetName = nameForUser(targetUser) || log.details?.targetName || "Deleted user";
+      if (log.targetType === "Message") targetName = targetMessageIssue?.title || "";
+      if (log.targetType === "Comment") targetName = targetCommentIssue?.title || "";
+
+      return {
+        date: log.performedAt ? new Date(log.performedAt).toLocaleString("en-AU") : "Unknown",
+        action: log.action || "Unknown",
+        actor: nameForUser(actor) || "Unavailable",
+        target: targetName || log.targetType || "Not specified",
+        outcome: log.outcome || "Unknown",
+        details: [log.reason, detailsForPdf(log.details), log.targetId ? `${log.targetType} ID: ${log.targetId}` : ""]
+          .filter(Boolean)
+          .join(" · "),
+      };
+    });
+
+    const filterSummary = [
+      ["Action", req.query.action || "All actions"],
+      ["Actor type", req.query.actorType || "All actors"],
+      ["Outcome", req.query.outcome || "All outcomes"],
+      ["Start date", req.query.from || "Any"],
+      ["End date", req.query.to || "Any"],
+      ["Search", req.query.search || "None"],
+    ].map(([label, value]) => `${label}: ${value}`).join("   ");
+
+    const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 36 });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="audit-log-${new Date().toISOString().slice(0, 10)}.pdf"`);
+    doc.pipe(res);
+    doc.fontSize(18).font("Helvetica-Bold").text("WHS Reporting App - Audit Log Export");
+    doc.fontSize(9).font("Helvetica").text(`Exported copy | Generated: ${new Date().toLocaleString("en-AU")} | Records: ${rows.length}`);
+    doc.moveDown(0.5).fontSize(8).text(filterSummary);
+    doc.moveDown();
+
+    const columns = [
+      ["Date and time", 82],
+      ["Action", 100],
+      ["Actor", 105],
+      ["Target", 125],
+      ["Outcome", 55],
+      ["Reason / details", 300],
+    ];
+    const drawHeader = () => {
+      doc.font("Helvetica-Bold").fontSize(8);
+      let x = doc.x;
+      columns.forEach(([label, width]) => {
+        doc.text(label, x, doc.y, { width, continued: false });
+        x += width;
+      });
+      doc.moveDown(0.5);
+      doc.font("Helvetica").fontSize(7);
+    };
+
+    drawHeader();
+    rows.forEach((row) => {
+      const values = [row.date, row.action, row.actor, row.target, row.outcome, row.details || "Action recorded."];
+      const rowHeight = Math.max(...values.map((value, index) => doc.heightOfString(String(value), { width: columns[index][1] }))) + 5;
+      if (doc.y + rowHeight > doc.page.height - doc.page.margins.bottom) {
+        doc.addPage();
+        drawHeader();
+      }
+      let x = doc.x;
+      const y = doc.y;
+      values.forEach((value, index) => {
+        doc.text(String(value), x, y, { width: columns[index][1] });
+        x += columns[index][1];
+      });
+      doc.moveTo(doc.x, y + rowHeight - 2).lineTo(doc.page.width - doc.page.margins.right, y + rowHeight - 2).strokeColor("#dddddd").stroke();
+      doc.y = y + rowHeight;
+    });
+
+    doc.end();
+  } catch (error) {
+    console.error("Failed to export audit logs:", error);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to export audit logs" });
+  }
+});
 
 /**
  * Start the Express server and connect to MongoDB
@@ -193,6 +718,16 @@ app.post('/api/user', async (req, res) => {
 
     //Insert into MongoDB
     const result = await db.collection("User").insertOne(newUser);
+
+    await recordAuditLog(db, {
+      performedBy: result.insertedId,
+      actorType: "User",
+      action: "USER_CREATED",
+      targetType: "User",
+      targetId: result.insertedId,
+      outcome: "Success",
+      details: { role: newUser.role },
+    });
 
     res.status(201).json({ message: "User created successfully", userId: result.insertedId });
 
@@ -691,6 +1226,17 @@ app.put("/api/admin-access/requests/:userId", async (req, res) => {
       }
     );
 
+    await recordAuditLog(db, {
+      performedBy: admin._id,
+      actorType: "Admin",
+      action: approved ? "ADMIN_ACCESS_APPROVED" : "ADMIN_ACCESS_REJECTED",
+      targetType: "User",
+      targetId: new ObjectId(userId),
+      outcome: "Success",
+      reason: approved ? "Administrator access request approved." : "Administrator access request rejected.",
+      details: { requestedAction: action },
+    });
+
     res.json({
       message: approved
         ? "Admin access request approved successfully"
@@ -743,6 +1289,11 @@ app.put('/api/admin/users/:userId', async (req, res) => {
       return res.status(400).json({ error: "You cannot remove your own administrator status" });
     }
 
+    const targetUser = await db.collection("User").findOne({ _id: new ObjectId(userId) });
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     const updates = {};
 
     if (firstName !== undefined) {
@@ -773,7 +1324,6 @@ app.put('/api/admin/users/:userId', async (req, res) => {
         return res.status(400).json({ error: "isAdmin must be a boolean" });
       }
 
-      const targetUser = await db.collection("User").findOne({ _id: new ObjectId(userId) });
       const roleToValidate = role ?? targetUser?.role;
       const adminEligibility = validateAdminEligibility({
         routeRole: roleToValidate,
@@ -812,6 +1362,32 @@ app.put('/api/admin/users/:userId', async (req, res) => {
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    if (updates.isAdmin === true && !targetUser?.isAdmin) {
+      await recordAuditLog(db, {
+        performedBy: requestingAdmin._id,
+        actorType: "Admin",
+        action: "ADMIN_PROMOTED",
+        targetType: "User",
+        targetId: new ObjectId(userId),
+        outcome: "Success",
+        reason: "Administrator access granted from user management.",
+        details: { previousIsAdmin: false },
+      });
+    }
+
+    if (updates.isAdmin === false && targetUser?.isAdmin) {
+      await recordAuditLog(db, {
+        performedBy: requestingAdmin._id,
+        actorType: "Admin",
+        action: "ADMIN_DEMOTED",
+        targetType: "User",
+        targetId: new ObjectId(userId),
+        outcome: "Success",
+        reason: "Administrator access removed from user management.",
+        details: { previousIsAdmin: true },
+      });
     }
 
     res.json(updatedUser);
@@ -869,6 +1445,19 @@ app.delete('/api/admin/users/:userId', async (req, res) => {
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "User not found" });
     }
+
+    await recordAuditLog(db, {
+      performedBy: requestingAdmin._id,
+      actorType: "Admin",
+      action: "USER_DELETED",
+      targetType: "User",
+      targetId: targetUser._id,
+      outcome: "Success",
+      reason: "User removed from the system.",
+      details: {
+        targetName: `${targetUser.firstName || ""} ${targetUser.lastName || ""}`.trim() || "Deleted user",
+      },
+    });
 
     res.json({ message: "User deleted successfully" });
   } catch (err) {
@@ -974,6 +1563,17 @@ app.post('/api/privacy/request', async (req, res) => {
       .collection("PrivacyRequest")
       .insertOne(privacyRequest);
 
+    await recordAuditLog(db, {
+      performedBy: user._id,
+      actorType: "User",
+      action: "USER_DEIDENTIFICATION_REQUESTED",
+      targetType: "User",
+      targetId: user._id,
+      outcome: "Success",
+      reason: "User submitted a data de-identification request.",
+      details: { privacyRequestId: result.insertedId.toString() },
+    });
+
     res.status(201).json({
       message: "Privacy request submitted successfully.",
       requestId: result.insertedId
@@ -1047,6 +1647,8 @@ app.get('/api/admin/users/:userId/privacy-request', async (req, res) => {
 app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
   let privacyRequestId;
   let requestClaimed = false;
+  let processingAdmin = null;
+  let targetUserId = null;
 
   try {
     const db = req.app.locals.db;
@@ -1084,6 +1686,7 @@ app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
       firebaseUid: decodedToken.uid,
       isAdmin: true
     });
+    processingAdmin = adminUser;
 
     if (!adminUser) {
       return res.status(403).json({
@@ -1147,6 +1750,7 @@ app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
     if (!user) {
       throw new Error("User associated with this request was not found");
     }
+    targetUserId = user._id;
 
     const originalFirebaseUid = privacyRequest.firebaseUid;
     const processedAt = new Date();
@@ -1223,6 +1827,17 @@ app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
       }
     );
 
+    await recordAuditLog(db, {
+      performedBy: adminUser._id,
+      actorType: "Admin",
+      action: "USER_DEIDENTIFIED",
+      targetType: "User",
+      targetId: user._id,
+      outcome: "Success",
+      reason: "User data de-identification completed.",
+      details: { privacyRequestId: privacyRequest._id.toString() },
+    });
+
     res.json({
       message: "Data de-identification request processed successfully."
     });
@@ -1245,6 +1860,16 @@ app.put('/api/admin/privacy-request/:requestId/process', async (req, res) => {
             }
           }
         );
+        await recordAuditLog(db, {
+          performedBy: processingAdmin?._id || null,
+          actorType: "Admin",
+          action: "USER_DEIDENTIFICATION_FAILED",
+          targetType: "User",
+          targetId: targetUserId || undefined,
+          outcome: "Failure",
+          reason: err.message,
+          details: { privacyRequestId: privacyRequestId.toString() },
+        });
       } catch (failureUpdateError) {
         console.error("Failed to record privacy request failure:", failureUpdateError);
       }
@@ -1380,6 +2005,20 @@ app.post('/api/issue/:firebaseUid', async (req, res) => {
     };
 
     const result = await db.collection("Issue").insertOne(newIssue);
+
+    await recordAuditLog(db, {
+      performedBy: userExists._id,
+      actorType: userExists.isAdmin ? "Admin" : "User",
+      action: "ISSUE_CREATED",
+      targetType: "Issue",
+      targetId: result.insertedId,
+      outcome: "Success",
+      details: {
+        status: newIssue.status,
+        priority: newIssue.priority,
+        createdByName: `${userExists.firstName || ""} ${userExists.lastName || ""}`.trim(),
+      },
+    });
 
     res.status(201).json({ message: "Issue created successfully", issueId: result.insertedId });
 
@@ -1692,6 +2331,16 @@ app.post('/api/issues/:id/messages', async (req, res) => {
 
     const result = await db.collection("Message").insertOne(message);
 
+    await recordAuditLog(db, {
+      performedBy: user._id,
+      actorType: user.isAdmin ? "Admin" : "User",
+      action: "MESSAGE_CREATED",
+      targetType: "Message",
+      targetId: result.insertedId,
+      outcome: "Success",
+      details: { issueId: issueId.toString() },
+    });
+
     if (user.isAdmin) {
       // Notify the issue reporter when an administrator sends a message.
       await createNotification(db, {
@@ -1839,6 +2488,16 @@ app.post('/api/issues/:id/comments', upload.array("attachments", 5), async (req,
     const result = await db
       .collection("IssueComments")
       .insertOne(newComment);
+
+    await recordAuditLog(db, {
+      performedBy: admin._id,
+      actorType: "Admin",
+      action: "COMMENT_CREATED",
+      targetType: "Comment",
+      targetId: result.insertedId,
+      outcome: "Success",
+      details: { issueId: issueId.toString(), attachmentCount: attachments.length },
+    });
 
     res.status(201).json({
       ...newComment,
@@ -2163,6 +2822,19 @@ app.put('/api/issues/:id/assign', async (req, res) => {
       return res.status(404).json({ error: "Issue not found" });
     }
 
+    await recordAuditLog(db, {
+      performedBy: user._id,
+      actorType: "Admin",
+      action: "ISSUE_ASSIGNED",
+      targetType: "Issue",
+      targetId: result._id,
+      outcome: "Success",
+      details: {
+        assignedTo: user._id.toString(),
+        assignedToName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+      },
+    });
+
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
     const issueComments = await getIssueComments(db, result._id);
     const issueMessages = await getIssueMessages(db, result._id);
@@ -2201,6 +2873,7 @@ app.put('/api/issues/:id/unassign', async (req, res) => {
   try {
     const db = req.app.locals.db;
     const { id } = req.params;
+    const { firebaseUid } = req.body || {};
 
     if (!ObjectId.isValid(id)) {
       return res.status(400).json({ error: "Invalid issue ID" });
@@ -2209,6 +2882,16 @@ app.put('/api/issues/:id/unassign', async (req, res) => {
     const issue = await db.collection("Issue").findOne({ _id: new ObjectId(id) }); // Retrieve the issue from the database using the provided issue ID if it exists
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });
+    }
+
+    const unassigningAdmin = firebaseUid
+      ? await findUserByIdentity(db, firebaseUid)
+      : null;
+
+    if (!unassigningAdmin) {
+      return res.status(400).json({
+        error: "firebaseUid is required to record the administrator action",
+      });
     }
 
     const result = await db.collection("Issue").findOneAndUpdate( // Update the issue in MongoDB to clear the assignment by setting assignedTo to null and return the updated document
@@ -2220,6 +2903,27 @@ app.put('/api/issues/:id/unassign', async (req, res) => {
     if (!result) {
       return res.status(404).json({ error: "Issue not found" });
     }
+
+    const previousAssignee = issue.assignedTo
+      ? await db.collection("User").findOne(
+        { _id: issue.assignedTo },
+        { projection: { firstName: 1, lastName: 1 } }
+      )
+      : null;
+    await recordAuditLog(db, {
+      performedBy: unassigningAdmin._id,
+      actorType: "Admin",
+      action: "ISSUE_UNASSIGNED",
+      targetType: "Issue",
+      targetId: result._id,
+      outcome: "Success",
+      details: {
+        previousAssignee: issue.assignedTo?.toString() || null,
+        previousAssigneeName: previousAssignee
+          ? `${previousAssignee.firstName || ""} ${previousAssignee.lastName || ""}`.trim()
+          : null,
+      },
+    });
 
     const enrichedIssues = await issueWithAssigneeName(db, { _id: result._id }, 1);
     const issueComments = await getIssueComments(db, result._id);
@@ -2477,6 +3181,85 @@ app.put('/api/issues/:id', upload.array("images", 5), async (req, res) => {
       return res.status(404).json({ error: "Issue not found" });
     }
 
+    const issueActor = body.firebaseUid
+      ? await findUserByIdentity(db, body.firebaseUid)
+      : null;
+    const auditActorType = issueActor?.isAdmin ? "Admin" : "User";
+    const separatelyAuditedFields = new Set([
+      "status",
+      "priority",
+      "isArchived",
+      "dateTimeIssueClosed",
+    ]);
+    const reportFields = [
+      "title",
+      "issueDescription",
+      "location",
+      "campus",
+      "dateTimeIssueOccurred",
+      "witnessNames",
+      "imageURLs",
+    ];
+    const valuesEqual = (left, right) => {
+      if (left instanceof Date || right instanceof Date) {
+        return new Date(left || 0).getTime() === new Date(right || 0).getTime();
+      }
+
+      return JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
+    };
+    const changedFields = reportFields.filter((field) => (
+      Object.prototype.hasOwnProperty.call(updateFields, field) &&
+      !separatelyAuditedFields.has(field) &&
+      !valuesEqual(issue[field], result[field])
+    ));
+
+    if (changedFields.length > 0) {
+      await recordAuditLog(db, {
+        performedBy: issueActor?._id || issue.reportedBy || null,
+        actorType: issueActor ? auditActorType : "User",
+        action: "ISSUE_UPDATED",
+        targetType: "Issue",
+        targetId: result._id,
+        outcome: "Success",
+        details: { changedFields },
+      });
+    }
+
+    if (status !== undefined && issue.status !== updateFields.status) {
+      await recordAuditLog(db, {
+        performedBy: issueActor?._id || null,
+        actorType: issueActor ? auditActorType : "User",
+        action: "ISSUE_STATUS_CHANGED",
+        targetType: "Issue",
+        targetId: result._id,
+        outcome: "Success",
+        details: { from: issue.status || null, to: updateFields.status },
+      });
+    }
+
+    if (priority !== undefined && issue.priority !== updateFields.priority) {
+      await recordAuditLog(db, {
+        performedBy: issueActor?._id || null,
+        actorType: issueActor ? auditActorType : "User",
+        action: "ISSUE_PRIORITY_CHANGED",
+        targetType: "Issue",
+        targetId: result._id,
+        outcome: "Success",
+        details: { from: issue.priority || null, to: updateFields.priority },
+      });
+    }
+
+    if (updateFields.isArchived !== undefined && issue.isArchived !== updateFields.isArchived) {
+      await recordAuditLog(db, {
+        performedBy: issueActor?._id || null,
+        actorType: issueActor ? auditActorType : "User",
+        action: updateFields.isArchived ? "ISSUE_ARCHIVED" : "ISSUE_RESTORED",
+        targetType: "Issue",
+        targetId: result._id,
+        outcome: "Success",
+      });
+    }
+
     if (status !== undefined && issue.status !== updateFields.status) {
       await createParticipantNotifications(db, result, {
         issueId: result._id,
@@ -2714,6 +3497,16 @@ app.delete('/api/issues/:issueId/messages/:messageId', async (req, res) => {
       }
     );
 
+    await recordAuditLog(db, {
+      performedBy: admin._id,
+      actorType: "Admin",
+      action: "MESSAGE_DELETED",
+      targetType: "Message",
+      targetId: messageObjectId,
+      outcome: "Success",
+      details: { issueId: issueObjectId.toString() },
+    });
+
     res.json({
       message: "Message removed successfully",
     });
@@ -2796,6 +3589,19 @@ app.put('/api/issues/:id/assign-to', async (req, res) => {
     if (!result) {
       return res.status(404).json({ error: "Issue not found" });
     }
+
+    await recordAuditLog(db, {
+      performedBy: requestingAdmin._id,
+      actorType: "Admin",
+      action: "ISSUE_ASSIGNED",
+      targetType: "Issue",
+      targetId: result._id,
+      outcome: "Success",
+      details: {
+        assignedTo: assignedAdminId.toString(),
+        assignedToName: `${assignedAdmin.firstName || ""} ${assignedAdmin.lastName || ""}`.trim(),
+      },
+    });
 
     // Get the updated issue with the administrator's display name.
     const enrichedIssues = await issueWithAssigneeName(

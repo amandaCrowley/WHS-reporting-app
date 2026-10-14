@@ -24,8 +24,8 @@ import {
   LogOut,
   Search,
   UserRound,
-  ShieldCheck,
   BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
@@ -253,6 +253,10 @@ export default function UserManagement() {
           >
             <BarChart3 />
             <span>Reporting & Analytics</span>
+          </button>
+          <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/audit-log")}>
+            <ShieldCheck />
+            <span>Audit Log</span>
           </button>
         </nav>
 

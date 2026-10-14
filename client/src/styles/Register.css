@@ -25,6 +25,26 @@
     backdrop-filter: blur(8px);
 }
 
+/* Center the registration heading */
+.register-page .register-container>h1 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    color: #1e3a8a;
+    font-size: 3rem;
+    line-height: 1.15;
+    margin: 0 0 25px;
+}
+
+@media (max-width: 480px) {
+    .register-page .register-container>h1 {
+        font-size: 2.5rem;
+    }
+}
+
 .register-container h1 {
     text-align: center;
     color: #1e3a8a;
@@ -365,4 +385,25 @@
         font-size: 1rem;
         padding: 12px;
     }
+}
+
+
+.register-page .register-container>.app-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto 20px;
+    padding: 0;
+    text-align: center;
+}
+
+.register-page .register-container>.app-header .logo {
+    display: block;
+    height: 80px;
+    width: auto;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    object-fit: contain;
 }

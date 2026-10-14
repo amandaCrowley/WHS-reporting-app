@@ -49,6 +49,7 @@ import {
     Timer,
     Download,
     Activity,
+    ShieldCheck,
 } from "lucide-react";
 
 import { userLogout } from "../hooks/userLogout";
@@ -1871,6 +1872,14 @@ export default function AdminReporting() {
                             Reporting & Analytics
                         </span>
 
+                    </button>
+                    <button
+                        type="button"
+                        className="user-dashboard-nav-item"
+                        onClick={() => navigate("/admin/audit-log")}
+                    >
+                        <ShieldCheck />
+                        <span>Audit Log</span>
                     </button>
 
                 </nav>

@@ -28,6 +28,7 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 
 import { getUserData } from "../hooks/getUserData";
@@ -40,6 +41,24 @@ import UONLogo from "../images/UONLogo White.png";
 
 import "../pages/UserDashboard.css";
 import "./ManageIssues.css";
+
+const normalizeIssueStatus = (status) => {
+  const normalized = String(status || "").trim().toLowerCase();
+
+  if (normalized === "in-progress" || normalized === "in progress") {
+    return "In Progress";
+  }
+
+  if (normalized === "open") {
+    return "Open";
+  }
+
+  if (normalized === "closed" || normalized === "resolved") {
+    return "Closed";
+  }
+
+  return status;
+};
 
 export default function ManageIssues() {
   const mobileNavigation = useMobileNavigation();
@@ -65,7 +84,7 @@ export default function ManageIssues() {
 
   const issuesPerPage = 10;
 
-  const fetchIssues = async () => {
+    const fetchIssues = async () => {
     try {
       const params = new URLSearchParams();
 
@@ -124,12 +143,12 @@ export default function ManageIssues() {
     if (statusFilter === "Active") {
       temp = temp.filter(
         (issue) =>
-          issue.status === "Open" ||
-          issue.status === "In Progress"
+          normalizeIssueStatus(issue.status) === "Open" ||
+          normalizeIssueStatus(issue.status) === "In Progress"
       );
     } else if (statusFilter !== "All") {
       temp = temp.filter(
-        (issue) => issue.status === statusFilter
+        (issue) => normalizeIssueStatus(issue.status) === statusFilter
       );
     }
 
@@ -269,6 +288,12 @@ export default function ManageIssues() {
         `http://localhost:8000/api/issues/${issueId}/unassign`,
         {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firebaseUid: userData.firebaseUid,
+          }),
         }
       );
 
@@ -484,6 +509,10 @@ export default function ManageIssues() {
             <BarChart3 />
             <span>Reporting & Analytics</span>
           </button>
+          <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/audit-log")}>
+            <ShieldCheck />
+            <span>Audit Log</span>
+          </button>
         </nav>
 
         <div className="user-dashboard-logout-section">
@@ -540,7 +569,6 @@ export default function ManageIssues() {
               </div>
 
               <div>
-                <h2>Search and filter</h2>
 
                 <p>
                   Narrow the issue list by keyword, status,

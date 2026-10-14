@@ -1,13 +1,14 @@
 .home-page {
   min-height: 100vh;
+  box-sizing: border-box;
   background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
+  align-items: center !important;
+  justify-content: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding: 40px 20px;
-  text-align: center;
+  text-align: center !important;
 }
 
 
@@ -50,7 +51,7 @@
   background-color: #172554;
   color: white;
   border: 2px solid #172554;
-  
+
 }
 
 .login-button:hover {
@@ -78,7 +79,7 @@
   .hero-section h1 {
     font-size: 2.6rem;
   }
-  
+
   .actions {
     flex-direction: column;
     align-items: center;
@@ -86,27 +87,27 @@
 }
 
 .logo {
-  height: 80px;   
-  width: auto;    
+  height: 80px;
+  width: auto;
 }
 
 .home-page .actions .btn-primary {
-    font-size: 1.1rem;
+  font-size: 1.1rem;
 }
 
 .home-page .actions .btn-primary:hover {
-    background-color: var(--brand-primary-hover);
-    color: #ffffff;
+  background-color: var(--brand-primary-hover);
+  color: #ffffff;
 }
 
 .home-page .actions .btn-secondary {
-    font-size: 1.1rem;
+  font-size: 1.1rem;
 }
 
 .home-page .actions .btn-secondary:hover {
-    background-color: var(--surface-subtle);
-    color: var(--brand-primary);
-    border-color: var(--brand-primary);
+  background-color: var(--surface-subtle);
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
 }
 
 @media (max-width: 600px) {

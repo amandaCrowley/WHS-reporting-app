@@ -23,6 +23,7 @@ import {
   Users,
   LogOut,
   BarChart3,
+  ShieldCheck,
   ClipboardCheck,
   Check,
   Clock3,
@@ -168,6 +169,9 @@ export default function AdminAssignedIssues() {
           >
             <BarChart3 />
             <span>Reporting & Analytics</span>
+          </button>
+          <button type="button" className="user-dashboard-nav-item" onClick={() => navigate("/admin/audit-log")}>
+            <ShieldCheck /><span>Audit Log</span>
           </button>
         </nav>
         <div className="user-dashboard-logout-section">
