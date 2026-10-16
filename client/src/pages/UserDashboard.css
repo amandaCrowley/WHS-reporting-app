@@ -641,7 +641,7 @@ body {
 }
 
 .admin-access-content textarea {
-  text-align: center;
+  text-align: left;
 }
 
 .admin-access-request-button {

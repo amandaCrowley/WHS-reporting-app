@@ -1,5 +1,6 @@
 .admin-audit-content {
-  max-width: 1500px;
+  width: 100%;
+  max-width: none;
 }
 
 .admin-audit-heading {
@@ -186,6 +187,120 @@
 
 .admin-audit-print-sheet {
   display: none;
+}
+
+@media screen and (max-width: 760px) {
+  .admin-audit-page .user-dashboard-content {
+    padding: 16px 12px 32px;
+  }
+
+  .admin-audit-page .admin-reporting-intro {
+    align-items: stretch;
+    gap: 20px;
+    padding: 18px;
+  }
+
+  .admin-audit-page .admin-reporting-intro > div:first-child {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .admin-audit-page .admin-reporting-export,
+  .admin-audit-page .admin-reporting-export-controls,
+  .admin-audit-page .admin-reporting-export button {
+    width: 100%;
+  }
+
+  .admin-audit-page .admin-reporting-export {
+    align-items: stretch;
+  }
+
+  .admin-audit-page .admin-reporting-filters {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px;
+  }
+
+  .admin-audit-page .admin-reporting-filter input,
+  .admin-audit-page .admin-reporting-filter select,
+  .admin-audit-page .admin-reporting-filter-actions button,
+  .admin-audit-page .admin-reporting-export button {
+    min-height: 44px;
+  }
+
+  .admin-audit-page .admin-reporting-filter-clear {
+    width: 100%;
+  }
+
+  .admin-audit-table-card {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .admin-audit-table-wrap {
+    overflow: visible;
+  }
+
+  .admin-audit-table,
+  .admin-audit-table tbody {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .admin-audit-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .admin-audit-table tbody tr {
+    display: block;
+    margin: 12px 0;
+    padding: 8px 16px;
+    border: 1px solid #e1e7ef;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(16, 24, 40, 0.04);
+  }
+
+  .admin-audit-table tbody td {
+    display: block;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    padding: 10px 0;
+    border: 0;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  .admin-audit-table tbody td + td {
+    border-top: 1px solid #edf0f4;
+  }
+
+  .admin-audit-table tbody td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 5px;
+    color: #667085;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+  }
+
+  .admin-audit-table td small {
+    overflow-wrap: anywhere;
+  }
+
+  .admin-audit-outcome {
+    margin-top: 1px;
+  }
 }
 
 @media print {

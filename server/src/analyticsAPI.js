@@ -35,6 +35,14 @@ import express from "express";
 
 const router = express.Router();
 
+const UNRESOLVED_ISSUE_AGE_GROUPS = [
+    "0–7 days",
+    "8–14 days",
+    "15–30 days",
+    "31–60 days",
+    "61+ days"
+];
+
 /**
  * Admin reporting and analytics endpoint.
  */
@@ -861,7 +869,7 @@ router.get("/:firebaseUid", async (req, res) => {
                                         }
                                     ],
 
-                                    default: "60+ days"
+                                    default: "61+ days"
                                 }
                             }
                         }
@@ -932,7 +940,7 @@ router.get("/:firebaseUid", async (req, res) => {
                                             case: {
                                                 $eq: [
                                                     "$_id",
-                                                    "60+ days"
+                                                    "61+ days"
                                                 ]
                                             },
                                             then: 5
@@ -1319,14 +1327,19 @@ router.get("/:firebaseUid", async (req, res) => {
                 ),
 
             unresolvedIssuesByAge:
-                analyticsResult.unresolvedIssuesByAge.map(
-                    (item) => ({
-                        ageGroup:
-                            item._id,
+                UNRESOLVED_ISSUE_AGE_GROUPS.map(
+                    (ageGroup) => {
+                        const matchingGroup =
+                            analyticsResult.unresolvedIssuesByAge.find(
+                                (item) =>
+                                    item._id === ageGroup
+                            );
 
-                        count:
-                            item.count
-                    })
+                        return {
+                            ageGroup,
+                            count: matchingGroup?.count || 0
+                        };
+                    }
                 ),
 
             issuesRequiringAttention:

@@ -284,12 +284,12 @@ export default function AdminAuditLog() {
                   <thead><tr><th>Date and time</th><th>Action</th><th>Actor</th><th>Target</th><th>Outcome</th><th>Reason / details</th></tr></thead>
                   <tbody>{logs.map((log) => (
                     <tr key={log._id}>
-                      <td>{formatDate(log.performedAt)}</td>
-                      <td><strong>{log.action}</strong></td>
-                      <td><strong>{log.actorName || "Unavailable"}</strong><small>{log.actorType}{log.actorEmail ? ` · ${log.actorEmail}` : ""}</small></td>
-                      <td><strong>{log.targetName || log.targetType}</strong><small>{log.targetName ? log.targetType : (log.targetId || "Not specified")}</small></td>
-                      <td><span className={`admin-audit-outcome admin-audit-outcome-${log.outcome.toLowerCase()}`}>{log.outcome}</span></td>
-                      <td>
+                      <td data-label="Date and time">{formatDate(log.performedAt)}</td>
+                      <td data-label="Action"><strong>{formatAction(log.action)}</strong></td>
+                      <td data-label="Actor"><strong>{log.actorName || "Unavailable"}</strong><small>{log.actorType}{log.actorEmail ? ` · ${log.actorEmail}` : ""}</small></td>
+                      <td data-label="Target"><strong>{log.targetName || log.targetType}</strong><small>{log.targetName ? log.targetType : (log.targetId || "Not specified")}</small></td>
+                      <td data-label="Outcome"><span className={`admin-audit-outcome admin-audit-outcome-${log.outcome.toLowerCase()}`}>{log.outcome}</span></td>
+                      <td data-label="Reason / details">
                         {log.reason || defaultDetailsByAction[log.action] || "Action recorded."}
                         {log.targetId && <small>{`${log.targetType} ID: ${log.targetId}`}</small>}
                         {formatDetails(log.details) && <small>{formatDetails(log.details)}</small>}
